@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/cpc-backend:latest
+    depends_on:
+      - mongodb
+      - redis
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/cpc-frontend:latest
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - mongodb_prod:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis_prod:/data
+
+volumes:
+  mongodb_prod:
+  redis_prod:
