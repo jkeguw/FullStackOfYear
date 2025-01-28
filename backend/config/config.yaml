@@ -1,0 +1,26 @@
+server:
+  port: :8080
+  readTimeout: 60s
+  writeTimeout: 60s
+
+mongodb:
+  uri: mongodb://localhost:27017
+  database: cpc
+
+redis:
+  addr: localhost:6379
+  password: ""
+  db: 0
+
+jwt:
+  secret: your-secret-key
+  expireTime: 24h
+
+upload:
+  savePath: "./uploads"
+  allowTypes:
+    - ".jpg"
+    - ".jpeg"
+    - ".png"
+  maxSize: 5
+  urlPrefix: "/static/uploads"
