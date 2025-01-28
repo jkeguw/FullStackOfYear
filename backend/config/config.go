@@ -31,8 +31,10 @@ type RedisConfig struct {
 }
 
 type JWTConfig struct {
-	Secret     string        `yaml:"secret"`
-	ExpireTime time.Duration `yaml:"expireTime"`
+	Secret        string        `yaml:"secret"`
+	AccessExpire  time.Duration `yaml:"accessExpireTime"`
+	RefreshExpire time.Duration `yaml:"refreshExpireTime"`
+	Issuer        string        `yaml:"issuer"`
 }
 
 func LoadConfig() (*Config, error) {

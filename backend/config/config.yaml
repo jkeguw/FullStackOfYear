@@ -14,7 +14,9 @@ redis:
 
 jwt:
   secret: your-secret-key
-  expireTime: 24h
+  accessExpireTime: 2h
+  refreshExpireTime: 720h
+  issuer: "peripheral-review-platform"
 
 upload:
   savePath: "./uploads"

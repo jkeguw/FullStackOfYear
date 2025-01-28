@@ -1,24 +1,26 @@
 package middleware
 
 import (
+	"FullStackOfYear/backend/internal/errors"
+	"FullStackOfYear/backend/services/limiter"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/time/rate"
-	"sync"
 )
 
-func RateLimiter(r rate.Limit, b int) gin.HandlerFunc {
-	limiter := rate.NewLimiter(r, b)
-	var clients sync.Map
-
+// RateLimit applies rate limiting to routes
+func RateLimit() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ip := c.ClientIP()
-		if _, ok := clients.Load(ip); !ok {
-			clients.Store(ip, rate.NewLimiter(r, b))
-		}
-		if !limiter.Allow() {
-			c.AbortWithStatus(429)
+		clientIP := c.ClientIP()
+		allowed, err := limiter.CheckRateLimit(c, clientIP)
+		if err != nil {
+			c.AbortWithStatusJSON(500, errors.NewAppError(errors.InternalError, "Rate limit check failed"))
 			return
 		}
+
+		if !allowed {
+			c.AbortWithStatusJSON(429, errors.NewAppError(errors.TooManyRequests, "Too many requests"))
+			return
+		}
+
 		c.Next()
 	}
 }

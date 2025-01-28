@@ -5,8 +5,8 @@ import (
 	"FullStackOfYear/backend/internal/errors"
 	"FullStackOfYear/backend/models"
 	"FullStackOfYear/backend/services/auth"
-	"FullStackOfYear/backend/services/geoip"
 	"FullStackOfYear/backend/services/limiter"
+	"FullStackOfYear/backend/services/token"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,12 +28,12 @@ type LoginRequest struct {
 }
 
 type AuthResponse struct {
-	Token        string       `json:"token"`
+	AccessToken  string       `json:"accessToken"`
 	RefreshToken string       `json:"refreshToken"`
 	User         *models.User `json:"user"`
 }
 
-// Register user register
+// Register handles user registration
 func Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -41,19 +41,19 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Verify password strength
+	// Validate password strength
 	if !auth.ValidatePassword(req.Password) {
 		c.JSON(400, errors.NewAppError(errors.BadRequest, "Password too weak"))
 		return
 	}
 
-	// Verify email format
+	// Validate email format
 	if _, err := mail.ParseAddress(req.Email); err != nil {
 		c.JSON(400, errors.NewAppError(errors.BadRequest, "Invalid email format"))
 		return
 	}
 
-	// Check if the user already exists
+	// Check if user exists
 	collection := database.MongoClient.Database("cpc").Collection("users")
 	var existingUser models.User
 	err := collection.FindOne(c, bson.M{
@@ -73,7 +73,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Create New User
+	// Create new user
 	hashedPassword, _ := auth.HashPassword(req.Password)
 	user := models.NewUser(req.Username, req.Email, hashedPassword)
 
@@ -86,7 +86,7 @@ func Register(c *gin.Context) {
 	c.JSON(200, user)
 }
 
-// Login user login
+// Login handles user login
 func Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -94,10 +94,10 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Get the client IP
+	// Get client IP
 	clientIP := c.ClientIP()
 
-	// Check request frequency
+	// Check rate limit
 	allowed, err := limiter.CheckRateLimit(c, clientIP)
 	if err != nil {
 		c.JSON(500, errors.NewAppError(errors.InternalError, "Rate limit check failed"))
@@ -108,7 +108,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Check the number of failed login attempts
+	// Check login attempts
 	allowed, blockDuration, err := limiter.CheckLoginAttempts(c, req.Email)
 	if err != nil {
 		c.JSON(500, errors.NewAppError(errors.InternalError, "Login attempt check failed"))
@@ -120,48 +120,35 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Query User
 	collection := database.MongoClient.Database("cpc").Collection("users")
 	var user models.User
 	err = collection.FindOne(c, bson.M{"email": req.Email}).Decode(&user)
 	if err != nil {
-		// Recording failure
+		// Record failure
 		limiter.RecordLoginFailure(c, req.Email)
 		c.JSON(401, errors.NewAppError(errors.Unauthorized, "Invalid credentials"))
 		return
 	}
 
-	// validate password
 	if !auth.CheckPassword(req.Password, user.Password) {
-		// Recording failure
+		// Record failure
 		limiter.RecordLoginFailure(c, req.Email)
 		c.JSON(401, errors.NewAppError(errors.Unauthorized, "Invalid credentials"))
 		return
 	}
 
-	// Check IP Geolocation
-	locationSafe, err := geoip.CheckLocation(c, user.ID.Hex(), clientIP)
-	if err != nil {
-		c.JSON(500, errors.NewAppError(errors.InternalError, "Location check failed"))
-		return
-	}
-	if !locationSafe {
-		// TODO: 发送邮件通知或要求额外验证
-		c.JSON(403, errors.NewAppError(errors.Forbidden, "Suspicious login location detected"))
-		return
-	}
-
-	// Login successful, clear failed records
-	limiter.ClearLoginFailure(c, req.Email)
-
-	// Generate Token
-	token, err := auth.GenerateToken(user.ID.Hex(), user.Role.Type, req.DeviceID)
+	// Generate tokens
+	tokenManager := token.NewManager(database.RedisClient)
+	accessToken, refreshToken, err := tokenManager.GenerateTokenPair(user.ID.Hex(), user.Role.Type, req.DeviceID)
 	if err != nil {
 		c.JSON(500, errors.NewAppError(errors.InternalError, "Failed to generate token"))
 		return
 	}
 
-	// Update last login time and IP
+	// Clear login failures
+	limiter.ClearLoginFailure(c, req.Email)
+
+	// Update last login time
 	_, err = collection.UpdateOne(c, bson.M{"_id": user.ID}, bson.M{
 		"$set": bson.M{
 			"stats.lastLoginAt": time.Now(),
@@ -169,10 +156,45 @@ func Login(c *gin.Context) {
 		},
 	})
 
+	if err != nil {
+		c.JSON(500, errors.NewAppError(errors.InternalError, "Failed to update last login"))
+		return
+	}
+
 	response := AuthResponse{
-		Token: token,
-		User:  &user,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User:         &user,
 	}
 
 	c.JSON(200, response)
+}
+
+type LogoutRequest struct {
+	DeviceID string `json:"deviceId" binding:"required"`
+}
+
+// Logout handles user logout request
+func Logout(c *gin.Context) {
+	var req LogoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, errors.NewAppError(errors.BadRequest, "Invalid request parameters"))
+		return
+	}
+
+	// Get user info from context (set by Auth middleware)
+	userID := c.GetString("userID")
+	deviceID := req.DeviceID
+
+	// Create token manager
+	tokenManager := token.NewManager(database.RedisClient)
+
+	// Invalidate tokens for this device
+	err := tokenManager.InvalidateTokens(c, userID, deviceID)
+	if err != nil {
+		c.JSON(500, errors.NewAppError(errors.InternalError, "Failed to logout"))
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Successfully logged out"})
 }
