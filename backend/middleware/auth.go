@@ -1,12 +1,15 @@
 package middleware
 
 import (
+	"FullStackOfYear/backend/internal/database"
 	"FullStackOfYear/backend/internal/errors"
-	"FullStackOfYear/backend/services/auth"
+	"FullStackOfYear/backend/services/jwt"
+	"FullStackOfYear/backend/services/token"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
 
+// Auth validates the JWT token and adds claims to context
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -21,22 +24,35 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := auth.ParseToken(parts[1])
+		claims, err := jwt.ParseToken(parts[1])
 		if err != nil {
 			c.AbortWithStatusJSON(401, err)
 			return
 		}
 
-		// Store user information in context
+		// Verify token exists in Redis
+		tokenManager := token.NewManager(database.RedisClient)
+		exists, err := tokenManager.CheckTokenExists(c, claims.UserID, claims.DeviceID, "access")
+		if err != nil {
+			c.AbortWithStatusJSON(500, errors.NewAppError(errors.InternalError, "Token verification failed"))
+			return
+		}
+
+		if !exists {
+			c.AbortWithStatusJSON(401, errors.NewAppError(errors.Unauthorized, "Token has been revoked"))
+			return
+		}
+
+		// Set claims to context
 		c.Set("userID", claims.UserID)
 		c.Set("role", claims.Role)
-		c.Set("device", claims.Device)
+		c.Set("deviceId", claims.DeviceID)
 
 		c.Next()
 	}
 }
 
-// RequireRoles Role Verification Middleware
+// RequireRoles validates user roles
 func RequireRoles(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role := c.GetString("role")
