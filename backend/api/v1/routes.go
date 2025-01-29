@@ -14,6 +14,13 @@ func RegisterRoutes(router *gin.RouterGroup) {
 		authGroup.POST("/login", auth.Login)
 		authGroup.POST("/refresh", auth.RefreshToken)
 		authGroup.POST("/logout", middleware.Auth(), auth.Logout)
+
+		// OAuth routes
+		oauthGroup := authGroup.Group("/oauth/google")
+		{
+			oauthGroup.GET("/login", auth.OAuthInstance.InitiateOAuth)
+			oauthGroup.GET("/callback", auth.OAuthInstance.HandleCallback)
+		}
 	}
 
 	// route need auth
