@@ -26,3 +26,12 @@ upload:
     - ".png"
   maxSize: 5
   urlPrefix: "/static/uploads"
+
+oauth:
+  google:
+    clientId: ${GOOGLE_OAUTH_CLIENT_ID}
+    clientSecret: ${GOOGLE_OAUTH_CLIENT_SECRET}
+    redirectUrl: ${GOOGLE_OAUTH_REDIRECT_URL}
+    scopes:
+      - email
+      - profile

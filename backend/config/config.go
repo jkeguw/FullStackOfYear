@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
 	"time"
@@ -38,6 +39,15 @@ type JWTConfig struct {
 	Issuer        string        `yaml:"issuer"`
 }
 
+type OAuthConfig struct {
+	Google struct {
+		ClientID     string   `yaml:"clientId"`
+		ClientSecret string   `yaml:"clientSecret"`
+		RedirectURL  string   `yaml:"redirectUrl"`
+		Scopes       []string `yaml:"scopes"`
+	} `yaml:"google"`
+}
+
 func LoadConfig() (*Config, error) {
 	config := &Config{}
 
@@ -52,28 +62,26 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	// 环境变量覆盖
-	if mongoURI := os.Getenv("MONGO_URI"); mongoURI != "" {
-		config.MongoDB.URI = mongoURI
+	// OAuth environment variable override
+	if clientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID"); clientID != "" {
+		config.OAuth.Google.ClientID = clientID
 	}
-	if mongoDB := os.Getenv("MONGO_DATABASE"); mongoDB != "" {
-		config.MongoDB.Database = mongoDB
+	if clientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET"); clientSecret != "" {
+		config.OAuth.Google.ClientSecret = clientSecret
 	}
-	if redisAddr := os.Getenv("REDIS_ADDR"); redisAddr != "" {
-		config.Redis.Addr = redisAddr
+	if redirectURL := os.Getenv("GOOGLE_OAUTH_REDIRECT_URL"); redirectURL != "" {
+		config.OAuth.Google.RedirectURL = redirectURL
 	}
-	if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret != "" {
-		config.JWT.Secret = jwtSecret
+
+	//Verify OAuth Configuration
+	if config.OAuth.Google.ClientID != "" {
+		if config.OAuth.Google.ClientSecret == "" {
+			return nil, fmt.Errorf("google OAuth client secret is required when client ID is set")
+		}
+		if config.OAuth.Google.RedirectURL == "" {
+			return nil, fmt.Errorf("google OAuth redirect URL is required when client ID is set")
+		}
 	}
 
 	return config, nil
-}
-
-type OAuthConfig struct {
-	Google struct {
-		ClientID     string   `yaml:"clientId"`
-		ClientSecret string   `yaml:"clientSecret"`
-		RedirectURL  string   `yaml:"redirectUrl"`
-		Scopes       []string `yaml:"scopes"`
-	} `yaml:"google"`
 }
