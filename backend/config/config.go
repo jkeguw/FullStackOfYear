@@ -11,6 +11,7 @@ type Config struct {
 	MongoDB MongoDBConfig `yaml:"mongodb"`
 	Redis   RedisConfig   `yaml:"redis"`
 	JWT     JWTConfig     `yaml:"jwt"`
+	OAuth   OAuthConfig   `yaml:"oauth"`
 }
 
 type ServerConfig struct {
@@ -66,4 +67,13 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return config, nil
+}
+
+type OAuthConfig struct {
+	Google struct {
+		ClientID     string   `yaml:"clientId"`
+		ClientSecret string   `yaml:"clientSecret"`
+		RedirectURL  string   `yaml:"redirectUrl"`
+		Scopes       []string `yaml:"scopes"`
+	} `yaml:"google"`
 }
