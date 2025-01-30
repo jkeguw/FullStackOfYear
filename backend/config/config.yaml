@@ -35,3 +35,15 @@ oauth:
     scopes:
       - email
       - profile
+
+email:
+  smtp:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+  from: "no-reply@your-domain.com"
+  baseUrl: "https://your-domain.com"
+  templates:
+    verifyEmail: "templates/email/verify.html"
+    resetPassword: "templates/email/reset.html"
