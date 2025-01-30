@@ -1,131 +1,82 @@
 package models
 
 import (
-	"FullStackOfYear/backend/internal/errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
-// Constants for email verification
-const (
-	VerifyTokenExpiration = 24 * time.Hour
-	MaxLoginHistory       = 50 // Maximum number of login records to keep
-	MaxConcurrentSessions = 5  // Maximum number of active sessions per user
-)
-
+// User 代表系统中的用户实体
 type User struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Username     string             `bson:"username" json:"username"`
-	Email        string             `bson:"email" json:"email"`
-	Password     string             `bson:"password" json:"-"`
-	Role         UserRole           `bson:"role" json:"role"`
-	Stats        UserStats          `bson:"stats" json:"stats"`
-	OAuth        *OAuthInfo         `bson:"oauth,omitempty" json:"oauth,omitempty"`
-	Status       UserStatus         `bson:"status" json:"status"`             // 新增
-	LoginHistory []LoginRecord      `bson:"loginHistory" json:"loginHistory"` // 新增
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Username string             `bson:"username" json:"username"`
+	Email    string             `bson:"email" json:"email"`
+	Password string             `bson:"password" json:"-"`
+
+	Status Status     `bson:"status" json:"status"`
+	Role   Role       `bson:"role" json:"role"`
+	Stats  UserStats  `bson:"stats" json:"stats"`
+	OAuth  *OAuthInfo `bson:"oauth,omitempty" json:"oauth,omitempty"`
+
+	LoginHistory []LoginRecord `bson:"loginHistory" json:"loginHistory"`
+	SecurityLogs []SecurityLog `bson:"securityLogs" json:"securityLogs"`
+
+	CreatedAt time.Time `bson:"createdAt" json:"createdAt"`
+	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt"`
 }
 
-type UserRole struct {
-	Type                string               `bson:"type" json:"type"`
-	ReviewerApplication *ReviewerApplication `bson:"reviewerApplication,omitempty" json:"reviewerApplication,omitempty"`
-	InviteCode          string               `bson:"inviteCode,omitempty" json:"inviteCode,omitempty"`
-}
-
-type ReviewerApplication struct {
-	Status      string    `bson:"status" json:"status"`
-	AppliedAt   time.Time `bson:"appliedAt" json:"appliedAt"`
-	ReviewCount int       `bson:"reviewCount" json:"reviewCount"`
-	TotalWords  int       `bson:"totalWords" json:"totalWords"`
-}
-
-type UserStats struct {
-	ReviewCount int       `bson:"reviewCount" json:"reviewCount"`
-	TotalWords  int       `bson:"totalWords" json:"totalWords"`
-	Violations  int       `bson:"violations" json:"violations"`
-	CreatedAt   time.Time `bson:"createdAt" json:"createdAt"`
-	LastLoginAt time.Time `bson:"lastLoginAt" json:"lastLoginAt"`
-}
-
-// UserStatus represents the current status of a user account
-type UserStatus struct {
-	EmailVerified bool      `bson:"emailVerified" json:"emailVerified"`
-	VerifyToken   string    `bson:"verifyToken,omitempty" json:"-"`
-	TokenExpires  time.Time `bson:"tokenExpires,omitempty" json:"-"`
-	IsLocked      bool      `bson:"isLocked" json:"isLocked"`
-	LockReason    string    `bson:"lockReason,omitempty" json:"lockReason,omitempty"`
-	LockExpires   time.Time `bson:"lockExpires,omitempty" json:"lockExpires,omitempty"`
-	EmailChange   string    `bson:"emailChange,omitempty" json:"-"`
-}
-
-// EmailHistory represents a record of email change
-type EmailHistory struct {
-	OldEmail  string    `bson:"oldEmail" json:"oldEmail"`
-	NewEmail  string    `bson:"newEmail" json:"newEmail"`
-	ChangedAt time.Time `bson:"changedAt" json:"changedAt"`
-}
-
-// LoginRecord represents a single login attempt record
-type LoginRecord struct {
-	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
-	IP        string    `bson:"ip" json:"ip"`
-	UserAgent string    `bson:"userAgent" json:"userAgent"`
-	Location  string    `bson:"location,omitempty" json:"location,omitempty"`
-	Success   bool      `bson:"success" json:"success"`
-	DeviceID  string    `bson:"deviceId" json:"deviceId"`
-}
-
-type OAuthInfo struct {
-	Google *GoogleOAuth `bson:"google,omitempty" json:"google,omitempty"`
-}
-
-type GoogleOAuth struct {
-	ID          string    `bson:"id" json:"id"`
-	Email       string    `bson:"email" json:"email"`
-	Connected   bool      `bson:"connected" json:"connected"`
-	ConnectedAt time.Time `bson:"connectedAt" json:"connectedAt"`
-}
-
-const (
-	RoleUser     = "user"
-	RoleReviewer = "reviewer"
-	RoleAdmin    = "admin"
-)
-
-// ValidateRole validate role type
-func (u *User) ValidateRole() error {
-	validRoles := map[string]bool{
-		RoleUser:     true,
-		RoleReviewer: true,
-		RoleAdmin:    true,
-	}
-
-	if !validRoles[u.Role.Type] {
-		return errors.NewAppError(errors.BadRequest, "Invalid role type")
-	}
-	return nil
-}
-
-// NewUser create new user with default status
+// NewUser 创建新用户
 func NewUser(username, email, password string) *User {
 	now := time.Now()
 	return &User{
+		ID:       primitive.NewObjectID(),
 		Username: username,
 		Email:    email,
 		Password: password,
-		Role: UserRole{
+		Role: Role{
 			Type: RoleUser,
 		},
+		Status: Status{
+			EmailVerified: false,
+		},
 		Stats: UserStats{
-			ReviewCount: 0,
-			TotalWords:  0,
-			Violations:  0,
 			CreatedAt:   now,
 			LastLoginAt: now,
 		},
-		Status: UserStatus{
-			EmailVerified: false,
-			IsLocked:      false,
-		},
+		CreatedAt:    now,
+		UpdatedAt:    now,
 		LoginHistory: make([]LoginRecord, 0),
+		SecurityLogs: make([]SecurityLog, 0),
 	}
+}
+
+// AddLoginRecord 添加登录记录
+func (u *User) AddLoginRecord(record LoginRecord) {
+	if len(u.LoginHistory) >= MaxLoginHistory {
+		u.LoginHistory = u.LoginHistory[1:]
+	}
+	u.LoginHistory = append(u.LoginHistory, record)
+	u.Stats.LastLoginAt = record.Timestamp
+	u.Stats.LastLoginIP = record.IP
+	u.UpdatedAt = record.Timestamp
+}
+
+// AddSecurityLog 添加安全日志
+func (u *User) AddSecurityLog(log SecurityLog) {
+	u.SecurityLogs = append(u.SecurityLogs, log)
+	u.UpdatedAt = log.Timestamp
+}
+
+// UpdateOAuthInfo 更新 OAuth 信息
+func (u *User) UpdateOAuthInfo(provider string, info interface{}) {
+	if u.OAuth == nil {
+		u.OAuth = &OAuthInfo{}
+	}
+
+	switch provider {
+	case "google":
+		if googleInfo, ok := info.(*GoogleOAuth); ok {
+			u.OAuth.Google = googleInfo
+		}
+	}
+	u.UpdatedAt = time.Now()
 }
