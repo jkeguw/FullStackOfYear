@@ -6,14 +6,23 @@ import (
 	"time"
 )
 
+// Constants for email verification
+const (
+	VerifyTokenExpiration = 24 * time.Hour
+	MaxLoginHistory       = 50 // Maximum number of login records to keep
+	MaxConcurrentSessions = 5  // Maximum number of active sessions per user
+)
+
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	Username string             `bson:"username" json:"username"`
-	Email    string             `bson:"email" json:"email"`
-	Password string             `bson:"password" json:"-"`
-	Role     UserRole           `bson:"role" json:"role"`
-	Stats    UserStats          `bson:"stats" json:"stats"`
-	OAuth    *OAuthInfo         `bson:"oauth,omitempty" json:"oauth,omitempty"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Username     string             `bson:"username" json:"username"`
+	Email        string             `bson:"email" json:"email"`
+	Password     string             `bson:"password" json:"-"`
+	Role         UserRole           `bson:"role" json:"role"`
+	Stats        UserStats          `bson:"stats" json:"stats"`
+	OAuth        *OAuthInfo         `bson:"oauth,omitempty" json:"oauth,omitempty"`
+	Status       UserStatus         `bson:"status" json:"status"`             // 新增
+	LoginHistory []LoginRecord      `bson:"loginHistory" json:"loginHistory"` // 新增
 }
 
 type UserRole struct {
@@ -35,6 +44,26 @@ type UserStats struct {
 	Violations  int       `bson:"violations" json:"violations"`
 	CreatedAt   time.Time `bson:"createdAt" json:"createdAt"`
 	LastLoginAt time.Time `bson:"lastLoginAt" json:"lastLoginAt"`
+}
+
+// UserStatus represents the current status of a user account
+type UserStatus struct {
+	EmailVerified bool      `bson:"emailVerified" json:"emailVerified"`
+	VerifyToken   string    `bson:"verifyToken,omitempty" json:"-"`
+	TokenExpires  time.Time `bson:"tokenExpires,omitempty" json:"-"`
+	IsLocked      bool      `bson:"isLocked" json:"isLocked"`
+	LockReason    string    `bson:"lockReason,omitempty" json:"lockReason,omitempty"`
+	LockExpires   time.Time `bson:"lockExpires,omitempty" json:"lockExpires,omitempty"`
+}
+
+// LoginRecord represents a single login attempt record
+type LoginRecord struct {
+	Timestamp time.Time `bson:"timestamp" json:"timestamp"`
+	IP        string    `bson:"ip" json:"ip"`
+	UserAgent string    `bson:"userAgent" json:"userAgent"`
+	Location  string    `bson:"location,omitempty" json:"location,omitempty"`
+	Success   bool      `bson:"success" json:"success"`
+	DeviceID  string    `bson:"deviceId" json:"deviceId"`
 }
 
 type OAuthInfo struct {
@@ -68,7 +97,7 @@ func (u *User) ValidateRole() error {
 	return nil
 }
 
-// NewUser create new user
+// NewUser create new user with default status
 func NewUser(username, email, password string) *User {
 	now := time.Now()
 	return &User{
@@ -85,5 +114,10 @@ func NewUser(username, email, password string) *User {
 			CreatedAt:   now,
 			LastLoginAt: now,
 		},
+		Status: UserStatus{
+			EmailVerified: false,
+			IsLocked:      false,
+		},
+		LoginHistory: make([]LoginRecord, 0),
 	}
 }
