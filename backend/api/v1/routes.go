@@ -1,29 +1,56 @@
 package v1
 
 import (
-	"FullStackOfYear/backend/handlers/auth"
+	authHandler "FullStackOfYear/backend/handlers/auth" // 重命名为 authHandler
 	"FullStackOfYear/backend/middleware"
+	"FullStackOfYear/backend/services/auth" // auth service
+	"FullStackOfYear/backend/services/email"
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(router *gin.RouterGroup) {
+type Router struct {
+	authService  *auth.AuthService
+	emailService *email.Service
+}
+
+func NewRouter(authService *auth.AuthService, emailService *email.Service) *Router {
+	return &Router{
+		authService:  authService,
+		emailService: emailService,
+	}
+}
+
+func (r *Router) RegisterRoutes(router *gin.RouterGroup) {
+	// init EmailVerificationHandler
+	emailHandler := authHandler.NewEmailVerificationHandler(r.authService, r.emailService)
+
 	// auth route
 	authGroup := router.Group("/auth")
 	{
-		authGroup.POST("/register", auth.Register)
-		authGroup.POST("/login", auth.Login)
-		authGroup.POST("/refresh", auth.RefreshToken)
-		authGroup.POST("/logout", middleware.Auth(), auth.Logout)
+		authGroup.POST("/register", authHandler.Register)
+		authGroup.POST("/login", authHandler.Login)
+		authGroup.POST("/refresh", authHandler.RefreshToken)
+		authGroup.POST("/logout", middleware.Auth(), authHandler.Logout)
 
 		// OAuth routes
 		oauthGroup := authGroup.Group("/oauth/google")
 		{
-			oauthGroup.GET("/login", auth.OAuthInstance.InitiateOAuth)
-			oauthGroup.GET("/callback", auth.OAuthInstance.HandleCallback)
+			oauthGroup.GET("/login", authHandler.OAuthInstance.InitiateOAuth)
+			oauthGroup.GET("/callback", authHandler.OAuthInstance.HandleCallback)
+		}
+
+		// Email verification routes - 新增
+		authGroup.GET("/verify-email", emailHandler.VerifyEmail) // 公开接口
+
+		// Protected email routes - 新增
+		emailGroup := authGroup.Group("")
+		emailGroup.Use(middleware.Auth())
+		{
+			emailGroup.POST("/send-verification", emailHandler.SendVerification)
+			emailGroup.POST("/update-email", emailHandler.UpdateEmail)
 		}
 	}
 
-	// route need auth
 	authenticated := router.Group("")
 	authenticated.Use(middleware.Auth())
 	{
