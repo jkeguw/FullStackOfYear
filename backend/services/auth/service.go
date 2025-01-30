@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"github.com/goccy/go-json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,6 +28,12 @@ type TokenService interface {
 
 type EmailService interface {
 	SendVerificationEmail(to, username, token string) error
+}
+
+// EmailChangeInfo stores information about email change request
+type EmailChangeInfo struct {
+	NewEmail string
+	OldEmail string
 }
 
 // NewAuthService creates a new authentication service
@@ -223,4 +230,111 @@ func (s *AuthService) GetUserByID(ctx context.Context, userID string) (*models.U
 	}
 
 	return &user, nil
+}
+
+// GenerateEmailChangeToken generates token for email change verification
+func (s *AuthService) GenerateEmailChangeToken(user *models.User, newEmail string) (string, error) {
+	// Generate secure random token
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", errors.NewAppError(errors.InternalError, "Failed to generate token")
+	}
+	token := base64.URLEncoding.EncodeToString(b)
+
+	// Store token with email change information
+	emailChange := &EmailChangeInfo{
+		NewEmail: newEmail,
+		OldEmail: user.Email,
+	}
+
+	// Serialize email change info
+	changeInfoBytes, err := json.Marshal(emailChange)
+	if err != nil {
+		return "", errors.NewAppError(errors.InternalError, "Failed to process email change")
+	}
+
+	// Update user with email change token and info
+	update := bson.M{
+		"$set": bson.M{
+			"status.verifyToken":  token,
+			"status.tokenExpires": time.Now().Add(24 * time.Hour),
+			"status.emailChange":  string(changeInfoBytes),
+		},
+	}
+
+	_, err = s.userCollection.UpdateOne(
+		context.Background(),
+		bson.M{"_id": user.ID},
+		update,
+	)
+	if err != nil {
+		return "", errors.NewAppError(errors.InternalError, "Failed to save token")
+	}
+
+	return token, nil
+}
+
+// VerifyEmailChangeToken verifies and processes email change
+func (s *AuthService) VerifyEmailChangeToken(ctx context.Context, token string) error {
+	// Find user by token
+	var user models.User
+	err := s.userCollection.FindOne(ctx, bson.M{
+		"status.verifyToken":  token,
+		"status.tokenExpires": bson.M{"$gt": time.Now()},
+	}).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return errors.NewAppError(errors.BadRequest, "Invalid or expired token")
+		}
+		return errors.NewAppError(errors.InternalError, "Database error")
+	}
+
+	// Parse email change info
+	if user.Status.EmailChange == "" {
+		return errors.NewAppError(errors.BadRequest, "Invalid email change request")
+	}
+
+	var emailChange EmailChangeInfo
+	err = json.Unmarshal([]byte(user.Status.EmailChange), &emailChange)
+	if err != nil {
+		return errors.NewAppError(errors.InternalError, "Failed to process email change")
+	}
+
+	// Check if email is already in use by another user
+	count, err := s.userCollection.CountDocuments(ctx, bson.M{
+		"_id":   bson.M{"$ne": user.ID},
+		"email": emailChange.NewEmail,
+	})
+	if err != nil {
+		return errors.NewAppError(errors.InternalError, "Database error")
+	}
+	if count > 0 {
+		return errors.NewAppError(errors.BadRequest, "Email already in use")
+	}
+
+	// Update user's email and clear verification data
+	update := bson.M{
+		"$set": bson.M{
+			"email":                emailChange.NewEmail,
+			"status.emailVerified": true,
+			"status.verifyToken":   "",
+			"status.tokenExpires":  time.Time{},
+			"status.emailChange":   "",
+		},
+		"$push": bson.M{
+			"emailHistory": bson.M{
+				"oldEmail":  emailChange.OldEmail,
+				"newEmail":  emailChange.NewEmail,
+				"changedAt": time.Now(),
+			},
+		},
+	}
+
+	_, err = s.userCollection.UpdateOne(ctx, bson.M{"_id": user.ID}, update)
+	if err != nil {
+		return errors.NewAppError(errors.InternalError, "Failed to update email")
+	}
+
+	return nil
 }

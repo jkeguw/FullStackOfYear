@@ -54,6 +54,14 @@ type UserStatus struct {
 	IsLocked      bool      `bson:"isLocked" json:"isLocked"`
 	LockReason    string    `bson:"lockReason,omitempty" json:"lockReason,omitempty"`
 	LockExpires   time.Time `bson:"lockExpires,omitempty" json:"lockExpires,omitempty"`
+	EmailChange   string    `bson:"emailChange,omitempty" json:"-"`
+}
+
+// EmailHistory represents a record of email change
+type EmailHistory struct {
+	OldEmail  string    `bson:"oldEmail" json:"oldEmail"`
+	NewEmail  string    `bson:"newEmail" json:"newEmail"`
+	ChangedAt time.Time `bson:"changedAt" json:"changedAt"`
 }
 
 // LoginRecord represents a single login attempt record
