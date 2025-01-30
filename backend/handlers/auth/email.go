@@ -30,6 +30,16 @@ func (h *EmailVerificationHandler) SendVerification(c *gin.Context) {
 		return
 	}
 
+	// token
+	token, err := h.authService.GenerateEmailVerificationToken(c, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": errors.NewAppError(errors.InternalError, "Failed to generate token"),
+		})
+		return
+	}
+
+	// get user info to send email
 	user, err := h.authService.GetUserByID(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -38,16 +48,7 @@ func (h *EmailVerificationHandler) SendVerification(c *gin.Context) {
 		return
 	}
 
-	// Generate verification token
-	token, err := h.authService.GenerateEmailVerificationToken(user)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": errors.NewAppError(errors.InternalError, "Failed to generate token"),
-		})
-		return
-	}
-
-	// Send verification email
+	// send verification email
 	err = h.emailService.SendVerificationEmail(user.Email, user.Username, token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

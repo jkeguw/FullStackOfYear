@@ -129,17 +129,18 @@ func (s *AuthService) HandleOAuthLogin(ctx context.Context, userInfo *auth.OAuth
 
 // GenerateEmailVerificationToken generates token for email verification
 func (s *AuthService) GenerateEmailVerificationToken(ctx context.Context, userID string) (string, error) {
-	// Generate random token
+	// Convert string ID to ObjectID
+	id, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return "", errors.NewAppError(errors.BadRequest, "Invalid user ID")
+	}
+
+	// Generate secure random token
 	b := make([]byte, 32)
 	if _, err := rand.Read(b); err != nil {
 		return "", errors.NewAppError(errors.InternalError, "Failed to generate token")
 	}
 	token := base64.URLEncoding.EncodeToString(b)
-
-	id, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return "", errors.NewAppError(errors.BadRequest, "Invalid user ID")
-	}
 
 	// Update user with verification token
 	update := bson.M{
@@ -149,13 +150,13 @@ func (s *AuthService) GenerateEmailVerificationToken(ctx context.Context, userID
 		},
 	}
 
-	result, err := s.userCollection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	_, err = s.userCollection.UpdateOne(
+		ctx,
+		bson.M{"_id": id},
+		update,
+	)
 	if err != nil {
 		return "", errors.NewAppError(errors.InternalError, "Failed to save token")
-	}
-
-	if result.MatchedCount == 0 {
-		return "", errors.NewAppError(errors.NotFound, "User not found")
 	}
 
 	return token, nil
