@@ -13,6 +13,7 @@ type Config struct {
 	Redis   RedisConfig   `yaml:"redis"`
 	JWT     JWTConfig     `yaml:"jwt"`
 	OAuth   OAuthConfig   `yaml:"oauth"`
+	Email   EmailConfig   `yaml:"email"`
 }
 
 type ServerConfig struct {
@@ -48,6 +49,19 @@ type OAuthConfig struct {
 	} `yaml:"google"`
 }
 
+// EmailConfig defines email service configuration
+type EmailConfig struct {
+	SMTP struct {
+		Host     string `yaml:"host"`
+		Port     int    `yaml:"port"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+	} `yaml:"smtp"`
+	From      string            `yaml:"from"`
+	BaseURL   string            `yaml:"baseUrl"`
+	Templates map[string]string `yaml:"templates"`
+}
+
 func LoadConfig() (*Config, error) {
 	config := &Config{}
 
@@ -81,6 +95,25 @@ func LoadConfig() (*Config, error) {
 		if config.OAuth.Google.RedirectURL == "" {
 			return nil, fmt.Errorf("google OAuth redirect URL is required when client ID is set")
 		}
+	}
+
+	// Email configuration environment variable override
+	if username := os.Getenv("SMTP_USERNAME"); username != "" {
+		config.Email.SMTP.Username = username
+	}
+	if password := os.Getenv("SMTP_PASSWORD"); password != "" {
+		config.Email.SMTP.Password = password
+	}
+
+	// Verify Email Configuration
+	if config.Email.SMTP.Host == "" {
+		return nil, fmt.Errorf("SMTP host is required")
+	}
+	if config.Email.SMTP.Username == "" {
+		return nil, fmt.Errorf("SMTP username is required")
+	}
+	if config.Email.SMTP.Password == "" {
+		return nil, fmt.Errorf("SMTP password is required")
 	}
 
 	return config, nil

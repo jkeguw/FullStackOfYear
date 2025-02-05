@@ -1,3 +1,4 @@
+// services/auth/service.go
 package auth
 
 import (
@@ -7,111 +8,129 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"github.com/goccy/go-json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
-// AuthService handles authentication related operations
-type AuthService struct {
-	userCollection *mongo.Collection
-	tokenService   TokenService
-	emailService   EmailService
+type service struct {
+	users         *mongo.Collection
+	tokenGen      TokenGenerator
+	emailSender   EmailSender
+	oauthProvider OAuthProvider
 }
 
-// TokenService interface for token operations
-type TokenService interface {
-	GenerateTokenPair(userID string, role string, deviceID string) (accessToken string, refreshToken string, err error)
-}
-
-type EmailService interface {
-	SendVerificationEmail(to, username, token string) error
-}
-
-// EmailChangeInfo stores information about email change request
-type EmailChangeInfo struct {
-	NewEmail string
-	OldEmail string
-}
-
-// NewAuthService creates a new authentication service
-func NewAuthService(userCollection *mongo.Collection, tokenService TokenService, emailService EmailService) *AuthService {
-	return &AuthService{
-		userCollection: userCollection,
-		tokenService:   tokenService,
-		emailService:   emailService,
+func NewService(
+	users *mongo.Collection,
+	tokenGen TokenGenerator,
+	emailSender EmailSender,
+	oauthProvider OAuthProvider,
+) Service {
+	return &service{
+		users:         users,
+		tokenGen:      tokenGen,
+		emailSender:   emailSender,
+		oauthProvider: oauthProvider,
 	}
 }
 
-// AuthResponse represents the authentication response
-type AuthResponse struct {
-	AccessToken  string       `json:"access_token"`
-	RefreshToken string       `json:"refresh_token"`
-	User         *models.User `json:"user"`
-}
+func (s *service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.LoginResponse, error) {
+	var user *models.User
+	var err error
 
-// HandleOAuthLogin processes OAuth login and returns auth response
-func (s *AuthService) HandleOAuthLogin(ctx context.Context, userInfo *auth.OAuthUserInfo) (*AuthResponse, error) {
-	// Try to find user by OAuth Google ID
-	filter := bson.M{"oauth.google.id": userInfo.ID}
-	var user models.User
-	err := s.userCollection.FindOne(ctx, filter).Decode(&user)
+	switch req.LoginType {
+	case auth.EmailLogin:
+		user, err = s.handleEmailLogin(ctx, req)
+	case auth.GoogleLogin:
+		user, err = s.handleGoogleLogin(ctx, req)
+	default:
+		return nil, errors.NewAppError(errors.BadRequest, "Unsupported login type")
+	}
 
 	if err != nil {
-		if err != mongo.ErrNoDocuments {
-			return nil, errors.NewAppError(errors.InternalError, "Database error")
-		}
-
-		// User not found, create new user
-		user = models.User{
-			ID:       primitive.NewObjectID(),
-			Username: userInfo.Email, // Use email as initial username
-			Email:    userInfo.Email,
-			Role: models.UserRole{
-				Type: models.RoleUser,
-			},
-			Stats: models.UserStats{
-				ReviewCount: 0,
-				TotalWords:  0,
-				Violations:  0,
-				CreatedAt:   time.Now(),
-				LastLoginAt: time.Now(),
-			},
-			OAuth: &models.OAuthInfo{
-				Google: &models.GoogleOAuth{
-					ID:          userInfo.ID,
-					Email:       userInfo.Email,
-					Connected:   true,
-					ConnectedAt: time.Now(),
-				},
-			},
-		}
-
-		_, err = s.userCollection.InsertOne(ctx, user)
-		if err != nil {
-			return nil, errors.NewAppError(errors.InternalError, "Failed to create user")
-		}
-	} else {
-		// Update existing user's OAuth info
-		update := bson.M{
-			"$set": bson.M{
-				"oauth.google.email":       userInfo.Email,
-				"oauth.google.connected":   true,
-				"oauth.google.connectedAt": time.Now(),
-				"stats.lastLoginAt":        time.Now(),
-			},
-		}
-
-		_, err = s.userCollection.UpdateOne(ctx, filter, update)
-		if err != nil {
-			return nil, errors.NewAppError(errors.InternalError, "Failed to update user")
-		}
+		return nil, err
 	}
 
-	// Generate tokens
-	accessToken, refreshToken, err := s.tokenService.GenerateTokenPair(
+	accessToken, refreshToken, err := s.GenerateTokenPair(ctx, user.ID.Hex(), user.Role.Type, req.DeviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &auth.LoginResponse{
+		AccessToken:    accessToken,
+		RefreshToken:   refreshToken,
+		ExpiresIn:      3600,
+		TokenType:      "Bearer",
+		UserID:         user.ID.Hex(),
+		Email:          user.Email,
+		Username:       user.Username,
+		CreatedAt:      user.CreatedAt,
+		OAuthConnected: user.OAuth != nil && user.OAuth.Google != nil && user.OAuth.Google.Connected,
+	}, nil
+}
+
+func (s *service) handleEmailLogin(ctx context.Context, req *auth.LoginRequest) (*models.User, error) {
+	if req.Email == "" || req.Password == "" {
+		return nil, errors.NewAppError(errors.BadRequest, "Email and password required")
+	}
+
+	user, err := s.ValidateEmailPassword(ctx, req.Email, req.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *service) handleGoogleLogin(ctx context.Context, req *auth.LoginRequest) (*models.User, error) {
+	if req.Code == "" || req.State == "" {
+		return nil, errors.NewAppError(errors.BadRequest, "OAuth code and state required")
+	}
+
+	token, err := s.oauthProvider.ExchangeCode(ctx, req.Code)
+	if err != nil {
+		return nil, errors.NewAppError(errors.InternalError, "Failed to exchange OAuth code")
+	}
+
+	userInfo, err := s.oauthProvider.GetUserInfo(ctx, token)
+	if err != nil {
+		return nil, errors.NewAppError(errors.InternalError, "Failed to get user info")
+	}
+
+	return s.findOrCreateGoogleUser(ctx, userInfo)
+}
+
+func (s *service) ValidateEmailPassword(ctx context.Context, email, password string) (*models.User, error) {
+	user, err := s.GetUserByEmail(ctx, email)
+	if err != nil {
+		return nil, errors.NewAppError(errors.Unauthorized, "Invalid credentials")
+	}
+
+	if user.Status.IsLocked {
+		if user.Status.LockExpires.After(time.Now()) {
+			return nil, errors.NewAppError(errors.Forbidden, "Account is locked")
+		}
+		user.Status.IsLocked = false
+		user.Status.LockReason = ""
+		user.Status.LockExpires = time.Time{}
+	}
+
+	if !CheckPasswordHash(password, user.Password) {
+		return nil, errors.NewAppError(errors.Unauthorized, "Invalid credentials")
+	}
+
+	return user, nil
+}
+
+func (s *service) HandleOAuthLogin(ctx context.Context, userInfo *auth.OAuthUserInfo) (*auth.LoginResponse, error) {
+	user, err := s.findOrCreateGoogleUser(ctx, userInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, refreshToken, err := s.tokenGen.GenerateTokenPair(
 		user.ID.Hex(),
 		user.Role.Type,
 		"oauth_"+user.ID.Hex(),
@@ -120,222 +139,279 @@ func (s *AuthService) HandleOAuthLogin(ctx context.Context, userInfo *auth.OAuth
 		return nil, errors.NewAppError(errors.InternalError, "Failed to generate tokens")
 	}
 
-	return &AuthResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		User:         &user,
+	return &auth.LoginResponse{
+		AccessToken:    accessToken,
+		RefreshToken:   refreshToken,
+		ExpiresIn:      3600,
+		TokenType:      "Bearer",
+		UserID:         user.ID.Hex(),
+		Email:          user.Email,
+		Username:       user.Username,
+		CreatedAt:      user.CreatedAt,
+		OAuthConnected: true,
+		OAuthProvider:  "google",
 	}, nil
 }
 
-// GenerateEmailVerificationToken generates token for email verification
-func (s *AuthService) GenerateEmailVerificationToken(ctx context.Context, userID string) (string, error) {
-	// Convert string ID to ObjectID
-	id, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return "", errors.NewAppError(errors.BadRequest, "Invalid user ID")
+func (s *service) findOrCreateGoogleUser(ctx context.Context, userInfo *auth.OAuthUserInfo) (*models.User, error) {
+	user, err := s.findUserByGoogleID(ctx, userInfo.ID)
+	if err == nil {
+		return s.updateGoogleUser(ctx, user, userInfo)
 	}
 
-	// Generate secure random token
-	b := make([]byte, 32)
-	if _, err := rand.Read(b); err != nil {
-		return "", errors.NewAppError(errors.InternalError, "Failed to generate token")
-	}
-	token := base64.URLEncoding.EncodeToString(b)
-
-	// Update user with verification token
-	update := bson.M{
-		"$set": bson.M{
-			"status.verifyToken":  token,
-			"status.tokenExpires": time.Now().Add(24 * time.Hour),
-		},
+	user, err = s.GetUserByEmail(ctx, userInfo.Email)
+	if err == nil {
+		return s.linkGoogleAccount(ctx, user, userInfo)
 	}
 
-	_, err = s.userCollection.UpdateOne(
-		ctx,
-		bson.M{"_id": id},
-		update,
-	)
-	if err != nil {
-		return "", errors.NewAppError(errors.InternalError, "Failed to save token")
-	}
-
-	return token, nil
+	return s.createGoogleUser(ctx, userInfo)
 }
 
-// VerifyEmailToken validates the email verification token
-func (s *AuthService) VerifyEmailToken(ctx context.Context, token string) error {
-	// Find and update user with atomic operation
-	update := bson.M{
-		"$set": bson.M{
-			"status.emailVerified": true,
-			"status.verifyToken":   "",
-			"status.tokenExpires":  time.Time{},
-		},
-	}
-
-	result, err := s.userCollection.UpdateOne(ctx,
-		bson.M{
-			"status.verifyToken":  token,
-			"status.tokenExpires": bson.M{"$gt": time.Now()},
-		},
-		update,
-	)
-
-	if err != nil {
-		return errors.NewAppError(errors.InternalError, "Database error")
-	}
-
-	if result.MatchedCount == 0 {
-		return errors.NewAppError(errors.BadRequest, "Invalid or expired token")
-	}
-
-	return nil
-}
-
-// SendVerificationEmail sends verification email to user
-func (s *AuthService) SendVerificationEmail(ctx context.Context, userID string) error {
-	user, err := s.GetUserByID(ctx, userID)
-	if err != nil {
-		return err
-	}
-
-	// Don't send verification if already verified
-	if user.Status.EmailVerified {
-		return errors.NewAppError(errors.BadRequest, "Email already verified")
-	}
-
-	// Generate new token
-	token, err := s.GenerateEmailVerificationToken(ctx, userID)
-	if err != nil {
-		return err
-	}
-
-	// Send email
-	return s.emailService.SendVerificationEmail(user.Email, user.Username, token)
-}
-
-// GetUserByID retrieves user by ID (保留现有的HandleOAuthLogin方法)
-func (s *AuthService) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
-	id, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return nil, errors.NewAppError(errors.BadRequest, "Invalid user ID")
-	}
-
+func (s *service) findUserByGoogleID(ctx context.Context, googleID string) (*models.User, error) {
 	var user models.User
-	err = s.userCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+	err := s.users.FindOne(ctx, bson.M{"oauth.google.id": googleID}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, errors.NewAppError(errors.NotFound, "User not found")
 		}
 		return nil, errors.NewAppError(errors.InternalError, "Database error")
 	}
-
 	return &user, nil
 }
 
-// GenerateEmailChangeToken generates token for email change verification
-func (s *AuthService) GenerateEmailChangeToken(user *models.User, newEmail string) (string, error) {
-	// Generate secure random token
-	b := make([]byte, 32)
-	if _, err := rand.Read(b); err != nil {
-		return "", errors.NewAppError(errors.InternalError, "Failed to generate token")
-	}
-	token := base64.URLEncoding.EncodeToString(b)
+func (s *service) updateGoogleUser(ctx context.Context, user *models.User, info *auth.OAuthUserInfo) (*models.User, error) {
+	now := time.Now()
 
-	// Store token with email change information
-	emailChange := &EmailChangeInfo{
-		NewEmail: newEmail,
-		OldEmail: user.Email,
+	googleOAuth := &models.GoogleOAuth{
+		ID:          info.ID,
+		Email:       info.Email,
+		Connected:   true,
+		ConnectedAt: now,
 	}
 
-	// Serialize email change info
-	changeInfoBytes, err := json.Marshal(emailChange)
+	user.UpdateOAuthInfo("google", googleOAuth)
+
+	_, err := s.users.ReplaceOne(ctx, bson.M{"_id": user.ID}, user)
 	if err != nil {
-		return "", errors.NewAppError(errors.InternalError, "Failed to process email change")
+		return nil, errors.NewAppError(errors.InternalError, "Failed to update user")
 	}
 
-	// Update user with email change token and info
+	return user, nil
+}
+
+func (s *service) linkGoogleAccount(ctx context.Context, user *models.User, info *auth.OAuthUserInfo) (*models.User, error) {
+	if !user.Status.EmailVerified {
+		return nil, errors.NewAppError(errors.BadRequest, "Email must be verified before linking Google account")
+	}
+
+	now := time.Now()
+	googleOAuth := &models.GoogleOAuth{
+		ID:          info.ID,
+		Email:       info.Email,
+		Connected:   true,
+		ConnectedAt: now,
+	}
+
+	user.UpdateOAuthInfo("google", googleOAuth)
+
+	user.AddSecurityLog(models.SecurityLog{
+		Action:      "google_account_linked",
+		Timestamp:   now,
+		Description: "Google account linked to existing email account",
+	})
+
+	_, err := s.users.ReplaceOne(ctx, bson.M{"_id": user.ID}, user)
+	if err != nil {
+		return nil, errors.NewAppError(errors.InternalError, "Failed to link Google account")
+	}
+
+	return user, nil
+}
+
+func (s *service) createGoogleUser(ctx context.Context, info *auth.OAuthUserInfo) (*models.User, error) {
+	now := time.Now()
+
+	user := &models.User{
+		ID:       primitive.NewObjectID(),
+		Username: info.Email,
+		Email:    info.Email,
+		Status: models.Status{
+			EmailVerified: true,
+		},
+		Role: models.Role{
+			Type: models.RoleUser,
+		},
+		Stats: models.UserStats{
+			CreatedAt:   now,
+			LastLoginAt: now,
+		},
+		OAuth: &models.OAuthInfo{
+			Google: &models.GoogleOAuth{
+				ID:          info.ID,
+				Email:       info.Email,
+				Connected:   true,
+				ConnectedAt: now,
+			},
+		},
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	_, err := s.users.InsertOne(ctx, user)
+	if err != nil {
+		return nil, errors.NewAppError(errors.InternalError, "Failed to create user")
+	}
+
+	return user, nil
+}
+
+func (s *service) SendVerificationEmail(ctx context.Context, userID string) error {
+	user, err := s.GetUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	if user.Status.EmailVerified {
+		return errors.NewAppError(errors.BadRequest, "Email already verified")
+	}
+
+	token, err := s.GenerateEmailVerificationToken(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	return s.emailSender.SendVerificationEmail(user.Email, user.Username, token)
+}
+
+func (s *service) VerifyEmail(ctx context.Context, token string) error {
 	update := bson.M{
 		"$set": bson.M{
-			"status.verifyToken":  token,
-			"status.tokenExpires": time.Now().Add(24 * time.Hour),
-			"status.emailChange":  string(changeInfoBytes),
+			"status.emailVerified": true,
+			"status.verifyToken":   "",
+			"status.tokenExpires":  time.Time{},
 		},
 	}
 
-	_, err = s.userCollection.UpdateOne(
-		context.Background(),
-		bson.M{"_id": user.ID},
+	result := s.users.FindOneAndUpdate(
+		ctx,
+		bson.M{
+			"status.verifyToken": token,
+			"status.tokenExpires": bson.M{
+				"$gt": time.Now(),
+			},
+		},
 		update,
 	)
-	if err != nil {
-		return "", errors.NewAppError(errors.InternalError, "Failed to save token")
-	}
 
-	return token, nil
-}
-
-// VerifyEmailChangeToken verifies and processes email change
-func (s *AuthService) VerifyEmailChangeToken(ctx context.Context, token string) error {
-	// Find user by token
-	var user models.User
-	err := s.userCollection.FindOne(ctx, bson.M{
-		"status.verifyToken":  token,
-		"status.tokenExpires": bson.M{"$gt": time.Now()},
-	}).Decode(&user)
-
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
 			return errors.NewAppError(errors.BadRequest, "Invalid or expired token")
 		}
 		return errors.NewAppError(errors.InternalError, "Database error")
 	}
 
-	// Parse email change info
-	if user.Status.EmailChange == "" {
-		return errors.NewAppError(errors.BadRequest, "Invalid email change request")
-	}
+	return nil
+}
 
-	var emailChange EmailChangeInfo
-	err = json.Unmarshal([]byte(user.Status.EmailChange), &emailChange)
+func (s *service) GenerateTokenPair(ctx context.Context, userID, role, deviceID string) (string, string, error) {
+	return s.tokenGen.GenerateTokenPair(userID, role, deviceID)
+}
+
+func (s *service) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
+	claims, err := s.tokenGen.ValidateRefreshToken(refreshToken)
 	if err != nil {
-		return errors.NewAppError(errors.InternalError, "Failed to process email change")
+		return "", "", err
 	}
 
-	// Check if email is already in use by another user
-	count, err := s.userCollection.CountDocuments(ctx, bson.M{
-		"_id":   bson.M{"$ne": user.ID},
-		"email": emailChange.NewEmail,
-	})
+	return s.GenerateTokenPair(ctx, claims.UserID, claims.Role, claims.DeviceID)
+}
+
+func (s *service) RevokeTokens(ctx context.Context, userID, deviceID string) error {
+	return s.tokenGen.RevokeTokens(userID, deviceID)
+}
+
+func (s *service) GetUserByID(ctx context.Context, userID string) (*models.User, error) {
+	objID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return errors.NewAppError(errors.InternalError, "Database error")
-	}
-	if count > 0 {
-		return errors.NewAppError(errors.BadRequest, "Email already in use")
+		return nil, errors.NewAppError(errors.BadRequest, "Invalid user ID")
 	}
 
-	// Update user's email and clear verification data
+	var user models.User
+	err = s.users.FindOne(ctx, bson.M{"_id": objID}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.NewAppError(errors.NotFound, "User not found")
+		}
+		return nil, errors.NewAppError(errors.InternalError, "Database error")
+	}
+	return &user, nil
+}
+
+func (s *service) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user models.User
+	err := s.users.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.NewAppError(errors.NotFound, "User not found")
+		}
+		return nil, errors.NewAppError(errors.InternalError, "Database error")
+	}
+	return &user, nil
+}
+
+func (s *service) GenerateEmailVerificationToken(ctx context.Context, userID string) (string, error) {
+	token := generateSecureToken()
+	expires := time.Now().Add(24 * time.Hour)
+
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return "", errors.NewAppError(errors.BadRequest, "Invalid user ID")
+	}
+
 	update := bson.M{
 		"$set": bson.M{
-			"email":                emailChange.NewEmail,
-			"status.emailVerified": true,
-			"status.verifyToken":   "",
-			"status.tokenExpires":  time.Time{},
-			"status.emailChange":   "",
-		},
-		"$push": bson.M{
-			"emailHistory": bson.M{
-				"oldEmail":  emailChange.OldEmail,
-				"newEmail":  emailChange.NewEmail,
-				"changedAt": time.Now(),
-			},
+			"status.verifyToken":  token,
+			"status.tokenExpires": expires,
 		},
 	}
 
-	_, err = s.userCollection.UpdateOne(ctx, bson.M{"_id": user.ID}, update)
+	_, err = s.users.UpdateOne(ctx, bson.M{"_id": objID}, update)
 	if err != nil {
-		return errors.NewAppError(errors.InternalError, "Failed to update email")
+		return "", errors.NewAppError(errors.InternalError, "Failed to update verification token")
 	}
 
-	return nil
+	return token, nil
+}
+
+func (s *service) GenerateEmailChangeToken(user *models.User, newEmail string) (string, error) {
+	token := generateSecureToken()
+	expires := time.Now().Add(24 * time.Hour)
+
+	update := bson.M{
+		"$set": bson.M{
+			"status.emailChange":  newEmail,
+			"status.verifyToken":  token,
+			"status.tokenExpires": expires,
+		},
+	}
+
+	_, err := s.users.UpdateOne(context.Background(), bson.M{"_id": user.ID}, update)
+	if err != nil {
+		return "", errors.NewAppError(errors.InternalError, "Failed to generate email change token")
+	}
+
+	return token, nil
+}
+
+func generateSecureToken() string {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return base64.URLEncoding.EncodeToString(b)
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
