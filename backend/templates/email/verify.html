@@ -2,31 +2,51 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Email Verification</title>
+  <title>Verify Your Email</title>
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 20px auto;
+          padding: 20px;
+      }
+      .button {
+          display: inline-block;
+          background-color: #4CAF50;
+          color: white;
+          padding: 12px 24px;
+          text-decoration: none;
+          border-radius: 4px;
+          margin: 20px 0;
+      }
+      .footer {
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          font-size: 12px;
+          color: #666;
+      }
+  </style>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-  <h2>Verify Your Email Address</h2>
-  <p>Hello {{.Username}},</p>
-  <p>Thank you for registering. Please verify your email address by clicking the button below:</p>
+<body>
+<h2>Verify Your Email Address</h2>
+<p>Hi {{.Username}},</p>
+<p>Thank you for registering. Please verify your email address by clicking the button below:</p>
 
-  <div style="text-align: center; margin: 30px 0;">
-    <a href="{{.VerifyLink}}"
-       style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
-      Verify Email
-    </a>
-  </div>
+<div style="text-align: center;">
+  <a href="{{.VerifyLink}}" class="button">Verify Email</a>
+</div>
 
-  <p>This link will expire in {{.ExpiresIn.Hours}} hours.</p>
+<p>This link will expire in {{.ExpiresIn}} hours.</p>
 
-  <p>If you did not create an account, please ignore this email.</p>
+<p>If you did not create an account, please ignore this email.</p>
 
-  <div style="margin-top: 40px; font-size: 12px; color: #666;">
-    <p>If you're having trouble clicking the button, copy and paste the URL below into your web browser:</p>
-    <p>{{.VerifyLink}}</p>
-    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-    <p>For support, please contact: {{.SupportMail}}</p>
-  </div>
+<div class="footer">
+  <p>If you're having trouble clicking the button, copy and paste the URL below into your web browser:</p>
+  <p style="word-break: break-all;">{{.VerifyLink}}</p>
+  <p>For support, please contact: {{.SupportMail}}</p>
 </div>
 </body>
 </html>

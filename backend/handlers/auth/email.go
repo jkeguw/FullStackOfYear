@@ -9,11 +9,11 @@ import (
 )
 
 type EmailVerificationHandler struct {
-	authService  *auth.AuthService
+	authService  auth.Service
 	emailService *email.Service
 }
 
-func NewEmailVerificationHandler(authService *auth.AuthService, emailService *email.Service) *EmailVerificationHandler {
+func NewEmailVerificationHandler(authService auth.Service, emailService *email.Service) *EmailVerificationHandler {
 	return &EmailVerificationHandler{
 		authService:  authService,
 		emailService: emailService,
@@ -30,7 +30,7 @@ func (h *EmailVerificationHandler) SendVerification(c *gin.Context) {
 		return
 	}
 
-	// token
+	// Generate token
 	token, err := h.authService.GenerateEmailVerificationToken(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -39,7 +39,7 @@ func (h *EmailVerificationHandler) SendVerification(c *gin.Context) {
 		return
 	}
 
-	// get user info to send email
+	// Get user info
 	user, err := h.authService.GetUserByID(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -48,7 +48,7 @@ func (h *EmailVerificationHandler) SendVerification(c *gin.Context) {
 		return
 	}
 
-	// send verification email
+	// Send verification email
 	err = h.emailService.SendVerificationEmail(user.Email, user.Username, token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -71,7 +71,7 @@ func (h *EmailVerificationHandler) VerifyEmail(c *gin.Context) {
 	}
 
 	// Verify token and update user
-	err := h.authService.VerifyEmailToken(c, token)
+	err := h.authService.VerifyEmail(c, token)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": errors.NewAppError(errors.BadRequest, "Invalid or expired token"),
@@ -103,7 +103,7 @@ func (h *EmailVerificationHandler) UpdateEmail(c *gin.Context) {
 		return
 	}
 
-	// Generate and send verification for new email
+	// Generate token for new email
 	user, err := h.authService.GetUserByID(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -112,7 +112,7 @@ func (h *EmailVerificationHandler) UpdateEmail(c *gin.Context) {
 		return
 	}
 
-	// Check if new email is different from current
+	// Check if new email is different
 	if user.Email == req.NewEmail {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": errors.NewAppError(errors.BadRequest, "New email is same as current"),
@@ -120,7 +120,7 @@ func (h *EmailVerificationHandler) UpdateEmail(c *gin.Context) {
 		return
 	}
 
-	// Generate token for email change
+	// Generate and send verification
 	token, err := h.authService.GenerateEmailChangeToken(user, req.NewEmail)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -129,7 +129,6 @@ func (h *EmailVerificationHandler) UpdateEmail(c *gin.Context) {
 		return
 	}
 
-	// Send verification to new email
 	err = h.emailService.SendVerificationEmail(req.NewEmail, user.Username, token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

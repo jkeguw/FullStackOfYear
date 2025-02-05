@@ -3,52 +3,82 @@ package main
 import (
 	"FullStackOfYear/backend/api/v1"
 	"FullStackOfYear/backend/config"
-	authHandler "FullStackOfYear/backend/handlers/auth"
 	"FullStackOfYear/backend/internal/database"
-	authService "FullStackOfYear/backend/services/auth"
+	"FullStackOfYear/backend/services/auth"
+	"FullStackOfYear/backend/services/email"
 	"FullStackOfYear/backend/services/oauth"
 	"FullStackOfYear/backend/services/token"
+	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"log"
 )
 
-func initOAuthComponents(cfg *config.Config) error {
-	stateManager := oauth.NewStateManager(database.RedisClient)
-	provider := oauth.NewGoogleProvider(
+func initServices(cfg *config.Config, logger *zap.Logger) (auth.Service, *email.Service, error) {
+	if err := database.InitMongoDB(context.Background()); err != nil {
+		return nil, nil, fmt.Errorf("failed to init mongodb: %v", err)
+	}
+
+	if err := database.InitRedis(); err != nil {
+		return nil, nil, fmt.Errorf("failed to init redis: %v", err)
+	}
+
+	emailCfg := &email.Config{
+		SMTP: struct {
+			Host     string
+			Port     int
+			Username string
+			Password string
+		}{
+			Host:     cfg.Email.SMTP.Host,
+			Port:     cfg.Email.SMTP.Port,
+			Username: cfg.Email.SMTP.Username,
+			Password: cfg.Email.SMTP.Password,
+		},
+		From:      cfg.Email.From,
+		BaseURL:   cfg.Email.BaseURL,
+		Templates: cfg.Email.Templates,
+	}
+
+	emailService, err := email.NewEmailService(emailCfg, logger)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to init email service: %v", err)
+	}
+
+	tokenManager := token.NewManager(database.RedisClient)
+
+	googleProvider := oauth.NewGoogleProvider(
 		cfg.OAuth.Google.ClientID,
 		cfg.OAuth.Google.ClientSecret,
 		cfg.OAuth.Google.RedirectURL,
 	)
 
-	tokenManager := token.NewManager(database.RedisClient)
-	authSvc := authService.NewAuthService(
+	authService := auth.NewService(
 		database.MongoClient.Database(cfg.MongoDB.Database).Collection("users"),
 		tokenManager,
+		emailService,
+		googleProvider,
 	)
 
-	authHandler.InitOAuthHandler(stateManager, provider, authSvc)
-	return nil
+	return authService, emailService, nil
 }
 
 func main() {
-	cfg, err := config.LoadConfig()
+	if err := config.Init(); err != nil {
+		log.Fatal("Failed to init config:", err)
+	}
+
+	authService, emailService, err := initServices(config.Cfg, config.Logger)
 	if err != nil {
-		log.Fatal("init config failed:", err)
-	}
-	defer config.Logger.Sync()
-
-	// 初始化OAuth组件
-	if err := initOAuthComponents(cfg); err != nil {
-		log.Fatal("Failed to initialize OAuth components:", err)
+		log.Fatal("Failed to init services:", err)
 	}
 
-	// 设置路由
 	router := gin.Default()
-	api := router.Group("/api/v1")
-	v1.RegisterRoutes(api)
+	apiV1 := router.Group("/api/v1")
+	v1.NewRouter(authService, emailService).RegisterRoutes(apiV1)
 
-	// 启动服务器
-	if err := router.Run(cfg.Server.Port); err != nil {
+	if err := router.Run(config.Cfg.Server.Port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }

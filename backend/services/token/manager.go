@@ -2,6 +2,7 @@ package token
 
 import (
 	"FullStackOfYear/backend/config"
+	"FullStackOfYear/backend/internal/errors"
 	"FullStackOfYear/backend/services/jwt"
 	"FullStackOfYear/backend/types/auth"
 	"context"
@@ -141,4 +142,19 @@ func (m *Manager) InvalidateTokens(ctx context.Context, userID, deviceID string)
 	}
 
 	return nil
+}
+
+func (m *Manager) ValidateRefreshToken(token string) (*Claims, error) {
+	claims, err := jwt.ParseToken(token)
+	if err != nil {
+		return nil, err
+	}
+	if claims.Type != "refresh" {
+		return nil, errors.NewAppError(errors.Unauthorized, "Invalid token type")
+	}
+	return claims, nil
+}
+
+func (m *Manager) RevokeTokens(userID, deviceID string) error {
+	return m.InvalidateTokens(context.Background(), userID, deviceID)
 }

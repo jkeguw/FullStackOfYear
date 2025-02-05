@@ -1,19 +1,19 @@
 package v1
 
 import (
-	authHandler "FullStackOfYear/backend/handlers/auth" // 重命名为 authHandler
+	authHandler "FullStackOfYear/backend/handlers/auth"
 	"FullStackOfYear/backend/middleware"
-	"FullStackOfYear/backend/services/auth" // auth service
+	authService "FullStackOfYear/backend/services/auth"
 	"FullStackOfYear/backend/services/email"
 	"github.com/gin-gonic/gin"
 )
 
 type Router struct {
-	authService  *auth.AuthService
+	authService  authService.Service
 	emailService *email.Service
 }
 
-func NewRouter(authService *auth.AuthService, emailService *email.Service) *Router {
+func NewRouter(authService authService.Service, emailService *email.Service) *Router {
 	return &Router{
 		authService:  authService,
 		emailService: emailService,
@@ -21,10 +21,8 @@ func NewRouter(authService *auth.AuthService, emailService *email.Service) *Rout
 }
 
 func (r *Router) RegisterRoutes(router *gin.RouterGroup) {
-	// init EmailVerificationHandler
 	emailHandler := authHandler.NewEmailVerificationHandler(r.authService, r.emailService)
 
-	// auth route
 	authGroup := router.Group("/auth")
 	{
 		authGroup.POST("/register", authHandler.Register)
@@ -32,17 +30,14 @@ func (r *Router) RegisterRoutes(router *gin.RouterGroup) {
 		authGroup.POST("/refresh", authHandler.RefreshToken)
 		authGroup.POST("/logout", middleware.Auth(), authHandler.Logout)
 
-		// OAuth routes
 		oauthGroup := authGroup.Group("/oauth/google")
 		{
 			oauthGroup.GET("/login", authHandler.OAuthInstance.InitiateOAuth)
 			oauthGroup.GET("/callback", authHandler.OAuthInstance.HandleCallback)
 		}
 
-		// Email verification routes - 新增
-		authGroup.GET("/verify-email", emailHandler.VerifyEmail) // 公开接口
+		authGroup.GET("/verify-email", emailHandler.VerifyEmail)
 
-		// Protected email routes - 新增
 		emailGroup := authGroup.Group("")
 		emailGroup.Use(middleware.Auth())
 		{
@@ -54,26 +49,23 @@ func (r *Router) RegisterRoutes(router *gin.RouterGroup) {
 	authenticated := router.Group("")
 	authenticated.Use(middleware.Auth())
 	{
-		// user related
-		user := authenticated.Group("/users")
+		userGroup := authenticated.Group("/users")
 		{
-			user.GET("/me", nil) // TODO
-			user.PUT("/me", nil) // TODO
+			userGroup.GET("/me", nil)
+			userGroup.PUT("/me", nil)
 		}
 
-		// comment related
-		review := authenticated.Group("/reviews")
-		review.Use(middleware.RequireRoles("reviewer", "admin"))
+		reviewGroup := authenticated.Group("/reviews")
+		reviewGroup.Use(middleware.RequireRoles("reviewer", "admin"))
 		{
-			review.GET("", nil)  // TODO
-			review.POST("", nil) // TODO
+			reviewGroup.GET("", nil)
+			reviewGroup.POST("", nil)
 		}
 
-		// devices related
-		device := authenticated.Group("/devices")
+		deviceGroup := authenticated.Group("/devices")
 		{
-			device.GET("", nil)  // TODO
-			device.POST("", nil) // TODO
+			deviceGroup.GET("", nil)
+			deviceGroup.POST("", nil)
 		}
 	}
 }

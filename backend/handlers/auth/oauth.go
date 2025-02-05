@@ -20,12 +20,12 @@ const (
 type OAuthHandler struct {
 	stateManager *oauth.StateManager
 	provider     oauth.Provider
-	authService  *auth.AuthService
+	authService  auth.Service
 }
 
 var OAuthInstance *OAuthHandler
 
-func NewOAuthHandler(sm *oauth.StateManager, provider oauth.Provider, as *auth.AuthService) *OAuthHandler {
+func NewOAuthHandler(sm *oauth.StateManager, provider oauth.Provider, as auth.Service) *OAuthHandler {
 	return &OAuthHandler{
 		stateManager: sm,
 		provider:     provider,
@@ -95,6 +95,6 @@ func (h *OAuthHandler) HandleCallback(c *gin.Context) {
 }
 
 // InitOAuthHandler initializes the OAuth handler instance
-func InitOAuthHandler(sm *oauth.StateManager, provider oauth.Provider, as *auth.AuthService) {
+func InitOAuthHandler(sm *oauth.StateManager, provider oauth.Provider, as auth.Service) {
 	OAuthInstance = NewOAuthHandler(sm, provider, as)
 }
