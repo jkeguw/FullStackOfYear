@@ -1,9 +1,10 @@
+//go:generate mockgen -source=types.go -destination=../../tests/mocks/auth_mocks.go -package=mocks
 package auth
 
 import (
 	"FullStackOfYear/backend/models"
-	"FullStackOfYear/backend/services/token"
 	"FullStackOfYear/backend/types/auth"
+	"FullStackOfYear/backend/types/claims"
 	"context"
 )
 
@@ -34,7 +35,7 @@ type Service interface {
 // TokenGenerator interface
 type TokenGenerator interface {
 	GenerateTokenPair(userID, role, deviceID string) (string, string, error)
-	ValidateRefreshToken(token string) (*token.Claims, error)
+	ValidateRefreshToken(token string) (*claims.Claims, error)
 	RevokeTokens(userID, deviceID string) error
 }
 

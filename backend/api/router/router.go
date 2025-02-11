@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter(authService *auth.AuthService, emailService *email.Service) *gin.Engine {
+func InitRouter(authService auth.Service, emailService *email.Service) *gin.Engine {
 	r := gin.New()
 
 	r.Use(middleware.Logger())
