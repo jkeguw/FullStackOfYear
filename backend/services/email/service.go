@@ -22,10 +22,14 @@ type Config struct {
 	Templates map[string]string
 }
 
+type Dialer interface {
+	DialAndSend(m ...*gomail.Message) error
+}
+
 // Service implements email sending functionality
 type Service struct {
 	config    *Config
-	dialer    *gomail.Dialer
+	dialer    Dialer
 	templates map[string]*template.Template
 	logger    *zap.Logger
 }
