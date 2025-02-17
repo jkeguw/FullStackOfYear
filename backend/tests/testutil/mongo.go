@@ -25,21 +25,21 @@ var (
 		"verified": {
 			ID:       primitive.NewObjectID(),
 			Email:    "verified@example.com",
-			Password: "$2a$10$NWY9SqxvWeYkPFn0R4PCu.DTF5lHcqyof.mKPHqY4TkGJRIA4O0Iy", // "password123"
+			Password: "$2a$10$7juGndSkFAhhd/J8gmRBBOidUg69fbusoY8lQnLc4hqUXlvvkfz5G", // "password123"
 			Username: "verified_user",
 			Role:     "user",
 		},
 		"unverified": {
 			ID:       primitive.NewObjectID(),
 			Email:    "unverified@example.com",
-			Password: "$2a$10$NWY9SqxvWeYkPFn0R4PCu.DTF5lHcqyof.mKPHqY4TkGJRIA4O0Iy",
+			Password: "$2a$10$7juGndSkFAhhd/J8gmRBBOidUg69fbusoY8lQnLc4hqUXlvvkfz5G",
 			Username: "unverified_user",
 			Role:     "user",
 		},
 		"locked": {
 			ID:       primitive.NewObjectID(),
 			Email:    "locked@example.com",
-			Password: "$2a$10$NWY9SqxvWeYkPFn0R4PCu.DTF5lHcqyof.mKPHqY4TkGJRIA4O0Iy",
+			Password: "$2a$10$7juGndSkFAhhd/J8gmRBBOidUg69fbusoY8lQnLc4hqUXlvvkfz5G",
 			Username: "locked_user",
 			Role:     "user",
 		},
@@ -52,7 +52,7 @@ var (
 		"admin": {
 			ID:       primitive.NewObjectID(),
 			Email:    "admin@example.com",
-			Password: "$2a$10$NWY9SqxvWeYkPFn0R4PCu.DTF5lHcqyof.mKPHqY4TkGJRIA4O0Iy",
+			Password: "$2a$10$7juGndSkFAhhd/J8gmRBBOidUg69fbusoY8lQnLc4hqUXlvvkfz5G",
 			Username: "admin_user",
 			Role:     "admin",
 		},
@@ -89,11 +89,12 @@ func createVerifiedUser(u TestUser, now time.Time) bson.M {
 			"type": u.Role,
 		},
 		"stats": bson.M{
-			"reviewCount": 0,
-			"totalWords":  0,
-			"violations":  0,
-			"createdAt":   now,
-			"lastLoginAt": now,
+			"reviewCount":         0,
+			"totalWords":          0,
+			"violations":          0,
+			"failedLoginAttempts": 0,
+			"createdAt":           now,
+			"lastLoginAt":         now,
 		},
 		"createdAt": now,
 		"updatedAt": now,
@@ -119,6 +120,7 @@ func createLockedUser(u TestUser, now time.Time) bson.M {
 		"lockReason":    "Too many login attempts",
 		"lockExpires":   now.Add(24 * time.Hour),
 	}
+	user["stats"].(bson.M)["failedLoginAttempts"] = 5
 	return user
 }
 
@@ -147,32 +149,35 @@ func createAdminUser(u TestUser, now time.Time) bson.M {
 // NewTestDB 创建测试数据库连接
 func NewTestDB() (*mongo.Database, error) {
 	ctx := context.Background()
+	// 只创建连接，不做其他操作
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to connect to mongodb: %v", err)
 	}
 
-	db := client.Database("cpc_test")
-
-	// 创建Collection并设置验证规则
-	err = createCollections(ctx, db)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
+	// 只返回数据库引用
+	return client.Database("cpc_test"), nil
 }
 
 // InitTestData 初始化测试数据
 func InitTestData(ctx context.Context, db *mongo.Database) error {
-	// 清理已有数据
+	// 1. 确保数据库为空
 	if err := db.Drop(ctx); err != nil {
-		return err
+		return fmt.Errorf("failed to drop database: %v", err)
 	}
 
-	// 创建用户数据
+	// 2. 创建 collection 和验证规则
+	if err := createCollections(ctx, db); err != nil {
+		return fmt.Errorf("failed to create collections: %v", err)
+	}
+
+	// 3. 创建用户数据
 	collection := db.Collection("users")
-	return CreateTestUsers(ctx, collection)
+	if err := CreateTestUsers(ctx, collection); err != nil {
+		return fmt.Errorf("failed to create test users: %v", err)
+	}
+
+	return nil
 }
 
 // createCollections 创建测试所需的集合和验证规则

@@ -120,7 +120,18 @@ func (p *GoogleProvider) ExchangeCode(ctx context.Context, code string) (*auth.O
 
 	token, err := p.config.Exchange(ctx, code)
 	if err != nil {
-		return nil, errors.NewAppError(errors.InternalError, "Failed to exchange OAuth code")
+		// 更精确的错误处理
+		switch {
+		case strings.Contains(err.Error(), "invalid_grant"):
+			return nil, errors.NewAppError(errors.BadRequest, "Invalid OAuth code")
+		case strings.Contains(err.Error(), "invalid_state"):
+			return nil, errors.NewAppError(errors.BadRequest, "Invalid state parameter")
+		case strings.Contains(err.Error(), "code_expired"):
+			return nil, errors.NewAppError(errors.BadRequest, "OAuth code expired")
+		default:
+			log.Printf("OAuth code exchange error: %v", err)
+			return nil, errors.NewAppError(errors.InternalError, "Failed to exchange OAuth code")
+		}
 	}
 
 	return &auth.OAuthToken{
@@ -143,26 +154,37 @@ func (p *GoogleProvider) GetUserInfo(ctx context.Context, token *auth.OAuthToken
 
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
+		log.Printf("Failed to fetch user info: %v", err)
 		return nil, errors.NewAppError(errors.InternalError, "Failed to fetch user info")
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	// 根据状态码返回适当的错误
+	switch resp.StatusCode {
+	case http.StatusUnauthorized:
+		return nil, errors.NewAppError(errors.Unauthorized, "Invalid OAuth token")
+	case http.StatusBadRequest:
+		return nil, errors.NewAppError(errors.BadRequest, "Invalid request")
+	case http.StatusOK:
+		// 继续处理
+	default:
 		return nil, errors.NewAppError(errors.InternalError, "Failed to fetch user info")
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.NewAppError(errors.InternalError, "Failed to read response body")
+		log.Printf("Failed to read response body: %v", err)
+		return nil, errors.NewAppError(errors.InternalError, "Failed to read user info")
 	}
 
 	var userInfo auth.OAuthUserInfo
 	if err := json.Unmarshal(body, &userInfo); err != nil {
+		log.Printf("Failed to parse user info: %v", err)
 		return nil, errors.NewAppError(errors.InternalError, "Failed to parse user info")
 	}
 
 	if userInfo.ID == "" || userInfo.Email == "" {
-		return nil, errors.NewAppError(errors.InternalError, "Invalid user info received")
+		return nil, errors.NewAppError(errors.BadRequest, "Incomplete user info received")
 	}
 
 	return &userInfo, nil
