@@ -1,4 +1,3 @@
-// services/auth/service.go
 package auth
 
 import (
@@ -105,20 +104,77 @@ func (s *service) handleGoogleLogin(ctx context.Context, req *auth.LoginRequest)
 func (s *service) ValidateEmailPassword(ctx context.Context, email, password string) (*models.User, error) {
 	user, err := s.GetUserByEmail(ctx, email)
 	if err != nil {
-		return nil, errors.NewAppError(errors.Unauthorized, "Invalid credentials")
+		if errors.GetErrorCode(err) == errors.NotFound {
+			// 用户不存在时延迟返回，防止时间泄露
+			time.Sleep(100 * time.Millisecond)
+			return nil, errors.NewAppError(errors.Unauthorized, "邮箱或密码错误")
+		}
+		return nil, err
 	}
 
+	// 检查邮箱验证状态
+	if !user.Status.EmailVerified {
+		return nil, errors.NewAppError(errors.Unauthorized, "请先验证邮箱")
+	}
+
+	// 检查账户锁定状态
 	if user.Status.IsLocked {
 		if user.Status.LockExpires.After(time.Now()) {
-			return nil, errors.NewAppError(errors.Forbidden, "Account is locked")
+			return nil, errors.NewAppError(errors.Forbidden,
+				"账户已锁定，请在 "+user.Status.LockExpires.Sub(time.Now()).String()+" 后重试")
 		}
+		// 自动解锁
 		user.Status.IsLocked = false
 		user.Status.LockReason = ""
 		user.Status.LockExpires = time.Time{}
+
+		_, err = s.users.UpdateOne(ctx, bson.M{"_id": user.ID}, bson.M{
+			"$set": bson.M{
+				"status.isLocked":    false,
+				"status.lockReason":  "",
+				"status.lockExpires": time.Time{},
+			},
+		})
+		if err != nil {
+			return nil, errors.NewAppError(errors.InternalError, "更新用户状态失败")
+		}
 	}
 
+	// 验证密码
 	if !CheckPasswordHash(password, user.Password) {
-		return nil, errors.NewAppError(errors.Unauthorized, "Invalid credentials")
+		// 更新登录失败次数
+		failedAttempts := user.Stats.FailedLoginAttempts + 1
+		update := bson.M{
+			"$inc": bson.M{"stats.failedLoginAttempts": 1},
+		}
+
+		// 如果失败次数过多，锁定账户
+		if failedAttempts >= 5 {
+			lockExpires := time.Now().Add(30 * time.Minute)
+			update["$set"] = bson.M{
+				"status.isLocked":    true,
+				"status.lockReason":  "登录失败次数过多",
+				"status.lockExpires": lockExpires,
+			}
+		}
+
+		_, err = s.users.UpdateOne(ctx, bson.M{"_id": user.ID}, update)
+		if err != nil {
+			return nil, errors.NewAppError(errors.InternalError, "更新用户状态失败")
+		}
+
+		return nil, errors.NewAppError(errors.Unauthorized, "邮箱或密码错误")
+	}
+
+	// 重置登录失败次数并更新最后登录时间
+	_, err = s.users.UpdateOne(ctx, bson.M{"_id": user.ID}, bson.M{
+		"$set": bson.M{
+			"stats.failedLoginAttempts": 0,
+			"stats.lastLoginAt":         time.Now(),
+		},
+	})
+	if err != nil {
+		return nil, errors.NewAppError(errors.InternalError, "更新用户状态失败")
 	}
 
 	return user, nil
@@ -130,10 +186,17 @@ func (s *service) HandleOAuthLogin(ctx context.Context, userInfo *auth.OAuthUser
 		return nil, err
 	}
 
+	//accessToken, refreshToken, err := s.tokenGen.GenerateTokenPair(
+	//	user.ID.Hex(),
+	//	user.Role.Type,
+	//	"oauth_"+user.ID.Hex(),
+	//)
+	deviceID := "oauth_device_" + user.ID.Hex()
+
 	accessToken, refreshToken, err := s.tokenGen.GenerateTokenPair(
 		user.ID.Hex(),
 		user.Role.Type,
-		"oauth_"+user.ID.Hex(),
+		deviceID,
 	)
 	if err != nil {
 		return nil, errors.NewAppError(errors.InternalError, "Failed to generate tokens")
@@ -272,45 +335,73 @@ func (s *service) SendVerificationEmail(ctx context.Context, userID string) erro
 	}
 
 	if user.Status.EmailVerified {
-		return errors.NewAppError(errors.BadRequest, "Email already verified")
+		return errors.NewAppError(errors.BadRequest, "邮箱已验证")
 	}
 
-	token, err := s.GenerateEmailVerificationToken(ctx, userID)
+	verifyToken, err := s.GenerateEmailVerificationToken(ctx, userID)
 	if err != nil {
 		return err
 	}
 
-	return s.emailSender.SendVerificationEmail(user.Email, user.Username, token)
+	// URL安全的Base64编码
+	//encodedToken := base64.URLEncoding.EncodeToString([]byte(verifyToken))
+	//
+	//// 生成完整的验证链接
+	//verifyLink := fmt.Sprintf("%s/verify-email?token=%s",
+	//	"http://localhost:3000", // TODO: 从配置中获取
+	//	encodedToken,
+	//)
+
+	// 直接发送验证token
+	return s.emailSender.SendVerificationEmail(user.Email, user.Username, verifyToken)
 }
 
-func (s *service) VerifyEmail(ctx context.Context, token string) error {
-	update := bson.M{
-		"$set": bson.M{
-			"status.emailVerified": true,
-			"status.verifyToken":   "",
-			"status.tokenExpires":  time.Time{},
-		},
+func (s *service) VerifyEmail(ctx context.Context, encodedToken string) error {
+	// 解码token
+	tokenBytes, err := base64.URLEncoding.DecodeString(encodedToken)
+	if err != nil {
+		return errors.NewAppError(errors.BadRequest, "无效的验证链接")
 	}
+	verifyToken := string(tokenBytes)
 
-	result := s.users.FindOneAndUpdate(
-		ctx,
-		bson.M{
-			"status.verifyToken": token,
-			"status.tokenExpires": bson.M{
-				"$gt": time.Now(),
+	// 使用事务确保原子性
+	session, err := s.users.Database().Client().StartSession()
+	if err != nil {
+		return errors.NewAppError(errors.InternalError, "数据库会话创建失败")
+	}
+	defer session.EndSession(ctx)
+
+	_, err = session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
+		update := bson.M{
+			"$set": bson.M{
+				"status.emailVerified": true,
+				"status.verifyToken":   "",
+				"status.tokenExpires":  time.Time{},
 			},
-		},
-		update,
-	)
-
-	if result.Err() != nil {
-		if result.Err() == mongo.ErrNoDocuments {
-			return errors.NewAppError(errors.BadRequest, "Invalid or expired token")
 		}
-		return errors.NewAppError(errors.InternalError, "Database error")
-	}
 
-	return nil
+		result := s.users.FindOneAndUpdate(
+			sessCtx,
+			bson.M{
+				"status.verifyToken": verifyToken,
+				"status.tokenExpires": bson.M{
+					"$gt": time.Now(),
+				},
+			},
+			update,
+		)
+
+		if result.Err() != nil {
+			if result.Err() == mongo.ErrNoDocuments {
+				return nil, errors.NewAppError(errors.BadRequest, "验证链接无效或已过期")
+			}
+			return nil, errors.NewAppError(errors.InternalError, "验证邮箱失败")
+		}
+
+		return nil, nil
+	})
+
+	return err
 }
 
 func (s *service) GenerateTokenPair(ctx context.Context, userID, role, deviceID string) (string, string, error) {
