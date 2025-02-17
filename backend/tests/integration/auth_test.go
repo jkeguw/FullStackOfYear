@@ -8,7 +8,13 @@ import (
 	authtypes "FullStackOfYear/backend/types/auth"    // 类型定义
 	authclaims "FullStackOfYear/backend/types/claims" // claims包使用别名
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -21,6 +27,8 @@ func TestAuthFlow(t *testing.T) {
 
 	db, cleanup := testutil.SetupAuthTest(t)
 	defer cleanup()
+
+	validateTestSetup(t, db)
 
 	mockTokenGen := mocks.NewMockTokenGenerator(ctrl)
 	mockEmailSender := mocks.NewMockEmailSender(ctrl)
@@ -35,39 +43,78 @@ func TestAuthFlow(t *testing.T) {
 
 	t.Run("邮箱验证-登录流程", func(t *testing.T) {
 		ctx := context.Background()
-		email := "newuser@example.com"
-		password := "Password123!"
+
+		t.Log("=== 开始邮箱登录测试 ===")
+
+		// 获取用户数据
+		var user bson.M
+		err := db.Collection("users").FindOne(ctx, bson.M{
+			"email": "verified@example.com",
+		}).Decode(&user)
+		require.NoError(t, err)
+
+		t.Logf("数据库中的用户数据:")
+		t.Logf("- ID: %v", user["_id"])
+		t.Logf("- Email: %v", user["email"])
+		t.Logf("- Role: %v", user["role"].(bson.M)["type"])
+
+		userID := user["_id"].(primitive.ObjectID).Hex()
+		roleType := user["role"].(bson.M)["type"].(string)
 		deviceID := "test_device_123"
 
-		// 登录请求
-		loginReq := &authtypes.LoginRequest{
-			LoginType: authtypes.EmailLogin,
-			Email:     email,
-			Password:  password,
-			DeviceID:  deviceID,
-		}
-
-		// 设置预期行为
+		// 设置mock
 		mockTokenGen.EXPECT().
-			GenerateTokenPair(gomock.Any(), "user", deviceID).
+			GenerateTokenPair(userID, roleType, deviceID).
 			Return("test_access_token", "test_refresh_token", nil)
 
+		t.Log("\n准备登录请求:")
+		t.Logf("- Email: verified@example.com")
+		t.Logf("- Password: password123")
+		t.Logf("- Device ID: %s", deviceID)
+
 		// 执行登录
-		resp, err := authService.Login(ctx, loginReq)
+		resp, err := authService.Login(ctx, &authtypes.LoginRequest{
+			LoginType: authtypes.EmailLogin,
+			Email:     "verified@example.com",
+			Password:  "password123",
+			DeviceID:  deviceID,
+		})
+
+		if err != nil {
+			t.Log("\n登录失败:")
+			if appErr, ok := err.(*errors.AppError); ok {
+				t.Logf("- 错误类型: AppError")
+				t.Logf("- 错误代码: %d", appErr.Code)
+				t.Logf("- 错误信息: %s", appErr.Message)
+			} else {
+				t.Logf("- 错误类型: %T", err)
+				t.Logf("- 错误信息: %v", err)
+			}
+		} else {
+			t.Log("\n登录成功:")
+			t.Logf("- User ID: %s", resp.UserID)
+			t.Logf("- Email: %s", resp.Email)
+		}
+
 		require.NoError(t, err)
 		assert.NotEmpty(t, resp.AccessToken)
 		assert.NotEmpty(t, resp.RefreshToken)
+		assert.Equal(t, "verified@example.com", resp.Email)
+		assert.Equal(t, userID, resp.UserID)
 	})
 
 	t.Run("OAuth登录流程", func(t *testing.T) {
 		ctx := context.Background()
+		deviceID := "oauth_device_123"
+
+		// 使用预设的OAuth用户信息
 		userInfo := &authtypes.OAuthUserInfo{
-			ID:    "google_123",
-			Email: "google@example.com",
-			Name:  "Google User",
+			ID:    "google_123456",
+			Email: "oauth@example.com",
+			Name:  "oauth_user",
 		}
 
-		// 设置OAuth相关的预期行为
+		// 设置OAuth相关的mock
 		mockOAuthProvider.EXPECT().
 			ExchangeCode(ctx, "test_code").
 			Return(&authtypes.OAuthToken{
@@ -78,8 +125,9 @@ func TestAuthFlow(t *testing.T) {
 			GetUserInfo(ctx, gomock.Any()).
 			Return(userInfo, nil)
 
+		// 使用gomock.Any()匹配用户ID，因为这可能是新创建的用户
 		mockTokenGen.EXPECT().
-			GenerateTokenPair(gomock.Any(), "user", "oauth_device").
+			GenerateTokenPair(gomock.Any(), "user", gomock.Eq(deviceID)).
 			Return("access_token", "refresh_token", nil)
 
 		// 执行OAuth登录
@@ -87,11 +135,12 @@ func TestAuthFlow(t *testing.T) {
 			LoginType: authtypes.GoogleLogin,
 			Code:      "test_code",
 			State:     "test_state",
-			DeviceID:  "oauth_device",
+			DeviceID:  deviceID,
 		})
 
 		require.NoError(t, err)
 		assert.True(t, resp.OAuthConnected)
+		assert.Equal(t, "google", resp.OAuthProvider)
 	})
 
 	t.Run("Token刷新流程", func(t *testing.T) {
@@ -147,9 +196,10 @@ func TestAuthFlowErrors(t *testing.T) {
 		assert.Equal(t, errors.BadRequest, errors.GetErrorCode(err))
 
 		// 验证用户状态未改变
-		updatedUser, err := authService.GetUserByID(ctx, user.ID.Hex())
+		var dbUser bson.M
+		err = db.Collection("users").FindOne(ctx, bson.M{"_id": user.ID}).Decode(&dbUser)
 		require.NoError(t, err)
-		assert.False(t, updatedUser.Status.EmailVerified)
+		assert.False(t, dbUser["status"].(bson.M)["emailVerified"].(bool))
 	})
 
 	t.Run("OAuth状态验证失败", func(t *testing.T) {
@@ -159,14 +209,13 @@ func TestAuthFlowErrors(t *testing.T) {
 			ExchangeCode(ctx, "test_code").
 			Return(nil, errors.NewAppError(errors.BadRequest, "Invalid state"))
 
-		loginReq := &authtypes.LoginRequest{
+		resp, err := authService.Login(ctx, &authtypes.LoginRequest{
 			LoginType: authtypes.GoogleLogin,
 			Code:      "test_code",
 			State:     "invalid_state",
 			DeviceID:  "test_device",
-		}
+		})
 
-		resp, err := authService.Login(ctx, loginReq)
 		assert.Error(t, err)
 		assert.Nil(t, resp)
 		assert.Equal(t, errors.BadRequest, errors.GetErrorCode(err))
@@ -183,15 +232,27 @@ func TestAuthFlowErrors(t *testing.T) {
 			DeviceID:  "test_device",
 		}
 
+		// 验证初始状态
+		var dbUser bson.M
+		err := db.Collection("users").FindOne(ctx, bson.M{"_id": user.ID}).Decode(&dbUser)
+		require.NoError(t, err)
+		require.False(t, dbUser["status"].(bson.M)["isLocked"].(bool), "用户初始状态应该是未锁定")
+
 		// 多次尝试错误密码
 		for i := 0; i < 5; i++ {
 			_, err := authService.Login(ctx, loginReq)
 			assert.Error(t, err)
+			t.Logf("第 %d 次登录失败", i+1)
 		}
 
 		// 验证账户已锁定
-		loginReq.Password = "correct_password"
-		_, err := authService.Login(ctx, loginReq)
+		err = db.Collection("users").FindOne(ctx, bson.M{"_id": user.ID}).Decode(&dbUser)
+		require.NoError(t, err)
+		assert.True(t, dbUser["status"].(bson.M)["isLocked"].(bool), "用户应该被锁定")
+
+		// 尝试使用正确密码登录
+		loginReq.Password = "password123"
+		_, err = authService.Login(ctx, loginReq)
 		assert.Error(t, err)
 		assert.Equal(t, errors.Forbidden, errors.GetErrorCode(err))
 	})
@@ -213,9 +274,21 @@ func TestAuthFlowErrors(t *testing.T) {
 	t.Run("OAuth账号重复绑定", func(t *testing.T) {
 		ctx := context.Background()
 
-		// 创建用户信息时直接使用已存在的Google ID
+		// 从数据库获取已存在的OAuth用户
+		var existingUser bson.M
+		err := db.Collection("users").FindOne(ctx, bson.M{
+			"email": "oauth@example.com",
+		}).Decode(&existingUser)
+		require.NoError(t, err)
+
+		// 获取Google ID
+		oauthInfo := existingUser["oauth"].(bson.M)
+		googleInfo := oauthInfo["google"].(bson.M)
+		googleID := googleInfo["id"].(string)
+
+		// 创建用户信息，使用已存在的Google ID
 		userInfo := &authtypes.OAuthUserInfo{
-			ID:    "google_123456", // 假设这是已被使用的Google ID
+			ID:    googleID,
 			Email: "new_email@example.com",
 			Name:  "New User",
 		}
@@ -228,7 +301,7 @@ func TestAuthFlowErrors(t *testing.T) {
 			GetUserInfo(ctx, gomock.Any()).
 			Return(userInfo, nil)
 
-		// 尝试使用已绑定的Google ID创建新账号
+		// 执行登录
 		resp, err := authService.Login(ctx, &authtypes.LoginRequest{
 			LoginType: authtypes.GoogleLogin,
 			Code:      "test_code",
@@ -236,9 +309,13 @@ func TestAuthFlowErrors(t *testing.T) {
 			DeviceID:  "oauth_device",
 		})
 
-		assert.Error(t, err)
-		assert.Nil(t, resp)
-		assert.Equal(t, errors.BadRequest, errors.GetErrorCode(err))
+		// 验证结果
+		require.Error(t, err)
+		require.Nil(t, resp)
+		appErr, ok := err.(*errors.AppError)
+		require.True(t, ok)
+		assert.Equal(t, errors.BadRequest, appErr.Code)
+		assert.Contains(t, appErr.Message, "already linked")
 	})
 }
 
@@ -268,36 +345,37 @@ func TestAuthRaceConditions(t *testing.T) {
 			DeviceID: "test_device",
 		}
 
-		// 设置预期行为
+		// 设置 mock 期望 - 允许多次验证但只允许一次生成
 		mockTokenGen.EXPECT().
 			ValidateRefreshToken(gomock.Any()).
-			MinTimes(1).
+			AnyTimes().
 			Return(validClaims, nil)
 
 		mockTokenGen.EXPECT().
 			GenerateTokenPair(validClaims.UserID, validClaims.Role, validClaims.DeviceID).
-			MinTimes(1).
+			Times(1).
 			Return("new_access_token", "new_refresh_token", nil)
 
-		// 并发执行token刷新
+		var (
+			wg sync.WaitGroup
+			mu sync.Mutex
+		)
+		successCount := 0
 		const goroutines = 3
-		results := make(chan error, goroutines)
+
 		for i := 0; i < goroutines; i++ {
+			wg.Add(1)
 			go func() {
-				_, _, err := authService.RefreshToken(ctx, "test_refresh_token")
-				results <- err
+				defer wg.Done()
+				if _, _, err := authService.RefreshToken(ctx, "test_refresh_token"); err == nil {
+					mu.Lock()
+					successCount++
+					mu.Unlock()
+				}
 			}()
 		}
 
-		// 收集并验证结果
-		var successCount int
-		for i := 0; i < goroutines; i++ {
-			if err := <-results; err == nil {
-				successCount++
-			}
-		}
-
-		// 确保只有一次刷新成功
+		wg.Wait()
 		assert.Equal(t, 1, successCount)
 	})
 
@@ -306,30 +384,157 @@ func TestAuthRaceConditions(t *testing.T) {
 		user := testutil.GetTestUser(t, "unverified")
 		verifyToken := "test_verify_token"
 
-		// 并发执行邮箱验证
+		// 准备测试数据
+		_, err := db.Collection("users").UpdateOne(
+			ctx,
+			bson.M{"_id": user.ID},
+			bson.M{
+				"$set": bson.M{
+					"status.verifyToken":   verifyToken,
+					"status.tokenExpires":  time.Now().Add(time.Hour),
+					"status.emailVerified": false,
+				},
+			},
+		)
+		require.NoError(t, err)
+
+		var (
+			wg sync.WaitGroup
+			mu sync.Mutex
+		)
+		successCount := 0
 		const goroutines = 3
-		results := make(chan error, goroutines)
+
 		for i := 0; i < goroutines; i++ {
+			wg.Add(1)
 			go func() {
-				err := authService.VerifyEmail(ctx, verifyToken)
-				results <- err
+				defer wg.Done()
+				if err := authService.VerifyEmail(ctx, verifyToken); err == nil {
+					mu.Lock()
+					successCount++
+					mu.Unlock()
+				}
 			}()
 		}
 
-		// 收集并验证结果
-		var successCount int
-		for i := 0; i < goroutines; i++ {
-			if err := <-results; err == nil {
-				successCount++
-			}
-		}
-
-		// 确保只有一次验证成功
+		wg.Wait()
 		assert.Equal(t, 1, successCount)
 
 		// 验证最终状态
-		updatedUser, err := authService.GetUserByID(ctx, user.ID.Hex())
+		var updatedUser struct {
+			Status struct {
+				EmailVerified bool `bson:"emailVerified"`
+			} `bson:"status"`
+		}
+		err = db.Collection("users").FindOne(ctx, bson.M{"_id": user.ID}).Decode(&updatedUser)
 		require.NoError(t, err)
 		assert.True(t, updatedUser.Status.EmailVerified)
 	})
+}
+
+// 为了确保测试数据的可靠性，添加数据验证函数
+func validateTestData(t *testing.T, db *mongo.Database) {
+	ctx := context.Background()
+
+	// 验证已验证用户
+	var verifiedUser struct {
+		Status struct {
+			EmailVerified bool `bson:"emailVerified"`
+		} `bson:"status"`
+		Password string `bson:"password"`
+	}
+	err := db.Collection("users").FindOne(
+		ctx,
+		bson.M{"email": "verified@example.com"},
+	).Decode(&verifiedUser)
+
+	require.NoError(t, err)
+	assert.True(t, verifiedUser.Status.EmailVerified)
+	assert.Equal(t,
+		"$2a$10$NWY9SqxvWeYkPFn0R4PCu.DTF5lHcqyof.mKPHqY4TkGJRIA4O0Iy",
+		verifiedUser.Password,
+	)
+
+	// 验证 OAuth 用户
+	var oauthUser struct {
+		OAuth struct {
+			Google struct {
+				ID string `bson:"id"`
+			} `bson:"google"`
+		} `bson:"oauth"`
+	}
+	err = db.Collection("users").FindOne(
+		ctx,
+		bson.M{"email": "oauth@example.com"},
+	).Decode(&oauthUser)
+
+	require.NoError(t, err)
+	assert.Equal(t, "google_123456", oauthUser.OAuth.Google.ID)
+}
+
+// 在主测试函数开始时调用验证
+//func TestMain(m *testing.M) {
+//	db, err := testutil.NewTestDB()
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	// 初始化并验证测试数据
+//	err = testutil.InitTestData(context.Background(), db)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	validateTestData(testing.T{}, db)
+//
+//	os.Exit(m.Run())
+//}
+
+// 验证测试数据初始化
+func validateTestSetup(t *testing.T, db *mongo.Database) {
+	ctx := context.Background()
+
+	// 查询并打印验证用户的完整信息
+	var verifiedUser bson.M
+	err := db.Collection("users").FindOne(ctx, bson.M{
+		"email": "verified@example.com",
+	}).Decode(&verifiedUser)
+	require.NoError(t, err)
+
+	// 打印完整的用户信息
+	t.Logf("Verified user data: %+v", verifiedUser)
+
+	// 特别检查密码字段
+	password, ok := verifiedUser["password"].(string)
+	require.True(t, ok, "Password field not found or not string")
+	t.Logf("Stored password hash: %s", password)
+
+	// 验证密码hash是否能正确验证
+	err = bcrypt.CompareHashAndPassword([]byte(password), []byte("password123"))
+	require.NoError(t, err, "Password hash verification failed")
+}
+
+func TestPasswordHash(t *testing.T) {
+	// 1. 测试预定义的hash
+	expectedHash := "$2a$10$NWY9SqxvWeYkPFn0R4PCu.DTF5lHcqyof.mKPHqY4TkGJRIA4O0Iy"
+	rawPassword := "password123"
+
+	t.Logf("测试预定义hash验证:")
+	t.Logf("密码: %s", rawPassword)
+	t.Logf("Hash: %s", expectedHash)
+
+	// 验证预定义hash
+	err := bcrypt.CompareHashAndPassword([]byte(expectedHash), []byte(rawPassword))
+	require.NoError(t, err, "预定义hash验证失败")
+
+	// 2. 测试新生成的hash
+	t.Logf("\n测试新生成hash:")
+	hash, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
+	require.NoError(t, err)
+	t.Logf("密码: %s", rawPassword)
+	t.Logf("新Hash: %s", string(hash))
+
+	// 验证新生成的hash
+	err = bcrypt.CompareHashAndPassword(hash, []byte(rawPassword))
+	require.NoError(t, err, "新生成hash验证失败")
 }

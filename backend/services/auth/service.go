@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"time"
 )
 
@@ -38,12 +39,14 @@ func NewService(
 func (s *service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.LoginResponse, error) {
 	var user *models.User
 	var err error
+	var provider string
 
 	switch req.LoginType {
 	case auth.EmailLogin:
 		user, err = s.handleEmailLogin(ctx, req)
 	case auth.GoogleLogin:
 		user, err = s.handleGoogleLogin(ctx, req)
+		provider = "google" // 设置provider
 	default:
 		return nil, errors.NewAppError(errors.BadRequest, "Unsupported login type")
 	}
@@ -67,6 +70,7 @@ func (s *service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.Logi
 		Username:       user.Username,
 		CreatedAt:      user.CreatedAt,
 		OAuthConnected: user.OAuth != nil && user.OAuth.Google != nil && user.OAuth.Google.Connected,
+		OAuthProvider:  provider,
 	}, nil
 }
 
@@ -90,12 +94,14 @@ func (s *service) handleGoogleLogin(ctx context.Context, req *auth.LoginRequest)
 
 	token, err := s.oauthProvider.ExchangeCode(ctx, req.Code)
 	if err != nil {
-		return nil, errors.NewAppError(errors.InternalError, "Failed to exchange OAuth code")
+		// 直接返回来自OAuth Provider的错误
+		return nil, err
 	}
 
 	userInfo, err := s.oauthProvider.GetUserInfo(ctx, token)
 	if err != nil {
-		return nil, errors.NewAppError(errors.InternalError, "Failed to get user info")
+		// 直接返回来自OAuth Provider的错误
+		return nil, err
 	}
 
 	return s.findOrCreateGoogleUser(ctx, userInfo)
@@ -105,6 +111,7 @@ func (s *service) ValidateEmailPassword(ctx context.Context, email, password str
 	user, err := s.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.GetErrorCode(err) == errors.NotFound {
+			log.Printf("User not found: %v", err)
 			// 用户不存在时延迟返回，防止时间泄露
 			time.Sleep(100 * time.Millisecond)
 			return nil, errors.NewAppError(errors.Unauthorized, "邮箱或密码错误")
@@ -120,6 +127,7 @@ func (s *service) ValidateEmailPassword(ctx context.Context, email, password str
 	// 检查账户锁定状态
 	if user.Status.IsLocked {
 		if user.Status.LockExpires.After(time.Now()) {
+			log.Printf("Account is locked until: %v", user.Status.LockExpires)
 			return nil, errors.NewAppError(errors.Forbidden,
 				"账户已锁定，请在 "+user.Status.LockExpires.Sub(time.Now()).String()+" 后重试")
 		}
@@ -140,8 +148,13 @@ func (s *service) ValidateEmailPassword(ctx context.Context, email, password str
 		}
 	}
 
+	log.Printf("Attempting password verification:")
+	log.Printf("Stored hash: %s", user.Password)
+	log.Printf("Input password: %s", password)
+
 	// 验证密码
 	if !CheckPasswordHash(password, user.Password) {
+		log.Printf("Password verification failed")
 		// 更新登录失败次数
 		failedAttempts := user.Stats.FailedLoginAttempts + 1
 		update := bson.M{
@@ -177,6 +190,7 @@ func (s *service) ValidateEmailPassword(ctx context.Context, email, password str
 		return nil, errors.NewAppError(errors.InternalError, "更新用户状态失败")
 	}
 
+	log.Printf("Password verification successful")
 	return user, nil
 }
 
@@ -186,11 +200,6 @@ func (s *service) HandleOAuthLogin(ctx context.Context, userInfo *auth.OAuthUser
 		return nil, err
 	}
 
-	//accessToken, refreshToken, err := s.tokenGen.GenerateTokenPair(
-	//	user.ID.Hex(),
-	//	user.Role.Type,
-	//	"oauth_"+user.ID.Hex(),
-	//)
 	deviceID := "oauth_device_" + user.ID.Hex()
 
 	accessToken, refreshToken, err := s.tokenGen.GenerateTokenPair(
@@ -212,22 +221,34 @@ func (s *service) HandleOAuthLogin(ctx context.Context, userInfo *auth.OAuthUser
 		Username:       user.Username,
 		CreatedAt:      user.CreatedAt,
 		OAuthConnected: true,
-		OAuthProvider:  "google",
+		OAuthProvider:  "google", // 确保总是设置为google
 	}, nil
 }
 
 func (s *service) findOrCreateGoogleUser(ctx context.Context, userInfo *auth.OAuthUserInfo) (*models.User, error) {
+	// 首先检查是否存在使用该Google ID的用户
 	user, err := s.findUserByGoogleID(ctx, userInfo.ID)
 	if err == nil {
+		// 已找到用户，返回更新后的用户信息
 		return s.updateGoogleUser(ctx, user, userInfo)
 	}
 
-	user, err = s.GetUserByEmail(ctx, userInfo.Email)
+	// 检查邮箱是否已被使用
+	existingUser, err := s.GetUserByEmail(ctx, userInfo.Email)
 	if err == nil {
-		return s.linkGoogleAccount(ctx, user, userInfo)
+		// 邮箱已存在，检查是否已经绑定了Google账号
+		if existingUser.OAuth != nil && existingUser.OAuth.Google != nil {
+			return nil, errors.NewAppError(errors.BadRequest, "Email already linked to another Google account")
+		}
+		return s.linkGoogleAccount(ctx, existingUser, userInfo)
 	}
 
-	return s.createGoogleUser(ctx, userInfo)
+	// 如果找不到用户，创建新用户
+	if errors.GetErrorCode(err) == errors.NotFound {
+		return s.createGoogleUser(ctx, userInfo)
+	}
+
+	return nil, err
 }
 
 func (s *service) findUserByGoogleID(ctx context.Context, googleID string) (*models.User, error) {
@@ -503,6 +524,15 @@ func generateSecureToken() string {
 }
 
 func CheckPasswordHash(password, hash string) bool {
+	log.Printf("Comparing password with hash:")
+	log.Printf("Password: %s", password)
+	log.Printf("Hash: %s", hash)
+
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	if err != nil {
+		log.Printf("Password comparison failed: %v", err)
+		return false
+	}
+	log.Printf("Password comparison successful")
+	return true
 }
