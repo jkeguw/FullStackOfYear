@@ -20,12 +20,13 @@ type Status struct {
 }
 
 type UserStats struct {
-	ReviewCount int       `bson:"reviewCount" json:"reviewCount"`
-	TotalWords  int       `bson:"totalWords" json:"totalWords"`
-	Violations  int       `bson:"violations" json:"violations"`
-	CreatedAt   time.Time `bson:"createdAt" json:"createdAt"`
-	LastLoginAt time.Time `bson:"lastLoginAt" json:"lastLoginAt"`
-	LastLoginIP string    `bson:"lastLoginIP,omitempty" json:"lastLoginIP,omitempty"`
+	ReviewCount         int       `bson:"reviewCount" json:"reviewCount"`
+	TotalWords          int       `bson:"totalWords" json:"totalWords"`
+	Violations          int       `bson:"violations" json:"violations"`
+	FailedLoginAttempts int       `bson:"failedLoginAttempts"`
+	CreatedAt           time.Time `bson:"createdAt" json:"createdAt"`
+	LastLoginAt         time.Time `bson:"lastLoginAt" json:"lastLoginAt"`
+	LastLoginIP         string    `bson:"lastLoginIP,omitempty" json:"lastLoginIP,omitempty"`
 }
 
 type ReviewerApplication struct {

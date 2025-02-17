@@ -233,6 +233,7 @@ func createCollections(ctx context.Context, db *mongo.Database) error {
 						"reviewCount",
 						"totalWords",
 						"violations",
+						"failedLoginAttempts",
 						"createdAt",
 						"lastLoginAt",
 					},
@@ -251,6 +252,10 @@ func createCollections(ctx context.Context, db *mongo.Database) error {
 						},
 						"lastLoginAt": bson.M{
 							"bsonType": "date",
+						},
+						"failedLoginAttempts": bson.M{
+							"bsonType": "int",
+							"minimum":  0,
 						},
 					},
 				},
