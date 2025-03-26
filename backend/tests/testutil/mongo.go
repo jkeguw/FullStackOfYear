@@ -17,6 +17,14 @@ type TestUser struct {
 	Password string
 	Username string
 	Role     string
+	OAuth    *struct {
+		Google *struct {
+			ID          string
+			Email       string
+			Connected   bool
+			ConnectedAt time.Time
+		}
+	}
 }
 
 var (
@@ -25,14 +33,14 @@ var (
 		"verified": {
 			ID:       primitive.NewObjectID(),
 			Email:    "verified@example.com",
-			Password: "$2a$10$7juGndSkFAhhd/J8gmRBBOidUg69fbusoY8lQnLc4hqUXlvvkfz5G", // "password123"
+			Password: "$2a$10$IjS3xNRCck7l/janDNNvHedxMfGmLitY6tG7xbDV7kXcOxoAtf1u2", // "password123"
 			Username: "verified_user",
 			Role:     "user",
 		},
 		"unverified": {
 			ID:       primitive.NewObjectID(),
 			Email:    "unverified@example.com",
-			Password: "$2a$10$7juGndSkFAhhd/J8gmRBBOidUg69fbusoY8lQnLc4hqUXlvvkfz5G",
+			Password: "$2a$10$IjS3xNRCck7l/janDNNvHedxMfGmLitY6tG7xbDV7kXcOxoAtf1u2",
 			Username: "unverified_user",
 			Role:     "user",
 		},
@@ -48,6 +56,26 @@ var (
 			Email:    "oauth@example.com",
 			Username: "oauth_user",
 			Role:     "user",
+			OAuth: &struct {
+				Google *struct {
+					ID          string
+					Email       string
+					Connected   bool
+					ConnectedAt time.Time
+				}
+			}{
+				Google: &struct {
+					ID          string
+					Email       string
+					Connected   bool
+					ConnectedAt time.Time
+				}{
+					ID:          "google_123456",
+					Email:       "oauth@example.com",
+					Connected:   true,
+					ConnectedAt: time.Now(),
+				},
+			},
 		},
 		"admin": {
 			ID:       primitive.NewObjectID(),

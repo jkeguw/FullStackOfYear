@@ -6,6 +6,7 @@ import (
 	"FullStackOfYear/backend/internal/database"
 	"FullStackOfYear/backend/services/auth"
 	"FullStackOfYear/backend/services/email"
+	"FullStackOfYear/backend/services/measurement" // 新增
 	"FullStackOfYear/backend/services/oauth"
 	"FullStackOfYear/backend/services/token"
 	"context"
@@ -15,13 +16,13 @@ import (
 	"log"
 )
 
-func initServices(cfg *config.Config, logger *zap.Logger) (auth.Service, *email.Service, error) {
+func initServices(cfg *config.Config, logger *zap.Logger) (auth.Service, *email.Service, measurement.Service, error) {
 	if err := database.InitMongoDB(context.Background()); err != nil {
-		return nil, nil, fmt.Errorf("failed to init mongodb: %v", err)
+		return nil, nil, nil, fmt.Errorf("failed to init mongodb: %v", err)
 	}
 
 	if err := database.InitRedis(); err != nil {
-		return nil, nil, fmt.Errorf("failed to init redis: %v", err)
+		return nil, nil, nil, fmt.Errorf("failed to init redis: %v", err)
 	}
 
 	emailCfg := &email.Config{
@@ -43,7 +44,7 @@ func initServices(cfg *config.Config, logger *zap.Logger) (auth.Service, *email.
 
 	emailService, err := email.NewEmailService(emailCfg, logger)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to init email service: %v", err)
+		return nil, nil, nil, fmt.Errorf("failed to init email service: %v", err)
 	}
 
 	tokenManager := token.NewManager(database.RedisClient)
@@ -61,7 +62,10 @@ func initServices(cfg *config.Config, logger *zap.Logger) (auth.Service, *email.
 		googleProvider,
 	)
 
-	return authService, emailService, nil
+	// 初始化测量服务
+	measurementService := measurement.New(database.MongoClient.Database(cfg.MongoDB.Database))
+
+	return authService, emailService, measurementService, nil
 }
 
 func main() {
@@ -69,14 +73,16 @@ func main() {
 		log.Fatal("Failed to init config:", err)
 	}
 
-	authService, emailService, err := initServices(config.Cfg, config.Logger)
+	authService, emailService, measurementService, err := initServices(config.Cfg, config.Logger)
 	if err != nil {
 		log.Fatal("Failed to init services:", err)
 	}
 
 	router := gin.Default()
 	apiV1 := router.Group("/api/v1")
-	v1.NewRouter(authService, emailService).RegisterRoutes(apiV1)
+
+	// 传递三个服务到NewRouter
+	v1.NewRouter(authService, emailService, measurementService).RegisterRoutes(apiV1)
 
 	if err := router.Run(config.Cfg.Server.Port); err != nil {
 		log.Fatal("Failed to start server:", err)

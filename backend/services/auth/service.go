@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"time"
@@ -377,52 +378,38 @@ func (s *service) SendVerificationEmail(ctx context.Context, userID string) erro
 	return s.emailSender.SendVerificationEmail(user.Email, user.Username, verifyToken)
 }
 
-func (s *service) VerifyEmail(ctx context.Context, encodedToken string) error {
-	// 解码token
-	tokenBytes, err := base64.URLEncoding.DecodeString(encodedToken)
-	if err != nil {
-		return errors.NewAppError(errors.BadRequest, "无效的验证链接")
+func (s *service) VerifyEmail(ctx context.Context, verifyToken string) error {
+	// 添加乐观锁
+	update := bson.M{
+		"$set": bson.M{
+			"status.emailVerified": true,
+			"status.verifyToken":   "",
+			"status.tokenExpires":  time.Time{},
+		},
 	}
-	verifyToken := string(tokenBytes)
 
-	// 使用事务确保原子性
-	session, err := s.users.Database().Client().StartSession()
-	if err != nil {
-		return errors.NewAppError(errors.InternalError, "数据库会话创建失败")
+	// 使用 FindOneAndUpdate 确保原子性
+	result := s.users.FindOneAndUpdate(
+		ctx,
+		bson.M{
+			"status.verifyToken": verifyToken,
+			"status.tokenExpires": bson.M{
+				"$gt": time.Now(),
+			},
+			"status.emailVerified": false, // 添加条件：邮箱未验证
+		},
+		update,
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			return errors.NewAppError(errors.BadRequest, "验证链接无效或已过期")
+		}
+		return errors.NewAppError(errors.InternalError, "验证邮箱失败")
 	}
-	defer session.EndSession(ctx)
 
-	_, err = session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
-		update := bson.M{
-			"$set": bson.M{
-				"status.emailVerified": true,
-				"status.verifyToken":   "",
-				"status.tokenExpires":  time.Time{},
-			},
-		}
-
-		result := s.users.FindOneAndUpdate(
-			sessCtx,
-			bson.M{
-				"status.verifyToken": verifyToken,
-				"status.tokenExpires": bson.M{
-					"$gt": time.Now(),
-				},
-			},
-			update,
-		)
-
-		if result.Err() != nil {
-			if result.Err() == mongo.ErrNoDocuments {
-				return nil, errors.NewAppError(errors.BadRequest, "验证链接无效或已过期")
-			}
-			return nil, errors.NewAppError(errors.InternalError, "验证邮箱失败")
-		}
-
-		return nil, nil
-	})
-
-	return err
+	return nil
 }
 
 func (s *service) GenerateTokenPair(ctx context.Context, userID, role, deviceID string) (string, string, error) {

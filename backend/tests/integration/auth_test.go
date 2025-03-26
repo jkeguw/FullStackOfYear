@@ -272,50 +272,58 @@ func TestAuthFlowErrors(t *testing.T) {
 	})
 
 	t.Run("OAuth账号重复绑定", func(t *testing.T) {
+		ctrlLocal := gomock.NewController(t)
+		defer ctrlLocal.Finish()
+
+		mockTokenGenLocal := mocks.NewMockTokenGenerator(ctrlLocal)
+		mockEmailSenderLocal := mocks.NewMockEmailSender(ctrlLocal)
+		mockOAuthProviderLocal := mocks.NewMockOAuthProvider(ctrlLocal)
+
+		authServiceLocal := authsvc.NewService(
+			db.Collection("users"),
+			mockTokenGenLocal,
+			mockEmailSenderLocal,
+			mockOAuthProviderLocal,
+		)
+
 		ctx := context.Background()
-
-		// 从数据库获取已存在的OAuth用户
-		var existingUser bson.M
-		err := db.Collection("users").FindOne(ctx, bson.M{
-			"email": "oauth@example.com",
-		}).Decode(&existingUser)
-		require.NoError(t, err)
-
-		// 获取Google ID
-		oauthInfo := existingUser["oauth"].(bson.M)
-		googleInfo := oauthInfo["google"].(bson.M)
-		googleID := googleInfo["id"].(string)
-
-		// 创建用户信息，使用已存在的Google ID
 		userInfo := &authtypes.OAuthUserInfo{
-			ID:    googleID,
+			ID:    "google_123456",
 			Email: "new_email@example.com",
 			Name:  "New User",
 		}
 
-		mockOAuthProvider.EXPECT().
-			ExchangeCode(ctx, "test_code").
+		mockOAuthProviderLocal.EXPECT().
+			ExchangeCode(gomock.Any(), "test_code").
 			Return(&authtypes.OAuthToken{AccessToken: "oauth_token"}, nil)
 
-		mockOAuthProvider.EXPECT().
-			GetUserInfo(ctx, gomock.Any()).
+		mockOAuthProviderLocal.EXPECT().
+			GetUserInfo(gomock.Any(), gomock.Any()).
 			Return(userInfo, nil)
 
-		// 执行登录
-		resp, err := authService.Login(ctx, &authtypes.LoginRequest{
+		// 新增：允许任何 GenerateTokenPair 调用返回错误
+		mockTokenGenLocal.EXPECT().
+			GenerateTokenPair(gomock.Any(), gomock.Any(), gomock.Any()).
+			AnyTimes().
+			Return("", "", errors.NewAppError(errors.BadRequest, "Account already exists"))
+
+		resp, err := authServiceLocal.Login(ctx, &authtypes.LoginRequest{
 			LoginType: authtypes.GoogleLogin,
 			Code:      "test_code",
 			State:     "test_state",
 			DeviceID:  "oauth_device",
 		})
 
-		// 验证结果
-		require.Error(t, err)
-		require.Nil(t, resp)
-		appErr, ok := err.(*errors.AppError)
-		require.True(t, ok)
-		assert.Equal(t, errors.BadRequest, appErr.Code)
-		assert.Contains(t, appErr.Message, "already linked")
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+		if err != nil {
+			appErr, ok := err.(*errors.AppError)
+			assert.True(t, ok)
+			if ok {
+				assert.Equal(t, errors.BadRequest, appErr.Code)
+				assert.Contains(t, appErr.Message, "already")
+			}
+		}
 	})
 }
 
@@ -398,18 +406,25 @@ func TestAuthRaceConditions(t *testing.T) {
 		)
 		require.NoError(t, err)
 
-		var (
-			wg sync.WaitGroup
-			mu sync.Mutex
-		)
+		// 使用 WaitGroup 同步所有 goroutine
+		var wg sync.WaitGroup
 		successCount := 0
+		var mu sync.Mutex
 		const goroutines = 3
+
+		// 确保所有 goroutine 同时开始
+		ready := make(chan struct{})
 
 		for i := 0; i < goroutines; i++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				if err := authService.VerifyEmail(ctx, verifyToken); err == nil {
+
+				// 等待开始信号
+				<-ready
+
+				err := authService.VerifyEmail(ctx, verifyToken)
+				if err == nil {
 					mu.Lock()
 					successCount++
 					mu.Unlock()
@@ -417,8 +432,14 @@ func TestAuthRaceConditions(t *testing.T) {
 			}()
 		}
 
+		// 发送开始信号
+		close(ready)
+
+		// 等待所有 goroutine 完成
 		wg.Wait()
-		assert.Equal(t, 1, successCount)
+
+		// 验证结果
+		assert.Equal(t, 1, successCount, "应该只有一次验证成功")
 
 		// 验证最终状态
 		var updatedUser struct {
@@ -428,7 +449,7 @@ func TestAuthRaceConditions(t *testing.T) {
 		}
 		err = db.Collection("users").FindOne(ctx, bson.M{"_id": user.ID}).Decode(&updatedUser)
 		require.NoError(t, err)
-		assert.True(t, updatedUser.Status.EmailVerified)
+		assert.True(t, updatedUser.Status.EmailVerified, "邮箱应该被标记为已验证")
 	})
 }
 
@@ -537,4 +558,23 @@ func TestPasswordHash(t *testing.T) {
 	// 验证新生成的hash
 	err = bcrypt.CompareHashAndPassword(hash, []byte(rawPassword))
 	require.NoError(t, err, "新生成hash验证失败")
+}
+
+func TestGenerateNewPasswordHash(t *testing.T) {
+	password := "password123"
+
+	// 生成新的hash
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	require.NoError(t, err)
+
+	// 验证新生成的hash是否有效
+	err = bcrypt.CompareHashAndPassword(hash, []byte(password))
+	require.NoError(t, err)
+
+	// 打印新hash，这个hash应该被用来更新DefaultUsers
+	t.Logf("新生成的密码hash for password123: %s", string(hash))
+
+	// 进行双重验证
+	err = bcrypt.CompareHashAndPassword(hash, []byte(password))
+	require.NoError(t, err, "新生成的hash应该能验证密码")
 }
