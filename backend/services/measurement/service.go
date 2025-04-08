@@ -505,8 +505,7 @@ func (s *service) calculateAndSaveUserStats(ctx context.Context, userID primitiv
 	filter := bson.M{"userId": userID}
 	update := bson.M{"$set": stats}
 
-	_, err = s.db.Collection(models.MeasurementUserStatsCollection).UpdateOne(ctx, filter, update, opts)
-	// ... 上一部分代码继续
+	// 更新用户统计数据
 	_, err = s.db.Collection(models.MeasurementUserStatsCollection).UpdateOne(ctx, filter, update, opts)
 	if err != nil {
 		return nil, errors.NewInternalServerError("保存用户统计数据失败: " + err.Error())
