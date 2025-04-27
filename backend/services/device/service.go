@@ -21,14 +21,14 @@ type Service interface {
 	GetDeviceList(ctx context.Context, deviceType string, page, pageSize int) (*device.DeviceListResponse, error)
 	
 	// 兼容层新增方法
-	GetMouseDevice(ctx context.Context, deviceID string) (*models.MouseDevice, error)
+	GetMouseDevice(ctx context.Context, deviceID primitive.ObjectID) (*models.MouseDevice, error)
 	UpdateMouseDevice(ctx context.Context, deviceID string, request device.UpdateMouseRequest) (*models.MouseDevice, error)
 	DeleteDevice(ctx context.Context, deviceID string) error
 	ListDevices(ctx context.Context, filter device.DeviceListFilter) (*device.DeviceListResponse, error)
 	
 	// 相似度相关
-	CompareMice(ctx context.Context, mouseIDs []string) (*similarity.ComparisonResult, error)
-	FindSimilarMice(ctx context.Context, mouseID string, limit int) ([]models.MouseDevice, error)
+	CompareMice(ctx context.Context, ids []string) (*device.ComparisonResponse, error)
+	FindSimilarMice(ctx context.Context, id string, limit int) (*device.SimilarityResponse, error)
 	
 	// 用户设备相关
 	CreateUserDevice(ctx context.Context, userID string, request device.CreateUserDeviceRequest) (*models.UserDevice, error)
@@ -111,7 +111,7 @@ func (s *DefaultService) GetDeviceList(ctx context.Context, deviceType string, p
 }
 
 // GetMouseDevice 获取鼠标设备
-func (s *DefaultService) GetMouseDevice(ctx context.Context, deviceID string) (*models.MouseDevice, error) {
+func (s *DefaultService) GetMouseDevice(ctx context.Context, deviceID primitive.ObjectID) (*models.MouseDevice, error) {
 	// 空实现，仅为了满足接口
 	return nil, nil
 }
@@ -135,13 +135,13 @@ func (s *DefaultService) ListDevices(ctx context.Context, filter device.DeviceLi
 }
 
 // CompareMice 比较鼠标
-func (s *DefaultService) CompareMice(ctx context.Context, mouseIDs []string) (*similarity.ComparisonResult, error) {
+func (s *DefaultService) CompareMice(ctx context.Context, mouseIDs []string) (*device.ComparisonResponse, error) {
 	// 空实现，仅为了满足接口
 	return nil, nil
 }
 
 // FindSimilarMice 查找相似鼠标
-func (s *DefaultService) FindSimilarMice(ctx context.Context, mouseID string, limit int) ([]models.MouseDevice, error) {
+func (s *DefaultService) FindSimilarMice(ctx context.Context, mouseID string, limit int) (*device.SimilarityResponse, error) {
 	// 空实现，仅为了满足接口
 	return nil, nil
 }
@@ -705,18 +705,18 @@ func (s *ServiceImpl) GetPublicUserDevices(ctx context.Context, page, pageSize i
 
 // 为兼容性提供的方法
 // GetMouseDevice 获取鼠标设备详情
-func (s *ServiceImpl) GetMouseDevice(ctx context.Context, deviceID string) (*models.MouseDevice, error) {
-	device, err := s.GetDeviceByID(ctx, deviceID)
+func (s *ServiceImpl) GetMouseDevice(ctx context.Context, deviceID primitive.ObjectID) (*models.MouseDevice, error) {
+	// 查询设备
+	var mouseDevice models.MouseDevice
+	err := s.db.Collection(models.DevicesCollection).FindOne(ctx, bson.M{"_id": deviceID}).Decode(&mouseDevice)
 	if err != nil {
-		return nil, err
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.NewNotFoundError("未找到鼠标设备")
+		}
+		return nil, errors.NewInternalServerError("获取鼠标设备失败: " + err.Error())
 	}
 	
-	// 将基础设备转换为鼠标设备
-	mouseDevice := &models.MouseDevice{
-		HardwareDevice: *device,
-	}
-	
-	return mouseDevice, nil
+	return &mouseDevice, nil
 }
 
 // UpdateMouseDevice 更新鼠标设备
@@ -854,7 +854,3 @@ func (s *ServiceImpl) GetPendingReviews(ctx context.Context, reviewType string, 
 	// 实现待完成
 	return nil, errors.NewInternalServerError("功能待实现")
 }
-
-// 这个方法的实际实现在 similarity.go 文件中
-
-// 这个方法的实际实现在 similarity.go 文件中

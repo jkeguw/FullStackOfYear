@@ -6,6 +6,7 @@ import (
 	deviceSvc "project/backend/services/device"
 	deviceTypes "project/backend/types/device"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
@@ -49,7 +50,13 @@ func (h *Handler) CreateMouseDevice(c *gin.Context) {
 func (h *Handler) GetMouseDevice(c *gin.Context) {
 	deviceID := c.Param("id")
 
-	result, err := h.deviceService.GetMouseDevice(c.Request.Context(), deviceID)
+	objID, err := primitive.ObjectIDFromHex(deviceID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewBadRequestError("无效的设备ID"))
+		return
+	}
+
+	result, err := h.deviceService.GetMouseDevice(c.Request.Context(), objID)
 	if err != nil {
 		c.JSON(errors.HTTPStatusFromError(err), err)
 		return
