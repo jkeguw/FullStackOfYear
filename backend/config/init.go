@@ -10,21 +10,26 @@ var (
 	Logger *zap.Logger
 )
 
-func Init() error {
+// InitConfig initializes the configuration from the given path
+func InitConfig(configPath string) error {
 	var err error
 
-	if err := InitViper(); err != nil {
-		return fmt.Errorf("init viper error: %v", err)
-	}
-
 	// load config
-	Cfg, err = LoadConfig()
+	Cfg, err = LoadConfigFromPath(configPath)
 	if err != nil {
 		return fmt.Errorf("load config error: %v", err)
 	}
 
-	// init logger
-	Logger = InitLogger()
+	return nil
+}
 
+// GetConfig returns the current configuration
+func GetConfig() *Config {
+	return Cfg
+}
+
+// InitLogger initializes the logger
+func InitLogger() error {
+	Logger = CreateLogger()
 	return nil
 }

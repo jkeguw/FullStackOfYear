@@ -1,5 +1,5 @@
 server:
-  port: :8080
+  port: :8081
   readTimeout: 60s
   writeTimeout: 60s
 
@@ -43,7 +43,7 @@ email:
     username: ${SMTP_USERNAME}
     password: ${SMTP_PASSWORD}
   from: "no-reply@yourdomain.com"
-  baseUrl: "https://yourdomain.com"
+  baseUrl: "http://localhost:8081"
   templates:
     verifyEmail: "templates/email/verify.html"
     resetPassword: "templates/email/reset.html"

@@ -1,0 +1,54 @@
+{
+  "common": {
+    "success": "成功",
+    "error": "错误",
+    "not_found": "未找到",
+    "unauthorized": "未授权",
+    "bad_request": "请求错误",
+    "forbidden": "禁止访问",
+    "server_error": "服务器错误"
+  },
+  "auth": {
+    "login_success": "登录成功",
+    "logout_success": "登出成功",
+    "register_success": "注册成功",
+    "login_required": "需要登录",
+    "invalid_credentials": "邮箱或密码错误",
+    "email_taken": "邮箱已被使用",
+    "username_taken": "用户名已被使用",
+    "email_verification_sent": "验证邮件已发送",
+    "email_verified": "邮箱验证成功",
+    "email_verification_failed": "邮箱验证失败",
+    "password_reset_sent": "密码重置说明已发送到您的邮箱",
+    "password_reset_success": "密码重置成功",
+    "password_reset_failed": "密码重置失败",
+    "token_expired": "令牌已过期",
+    "token_invalid": "无效的令牌"
+  },
+  "user": {
+    "profile_updated": "个人资料更新成功",
+    "password_changed": "密码修改成功",
+    "account_deleted": "账户删除成功"
+  },
+  "mouse": {
+    "not_found": "未找到鼠标",
+    "created": "鼠标创建成功",
+    "updated": "鼠标更新成功",
+    "deleted": "鼠标删除成功"
+  },
+  "review": {
+    "not_found": "未找到评测",
+    "created": "评测创建成功",
+    "updated": "评测更新成功",
+    "deleted": "评测删除成功",
+    "already_exists": "您已经评测过此项目"
+  },
+  "validation": {
+    "required": "{{field}}为必填项",
+    "min_length": "{{field}}必须至少包含{{min}}个字符",
+    "max_length": "{{field}}最多只能包含{{max}}个字符",
+    "email_format": "邮箱格式无效",
+    "password_match": "密码不匹配",
+    "password_requirements": "密码必须包含至少8个字符，包括大写字母、小写字母和数字"
+  }
+}

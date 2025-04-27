@@ -1,0 +1,104 @@
+package i18n
+
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"github.com/BurntSushi/toml"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"golang.org/x/text/language"
+)
+
+// Service represents the i18n service
+type Service struct {
+	bundle *i18n.Bundle
+}
+
+// Config i18n配置
+type Config struct {
+	LocalesDir    string
+	DefaultLocale string
+}
+
+// NewService creates a new i18n service
+func NewService(config Config) (Service, error) {
+	bundle := i18n.NewBundle(language.English)
+	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
+	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+
+	// 加载语言文件
+	enFile := config.LocalesDir + "/en-US.json"
+	zhFile := config.LocalesDir + "/zh-CN.json"
+	
+	// 加载英文
+	_, err := bundle.LoadMessageFile(enFile)
+	if err != nil {
+		return Service{}, fmt.Errorf("failed to load English messages: %w", err)
+	}
+	
+	// 加载中文
+	_, err = bundle.LoadMessageFile(zhFile)
+	if err != nil {
+		return Service{}, fmt.Errorf("failed to load Chinese messages: %w", err)
+	}
+
+	return Service{bundle: bundle}, nil
+}
+
+// T translates a message with the given language and template data
+func (s *Service) T(lang, messageID string, templateData map[string]interface{}) string {
+	if s.bundle == nil {
+		return messageID
+	}
+
+	// If language is empty, default to English
+	if lang == "" {
+		lang = "en"
+	}
+
+	// Create a localizer
+	localizer := i18n.NewLocalizer(s.bundle, lang)
+
+	// Localize the message
+	msg, err := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID:    messageID,
+		TemplateData: templateData,
+	})
+
+	if err != nil {
+		// Return message ID if translation not found
+		return messageID
+	}
+
+	return msg
+}
+
+// ParseAcceptLanguage parses the Accept-Language header
+// Returns the first preferred language or default language "en"
+func ParseAcceptLanguage(acceptLanguage string) string {
+	if acceptLanguage == "" {
+		return "en"
+	}
+
+	// Parse the accept-language header
+	tags, _, err := language.ParseAcceptLanguage(acceptLanguage)
+	if err != nil || len(tags) == 0 {
+		return "en"
+	}
+
+	// Get the base language from the first tag
+	lang := tags[0].String()
+	
+	// Extract only the language part (en-US -> en, zh-CN -> zh)
+	if strings.Contains(lang, "-") {
+		lang = strings.Split(lang, "-")[0]
+	}
+
+	// Currently we only support en and zh
+	if lang != "en" && lang != "zh" {
+		return "en"
+	}
+
+	return lang
+}

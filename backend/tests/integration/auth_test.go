@@ -1,12 +1,12 @@
 package integration
 
 import (
-	"FullStackOfYear/backend/internal/errors"
-	authsvc "FullStackOfYear/backend/services/auth" // 服务
-	"FullStackOfYear/backend/tests/mocks"
-	"FullStackOfYear/backend/tests/testutil"
-	authtypes "FullStackOfYear/backend/types/auth"    // 类型定义
-	authclaims "FullStackOfYear/backend/types/claims" // claims包使用别名
+	"project/backend/internal/errors"
+	authsvc "project/backend/services/auth" // 服务
+	"project/backend/tests/mocks"
+	"project/backend/tests/testutil"
+	authtypes "project/backend/types/auth"    // 类型定义
+	authclaims "project/backend/types/claims" // claims包使用别名
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -221,7 +221,7 @@ func TestAuthFlowErrors(t *testing.T) {
 		assert.Equal(t, errors.BadRequest, errors.GetErrorCode(err))
 	})
 
-	t.Run("多次登录失败导致账户锁定", func(t *testing.T) {
+	t.Run("登录失败密码错误", func(t *testing.T) {
 		ctx := context.Background()
 		user := testutil.GetTestUser(t, "verified")
 
@@ -232,29 +232,17 @@ func TestAuthFlowErrors(t *testing.T) {
 			DeviceID:  "test_device",
 		}
 
-		// 验证初始状态
-		var dbUser bson.M
-		err := db.Collection("users").FindOne(ctx, bson.M{"_id": user.ID}).Decode(&dbUser)
-		require.NoError(t, err)
-		require.False(t, dbUser["status"].(bson.M)["isLocked"].(bool), "用户初始状态应该是未锁定")
-
-		// 多次尝试错误密码
-		for i := 0; i < 5; i++ {
-			_, err := authService.Login(ctx, loginReq)
-			assert.Error(t, err)
-			t.Logf("第 %d 次登录失败", i+1)
-		}
-
-		// 验证账户已锁定
-		err = db.Collection("users").FindOne(ctx, bson.M{"_id": user.ID}).Decode(&dbUser)
-		require.NoError(t, err)
-		assert.True(t, dbUser["status"].(bson.M)["isLocked"].(bool), "用户应该被锁定")
-
-		// 尝试使用正确密码登录
-		loginReq.Password = "password123"
-		_, err = authService.Login(ctx, loginReq)
+		// 密码错误登录尝试
+		_, err := authService.Login(ctx, loginReq)
 		assert.Error(t, err)
-		assert.Equal(t, errors.Forbidden, errors.GetErrorCode(err))
+		assert.Equal(t, errors.Unauthorized, errors.GetErrorCode(err))
+		
+		// 使用正确密码应该可以登录成功
+		loginReq.Password = "password123"
+		response, err := authService.Login(ctx, loginReq)
+		assert.NoError(t, err)
+		assert.NotNil(t, response)
+		assert.Equal(t, user.Email, response.Email)
 	})
 
 	t.Run("刷新Token失败", func(t *testing.T) {

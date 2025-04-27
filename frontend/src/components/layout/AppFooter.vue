@@ -1,11 +1,9 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
-
+  <!-- 移除底部导航栏 -->
 </template>
 
-<style scoped>
+<script setup lang="ts">
+</script>
 
+<style scoped>
 </style>

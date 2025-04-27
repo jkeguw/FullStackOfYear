@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"FullStackOfYear/backend/types/claims"
+	"project/backend/types/claims"
 	"time"
 )
 

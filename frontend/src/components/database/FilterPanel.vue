@@ -1,290 +1,235 @@
 <template>
-  <div class="filter-panel">
-    <div class="filter-header">
-      <h3 class="text-lg font-medium">筛选条件</h3>
-      <el-button 
-        v-if="hasActiveFilters" 
-        type="primary"
-        text
-        @click="clearAllFilters"
-        class="text-claude-primary-purple hover:text-claude-primary-purple-light"
-      >
-        清除全部
-      </el-button>
-    </div>
+  <div class="filter-panel bg-[#1A1A1A] border border-[#333333] rounded-lg p-4">
+    <h3 class="text-lg font-medium text-white mb-4">筛选条件</h3>
     
-    <el-divider />
-    
-    <div class="filter-groups">
-      <div 
-        v-for="filter in filters" 
-        :key="filter.id" 
-        class="filter-group"
-      >
-        <div class="filter-title">
-          <h4 class="text-base font-medium">{{ filter.label }}</h4>
-        </div>
-        
-        <!-- 复选框过滤器 -->
-        <template v-if="filter.type === 'checkbox'">
-          <el-checkbox-group 
-            v-model="activeFilters[filter.id]" 
-            @change="(val) => emitFilterChange(filter.id, val)"
+    <div class="space-y-6">
+      <!-- 搜索框 -->
+      <div>
+        <label class="block text-gray-400 text-sm font-medium mb-2">搜索名称</label>
+        <el-input 
+          v-model="searchQuery" 
+          placeholder="输入鼠标名称..." 
+          :prefix-icon="Search"
+          class="search-input"
+        />
+      </div>
+      
+      <!-- 品牌筛选 -->
+      <div>
+        <label class="block text-gray-400 text-sm font-medium mb-2">品牌</label>
+        <el-checkbox-group v-model="selectedBrands" class="filter-checkbox-group">
+          <el-checkbox 
+            v-for="brand in brands" 
+            :key="brand" 
+            :label="brand"
+            class="filter-checkbox text-gray-300"
           >
-            <div class="checkbox-list">
-              <el-checkbox 
-                v-for="option in filter.options" 
-                :key="option.value" 
-                :label="option.value"
-              >
-                {{ option.label }}
-              </el-checkbox>
-            </div>
-          </el-checkbox-group>
-        </template>
-        
-        <!-- 范围过滤器 -->
-        <template v-else-if="filter.type === 'range'">
-          <div class="range-filter">
-            <div class="range-values">
-              <span>{{ activeRanges[filter.id]?.min || filter.min }}</span>
-              <span>{{ activeRanges[filter.id]?.max || filter.max }}{{ filter.unit }}</span>
-            </div>
-            
-            <el-slider
-              v-model="activeRanges[filter.id]"
-              range
-              :min="filter.min"
-              :max="filter.max"
-              @change="(val) => emitFilterChange(filter.id, val)"
-              :button-color="'var(--claude-primary-purple)'"
-              :active-color="'var(--claude-primary-purple)'"
-            />
-          </div>
-        </template>
-        
-        <!-- 单选按钮过滤器 -->
-        <template v-else-if="filter.type === 'radio'">
-          <el-radio-group 
-            v-model="activeRadios[filter.id]" 
-            @change="(val) => emitFilterChange(filter.id, val)"
+            {{ brand }}
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
+      
+      <!-- 形状筛选 -->
+      <div>
+        <label class="block text-gray-400 text-sm font-medium mb-2">形状</label>
+        <el-checkbox-group v-model="selectedShapes" class="filter-checkbox-group">
+          <el-checkbox 
+            v-for="shape in shapes" 
+            :key="shape" 
+            :label="shape"
+            class="filter-checkbox text-gray-300"
           >
-            <div class="radio-list">
-              <el-radio 
-                v-for="option in filter.options" 
-                :key="option.value" 
-                :label="option.value"
-              >
-                {{ option.label }}
-              </el-radio>
-            </div>
-          </el-radio-group>
-        </template>
+            {{ shapeLabels[shape] || shape }}
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
+      
+      <!-- 重量范围 -->
+      <div>
+        <label class="block text-gray-400 text-sm font-medium mb-2">
+          重量范围: {{ weightRange[0] }}g - {{ weightRange[1] }}g
+        </label>
+        <el-slider
+          v-model="weightRange"
+          range
+          :min="40"
+          :max="150"
+          class="filter-slider"
+        />
+      </div>
+      
+      <!-- 连接方式 -->
+      <div>
+        <label class="block text-gray-400 text-sm font-medium mb-2">连接方式</label>
+        <el-checkbox-group v-model="selectedConnections" class="filter-checkbox-group">
+          <el-checkbox 
+            v-for="conn in connections" 
+            :key="conn" 
+            :label="conn"
+            class="filter-checkbox text-gray-300"
+          >
+            {{ connectionLabels[conn] || conn }}
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
+      
+      <!-- 按钮数量范围 -->
+      <div>
+        <label class="block text-gray-400 text-sm font-medium mb-2">
+          按钮数量: {{ buttonRange[0] }} - {{ buttonRange[1] }}
+        </label>
+        <el-slider
+          v-model="buttonRange"
+          range
+          :min="2"
+          :max="20"
+          :step="1"
+          class="filter-slider"
+        />
+      </div>
+      
+      <!-- 操作按钮 -->
+      <div class="flex justify-between mt-6">
+        <el-button 
+          @click="resetFilters" 
+          :icon="RefreshRight"
+          class="dark-button"
+        >
+          重置筛选
+        </el-button>
+        <el-button 
+          type="primary" 
+          @click="applyFilters"
+          :icon="Filter"
+        >
+          应用筛选
+        </el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, defineProps, defineEmits } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ref, reactive, watch } from 'vue'
+import { Search, RefreshRight, Filter } from '@element-plus/icons-vue'
 
-interface FilterOption {
-  label: string;
-  value: string | number;
+// 品牌列表
+const brands = [
+  'Logitech', 'Razer', 'SteelSeries', 'Zowie', 'Glorious', 
+  'Vaxee', 'Pulsar', 'Cooler Master', 'HyperX', 'Endgame Gear'
+]
+
+// 鼠标形状
+const shapes = ['ergo', 'ambi', 'symmetrical']
+const shapeLabels = {
+  'ergo': '人体工学',
+  'ambi': '双手通用',
+  'symmetrical': '对称'
 }
 
-interface CheckboxFilter {
-  id: string;
-  label: string;
-  type: 'checkbox';
-  options: FilterOption[];
+// 连接方式
+const connections = ['wired', 'wireless', 'hybrid']
+const connectionLabels = {
+  'wired': '有线',
+  'wireless': '无线',
+  'hybrid': '双模'
 }
 
-interface RadioFilter {
-  id: string;
-  label: string;
-  type: 'radio';
-  options: FilterOption[];
+// 筛选状态
+const searchQuery = ref('')
+const selectedBrands = ref([])
+const selectedShapes = ref([])
+const weightRange = ref([40, 150])
+const defaultWeightRange = [40, 150]
+const selectedConnections = ref([])
+const buttonRange = ref([2, 20])
+const defaultButtonRange = [2, 20]
+
+// 重置筛选
+const resetFilters = () => {
+  searchQuery.value = ''
+  selectedBrands.value = []
+  selectedShapes.value = []
+  weightRange.value = [...defaultWeightRange]
+  selectedConnections.value = []
+  buttonRange.value = [...defaultButtonRange]
+  
+  // 发出事件通知父组件筛选已重置
+  emits('reset-filters')
 }
 
-interface RangeFilter {
-  id: string;
-  label: string;
-  type: 'range';
-  min: number;
-  max: number;
-  unit?: string;
-}
-
-type Filter = CheckboxFilter | RadioFilter | RangeFilter;
-
-const props = defineProps<{
-  filters: Filter[];
-  appliedFilters?: Record<string, any>;
-}>();
-
-const emit = defineEmits<{
-  (e: 'filter-change', filterId: string, value: any): void;
-}>();
-
-// 本地状态
-const activeFilters = ref<Record<string, string[]>>({});
-const activeRanges = ref<Record<string, { min: number; max: number }>>({});
-const activeRadios = ref<Record<string, string | number>>({});
-
-// 初始化过滤器状态
-function initializeFilters() {
-  if (props.appliedFilters) {
-    for (const [key, value] of Object.entries(props.appliedFilters)) {
-      const filter = props.filters.find(f => f.id === key);
-      
-      if (!filter) continue;
-      
-      if (filter.type === 'checkbox') {
-        activeFilters.value[key] = Array.isArray(value) ? value : [];
-      } else if (filter.type === 'range') {
-        activeRanges.value[key] = typeof value === 'object' ? value : { min: filter.min, max: filter.max };
-      } else if (filter.type === 'radio') {
-        activeRadios.value[key] = value;
-      }
-    }
+// 应用筛选
+const applyFilters = () => {
+  const filters = {
+    query: searchQuery.value,
+    brands: selectedBrands.value,
+    shapes: selectedShapes.value,
+    weight: weightRange.value,
+    connections: selectedConnections.value,
+    buttons: buttonRange.value
   }
   
-  // 为空的过滤器初始化默认值
-  props.filters.forEach(filter => {
-    if (filter.type === 'checkbox' && !activeFilters.value[filter.id]) {
-      activeFilters.value[filter.id] = [];
-    } else if (filter.type === 'range' && !activeRanges.value[filter.id]) {
-      activeRanges.value[filter.id] = { min: filter.min, max: filter.max };
-    }
-  });
+  // 发出筛选事件
+  emits('apply-filters', filters)
 }
 
-// 监听过滤器变化和重置
-watch(() => props.filters, () => {
-  initializeFilters();
-}, { immediate: true });
+// 定义组件事件
+const emits = defineEmits(['apply-filters', 'reset-filters'])
 
-watch(() => props.appliedFilters, (newFilters) => {
-  if (newFilters) {
-    initializeFilters();
-  }
-}, { deep: true });
-
-// 清除所有过滤器
-function clearAllFilters() {
-  activeFilters.value = {};
-  activeRanges.value = {};
-  activeRadios.value = {};
-  
-  props.filters.forEach(filter => {
-    if (filter.type === 'checkbox') {
-      activeFilters.value[filter.id] = [];
-      emit('filter-change', filter.id, []);
-    } else if (filter.type === 'range') {
-      activeRanges.value[filter.id] = { min: filter.min, max: filter.max };
-      emit('filter-change', filter.id, { min: filter.min, max: filter.max });
-    } else if (filter.type === 'radio') {
-      activeRadios.value[filter.id] = '';
-      emit('filter-change', filter.id, '');
-    }
-  });
-  
-  // 添加清除按钮动效
-  ElMessage({
-    message: '已清除所有筛选条件',
-    type: 'success',
-    duration: 2000
-  });
-}
-
-// 发射过滤器变化事件
-function emitFilterChange(filterId: string, value: any) {
-  emit('filter-change', filterId, value);
-}
-
-// 计算是否有激活的过滤器
-const hasActiveFilters = computed(() => {
-  // 检查复选框过滤器
-  for (const [_, value] of Object.entries(activeFilters.value)) {
-    if (Array.isArray(value) && value.length > 0) {
-      return true;
-    }
-  }
-  
-  // 检查范围过滤器
-  for (const [filterId, value] of Object.entries(activeRanges.value)) {
-    const filter = props.filters.find(f => f.id === filterId && f.type === 'range') as RangeFilter | undefined;
-    if (filter && (value.min > filter.min || value.max < filter.max)) {
-      return true;
-    }
-  }
-  
-  // 检查单选按钮过滤器
-  for (const [_, value] of Object.entries(activeRadios.value)) {
-    if (value) {
-      return true;
-    }
-  }
-  
-  return false;
-});
-
-// 初始化
-initializeFilters();
+// 监听筛选条件变化，实时更新
+watch([searchQuery, selectedBrands, selectedShapes, weightRange, selectedConnections, buttonRange], () => {
+  // 自动应用筛选，可以根据需要取消注释
+  // applyFilters()
+})
 </script>
 
 <style scoped>
 .filter-panel {
-  width: 100%;
   background-color: var(--claude-bg-medium);
-  border-radius: var(--el-border-radius-base);
-  border: 1px solid var(--claude-border-dark);
 }
 
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--claude-text-white);
-}
-
-.filter-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.filter-group {
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--claude-border-dark);
-}
-
-.filter-group:last-child {
-  border-bottom: none;
-}
-
-.filter-title {
-  margin-bottom: 0.75rem;
-  color: var(--claude-primary-purple-light);
-}
-
-.checkbox-list, .radio-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.range-filter {
-  padding: 0 0.5rem;
-}
-
-.range-values {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
+.search-input :deep(.el-input__inner) {
+  background-color: var(--claude-bg-light);
+  border-color: var(--claude-border-light);
   color: var(--claude-text-light);
+}
+
+.filter-checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.filter-checkbox :deep(.el-checkbox__label) {
+  color: var(--claude-text-light);
+}
+
+.filter-checkbox :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  background-color: var(--claude-primary-purple);
+  border-color: var(--claude-primary-purple);
+}
+
+.filter-slider :deep(.el-slider__runway) {
+  background-color: var(--claude-border-light);
+}
+
+.filter-slider :deep(.el-slider__bar) {
+  background-color: var(--claude-primary-purple);
+}
+
+.filter-slider :deep(.el-slider__button) {
+  border-color: var(--claude-primary-purple);
+  background-color: var(--claude-primary-purple);
+}
+
+.dark-button {
+  color: var(--claude-text-light);
+  background-color: var(--claude-bg-light);
+  border-color: var(--claude-border-light);
+}
+
+.dark-button:hover {
+  background-color: var(--claude-bg-medium);
+  border-color: var(--claude-border-dark);
 }
 </style>

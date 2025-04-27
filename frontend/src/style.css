@@ -1,79 +1,252 @@
+/* 全局样式 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  /* Claude.ai 黑夜模式配色 */
+  --claude-bg-darkest: #0B0D0E;
+  --claude-bg-dark: #111416;
+  --claude-bg-medium: #1D2023;
+  --claude-bg-light: #2A2D31;
+  --claude-text-white: #F9FAFB;
+  --claude-text-light: #E5E7EB;
+  --claude-text-muted: #9CA3AF;
+  --claude-text-disabled: #6B7280;
+  --claude-border-dark: #374151;
+  --claude-border-light: #4B5563;
+  --claude-primary-purple: #7D5AF3;
+  --claude-primary-purple-light: #9B86F4;
+  --claude-primary-purple-dark: #6342DD;
+  --claude-focus-ring: rgba(125, 90, 243, 0.6);
+  
+  /* 旧变量映射到新主题 */
+  --primary-color: var(--claude-primary-purple);
+  --secondary-color: var(--claude-primary-purple-light);
+  --accent-color: var(--claude-primary-purple);
+  --warning-color: #F59E0B;
+  --error-color: #EF4444;
+  --success-color: #10B981;
+  --info-color: #3B82F6;
+  --background-color: var(--claude-bg-dark);
+  --text-color: var(--claude-text-white);
+  --text-light-color: var(--claude-text-light);
+  --border-color: var(--claude-border-dark);
+  --card-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
+  
+  /* 覆盖Element Plus变量 */
+  --el-color-primary: var(--claude-primary-purple);
+  --el-color-primary-light-3: var(--claude-primary-purple-light);
+  --el-color-primary-light-5: color-mix(in srgb, var(--claude-primary-purple) 60%, white);
+  --el-color-primary-light-7: color-mix(in srgb, var(--claude-primary-purple) 40%, white);
+  --el-color-primary-light-8: color-mix(in srgb, var(--claude-primary-purple) 30%, white);
+  --el-color-primary-light-9: color-mix(in srgb, var(--claude-primary-purple) 20%, white);
+  --el-color-primary-dark-2: var(--claude-primary-purple-dark);
+  
+  --el-text-color-primary: var(--claude-text-white);
+  --el-text-color-regular: var(--claude-text-light);
+  --el-text-color-secondary: var(--claude-text-muted);
+  --el-text-color-placeholder: var(--claude-text-disabled);
+  --el-text-color-disabled: var(--claude-text-disabled);
+  
+  --el-border-color: var(--claude-border-dark);
+  --el-border-color-light: var(--claude-border-light);
+  --el-border-color-lighter: var(--claude-border-dark);
+  
+  --el-bg-color: var(--claude-bg-medium);
+  --el-bg-color-page: var(--claude-bg-dark);
+  
+  /* 边框圆角 */
+  --el-border-radius-base: 6px;
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 20px;
+  --el-border-radius-circle: 100%;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--claude-bg-dark);
+  color: var(--claude-text-white);
+  line-height: 1.6;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 .card {
-  padding: 2em;
+  background-color: var(--claude-bg-medium);
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--claude-border-dark);
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* 按钮样式 - Claude.ai 风格 */
+.btn {
+  display: inline-block;
+  font-weight: 500;
   text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: 1px solid transparent;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-radius: 8px;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.btn-primary {
+  color: white;
+  background-color: var(--claude-primary-purple);
+  border-color: var(--claude-primary-purple);
+}
+
+.btn-primary:hover {
+  background-color: var(--claude-primary-purple-light);
+  border-color: var(--claude-primary-purple-light);
+}
+
+.btn-secondary {
+  color: var(--claude-text-white);
+  background-color: var(--claude-bg-light);
+  border-color: var(--claude-border-light);
+}
+
+.btn-secondary:hover {
+  background-color: var(--claude-bg-medium);
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+
+.btn-lg {
+  padding: 0.5rem 1rem;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  border-radius: 0.3rem;
+}
+
+/* 表单样式 */
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* ===== 鼠标比较组件样式 ===== */
+
+/* 比较组件页面容器 */
+.compare-page {
+  background-color: var(--claude-gray-100);
+  min-height: 100vh;
+}
+
+/* 比较组件标题 */
+.comparison-header {
+  background-color: var(--claude-gray-800);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 1rem;
+}
+
+/* SVG比较区域 */
+.svg-comparison-area {
+  background-color: white;
+  border: 1px solid var(--claude-gray-200);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* 选中的鼠标卡片 */
+.mouse-card.selected,
+.mouse-card.is-selected {
+  border-color: var(--claude-primary);
+  box-shadow: 0 0 0 1px var(--claude-primary-light);
+}
+
+/* 暗色表头 */
+.dark-header th {
+  background-color: var(--claude-gray-800);
+  color: white;
+}
+
+/* 比较结果高亮 */
+.highlighted-value {
+  color: var(--claude-primary);
+  font-weight: 600;
+}
+
+/* 相似度进度条 */
+.similarity-score {
+  margin-bottom: 1.5rem;
+}
+
+/* 自定义表格样式 */
+.comparison-table .el-table th {
+  background-color: var(--claude-gray-800);
+  color: white;
+  font-weight: 500;
+}
+
+.comparison-table .el-table tr:hover > td {
+  background-color: var(--claude-gray-100);
+}
+
+/* 固定宽度的鼠标卡片 */
+.selected-mouse-card {
+  width: 200px;
+  transition: transform 0.2s ease;
+}
+
+.selected-mouse-card:hover {
+  transform: translateY(-2px);
+}
+
+/* 添加鼠标卡片 */
+.add-card {
+  border: 2px dashed var(--claude-gray-300);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-card:hover {
+  border-color: var(--claude-primary);
+  color: var(--claude-primary);
 }

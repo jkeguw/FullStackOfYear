@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"FullStackOfYear/backend/internal/errors"
-	"FullStackOfYear/backend/services/auth"
-	"FullStackOfYear/backend/services/email"
+	"project/backend/internal/errors"
+	"project/backend/services/auth"
+	"project/backend/services/email"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

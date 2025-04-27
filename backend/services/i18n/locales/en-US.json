@@ -1,0 +1,54 @@
+{
+  "common": {
+    "success": "Success",
+    "error": "Error",
+    "not_found": "Not found",
+    "unauthorized": "Unauthorized",
+    "bad_request": "Bad Request",
+    "forbidden": "Forbidden",
+    "server_error": "Server Error"
+  },
+  "auth": {
+    "login_success": "Login successful",
+    "logout_success": "Logout successful",
+    "register_success": "Registration successful",
+    "login_required": "Login required",
+    "invalid_credentials": "Invalid email or password",
+    "email_taken": "Email already in use",
+    "username_taken": "Username already in use",
+    "email_verification_sent": "Verification email sent",
+    "email_verified": "Email verified successfully",
+    "email_verification_failed": "Email verification failed",
+    "password_reset_sent": "Password reset instructions sent to your email",
+    "password_reset_success": "Password reset successful",
+    "password_reset_failed": "Password reset failed",
+    "token_expired": "Token expired",
+    "token_invalid": "Invalid token"
+  },
+  "user": {
+    "profile_updated": "Profile updated successfully",
+    "password_changed": "Password changed successfully",
+    "account_deleted": "Account deleted successfully"
+  },
+  "mouse": {
+    "not_found": "Mouse not found",
+    "created": "Mouse created successfully",
+    "updated": "Mouse updated successfully",
+    "deleted": "Mouse deleted successfully"
+  },
+  "review": {
+    "not_found": "Review not found",
+    "created": "Review created successfully",
+    "updated": "Review updated successfully",
+    "deleted": "Review deleted successfully",
+    "already_exists": "You have already reviewed this item"
+  },
+  "validation": {
+    "required": "{{field}} is required",
+    "min_length": "{{field}} must be at least {{min}} characters",
+    "max_length": "{{field}} must be at most {{max}} characters",
+    "email_format": "Invalid email format",
+    "password_match": "Passwords do not match",
+    "password_requirements": "Password must contain at least 8 characters, including uppercase, lowercase and numbers"
+  }
+}

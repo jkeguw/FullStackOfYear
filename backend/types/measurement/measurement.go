@@ -1,7 +1,7 @@
 package measurement
 
 import (
-	"FullStackOfYear/backend/models"
+	"project/backend/models"
 	"time"
 )
 

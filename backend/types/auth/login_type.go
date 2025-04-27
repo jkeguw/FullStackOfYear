@@ -8,12 +8,14 @@ const (
 	EmailLogin LoginType = "email"
 	// GoogleLogin represents login with Google OAuth
 	GoogleLogin LoginType = "google"
+	// TwoFactorLogin represents login with two-factor authentication
+	TwoFactorLogin LoginType = "2fa"
 )
 
 // IsValid checks if the login type is valid
 func (lt LoginType) IsValid() bool {
 	switch lt {
-	case EmailLogin, GoogleLogin:
+	case EmailLogin, GoogleLogin, TwoFactorLogin:
 		return true
 	default:
 		return false

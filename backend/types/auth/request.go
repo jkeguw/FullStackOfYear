@@ -13,6 +13,17 @@ type LoginRequest struct {
 	// OAuth login fields
 	Code  string `json:"code,omitempty"`
 	State string `json:"state,omitempty"`
+	
+	// Two-factor auth fields
+	TwoFactorToken string `json:"twoFactorToken,omitempty"` 
+	TwoFactorCode  string `json:"twoFactorCode,omitempty"`
+	
+	// Device info fields
+	DeviceName    string `json:"deviceName,omitempty"`
+	DeviceType    string `json:"deviceType,omitempty"`
+	DeviceOS      string `json:"deviceOS,omitempty"` 
+	DeviceBrowser string `json:"deviceBrowser,omitempty"`
+	IP            string `json:"ip,omitempty"`
 }
 
 // Validate performs login type specific validation
@@ -22,7 +33,26 @@ func (r *LoginRequest) Validate() bool {
 		return r.Email != "" && r.Password != ""
 	case GoogleLogin:
 		return r.Code != "" && r.State != ""
+	case TwoFactorLogin:
+		return r.TwoFactorToken != "" && r.TwoFactorCode != ""
 	default:
 		return false
 	}
+}
+
+// TwoFactorVerifyRequest 两因素认证验证请求
+type TwoFactorVerifyRequest struct {
+	Code string `json:"code" binding:"required"`
+}
+
+// PasswordChangeRequest 密码修改请求
+type PasswordChangeRequest struct {
+	CurrentPassword string `json:"currentPassword" binding:"required"`
+	NewPassword     string `json:"newPassword" binding:"required"`
+}
+
+// DeviceUpdateRequest 设备更新请求
+type DeviceUpdateRequest struct {
+	Name    string `json:"name"`
+	Trusted bool   `json:"trusted"`
 }

@@ -1,0 +1,54 @@
+{
+  "auth": {
+    "login_success": "登录成功",
+    "logout_success": "已成功退出登录",
+    "register_success": "注册成功",
+    "verify_email": "请验证您的邮箱",
+    "password_reset": "密码重置邮件已发送",
+    "password_updated": "密码更新成功",
+    "account_locked": "账户已锁定，请稍后再试"
+  },
+  "validation": {
+    "required_field": "此字段为必填项",
+    "invalid_email": "邮箱格式不正确",
+    "password_length": "密码长度必须至少为8个字符",
+    "password_match": "两次输入的密码不一致",
+    "invalid_token": "无效或已过期的令牌"
+  },
+  "errors": {
+    "not_found": "资源未找到",
+    "unauthorized": "未授权访问",
+    "forbidden": "禁止访问",
+    "internal_server": "服务器内部错误",
+    "bad_request": "请求格式错误",
+    "invalid_credentials": "无效的凭据",
+    "duplicate_email": "邮箱已被注册",
+    "too_many_requests": "请求过于频繁，请稍后再试",
+    "account_not_verified": "账户未验证"
+  },
+  "device": {
+    "created": "设备创建成功",
+    "updated": "设备更新成功",
+    "deleted": "设备删除成功",
+    "not_found": "未找到设备"
+  },
+  "measurement": {
+    "created": "测量数据创建成功",
+    "updated": "测量数据更新成功",
+    "deleted": "测量数据删除成功",
+    "not_found": "未找到测量数据"
+  },
+  "review": {
+    "created": "评测创建成功",
+    "updated": "评测更新成功",
+    "deleted": "评测删除成功",
+    "reported": "评测举报成功",
+    "not_found": "未找到评测"
+  },
+  "user": {
+    "profile_updated": "个人资料更新成功",
+    "settings_updated": "设置更新成功",
+    "account_deleted": "账户删除成功",
+    "not_found": "未找到用户"
+  }
+}

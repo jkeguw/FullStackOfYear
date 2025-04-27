@@ -3,11 +3,11 @@
 package measurement
 
 import (
-	"FullStackOfYear/backend/internal/errors"
-	measurementSvc "FullStackOfYear/backend/services/measurement"
-	measurementTypes "FullStackOfYear/backend/types/measurement"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"project/backend/internal/errors"
+	measurementSvc "project/backend/services/measurement"
+	measurementTypes "project/backend/types/measurement"
 )
 
 type Handler struct {

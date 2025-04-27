@@ -6,12 +6,15 @@ const (
 	// Common constants
 	MaxLoginHistory       = 50
 	MaxConcurrentSessions = 5
+	TwoFactorRecoveryCodeCount = 10 // 两因素认证恢复码数量
 
 	// Token related
 	VerifyTokenExpiration = 24 * time.Hour
+)
 
-	// Role types
-	RoleUser     = "user"
-	RoleReviewer = "reviewer"
-	RoleAdmin    = "admin"
+// Collection names constants - Not duplicated in other files
+const (
+	UsersCollection        = "users"
+	CartCollection         = "carts"
+	ReviewsCollection      = "reviews"
 )

@@ -39,8 +39,7 @@
           />
         </div>
         
-        <div v-if="loading" class="loading-container">
-          <el-spinner size="large" />
+        <div v-if="loading" class="loading-container" v-loading="true">
         </div>
         
         <div v-else-if="!filteredMice.length" class="empty-state">
@@ -53,18 +52,16 @@
             v-for="mouse in displayedMice"
             :key="mouse.id"
             class="mouse-card"
-            shadow="hover"
-            @click="navigateToMouseDetail(mouse.id)"
           >
             <div class="mouse-card-content">
-              <div class="mouse-image">
+              <div class="mouse-image" @click="navigateToMouseDetail(mouse.id)">
                 <img v-if="mouse.imageUrl" :src="mouse.imageUrl" alt="鼠标图片" class="img-fluid" />
                 <div v-else class="placeholder-image">
                   <i class="el-icon-mouse"></i>
                 </div>
               </div>
               <div class="mouse-info">
-                <h3 class="mouse-name">{{ mouse.brand }} {{ mouse.name }}</h3>
+                <h3 class="mouse-name" @click="navigateToMouseDetail(mouse.id)">{{ mouse.brand }} {{ mouse.name }}</h3>
                 <div class="mouse-specs">
                   <div class="spec-item">
                     <span class="spec-label">尺寸:</span>
@@ -79,6 +76,32 @@
                     <span class="spec-value">{{ mouse.shape.type }}</span>
                   </div>
                 </div>
+                <div class="mouse-card-actions">
+                  <div class="price-tag">¥{{ mouse.price || '699' }}</div>
+                  <div class="action-buttons">
+                    <el-button 
+                      type="primary" 
+                      size="small" 
+                      @click.stop="addToComparison(mouse)"
+                      :disabled="isInComparison(mouse.id)"
+                      icon="el-icon-sort"
+                      circle
+                      title="添加到比较"
+                    ></el-button>
+                    <AddToCartButton 
+                      :product="{ 
+                        id: mouse.id, 
+                        name: `${mouse.brand} ${mouse.name}`, 
+                        price: mouse.price || 699,
+                        image_url: mouse.imageUrl
+                      }" 
+                      productType="mouse"
+                      type="primary"
+                      size="small"
+                      iconOnly
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </el-card>
@@ -90,11 +113,14 @@
             :data="displayedMice"
             stripe
             border
-            @row-click="(row) => navigateToMouseDetail(row.id)"
             class="mouse-table"
           >
             <el-table-column label="品牌" prop="brand" min-width="80" />
-            <el-table-column label="型号" prop="name" min-width="120" />
+            <el-table-column label="型号" prop="name" min-width="120">
+              <template #default="{ row }">
+                <a @click="navigateToMouseDetail(row.id)" class="mouse-link">{{ row.name }}</a>
+              </template>
+            </el-table-column>
             <el-table-column label="尺寸 (mm)" min-width="150">
               <template #default="{ row }">
                 {{ row.dimensions.length }}x{{ row.dimensions.width }}x{{ row.dimensions.height }}
@@ -107,15 +133,36 @@
               </template>
             </el-table-column>
             <el-table-column label="连接方式" prop="connectivity" min-width="100" />
-            <el-table-column label="操作" fixed="right" width="120">
+            <el-table-column label="价格" prop="price" min-width="80">
               <template #default="{ row }">
-                <el-button 
-                  type="text"
-                  @click.stop="addToComparison(row)"
-                  :disabled="isInComparison(row.id)"
-                >
-                  {{ isInComparison(row.id) ? '已添加' : '添加比较' }}
-                </el-button>
+                ¥{{ row.price || '699' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" fixed="right" width="160">
+              <template #default="{ row }">
+                <div class="table-actions">
+                  <el-button 
+                    type="primary"
+                    size="small"
+                    icon="el-icon-sort"
+                    circle
+                    @click.stop="addToComparison(row)"
+                    :disabled="isInComparison(row.id)"
+                    title="添加到比较"
+                  ></el-button>
+                  <AddToCartButton 
+                    :product="{ 
+                      id: row.id, 
+                      name: `${row.brand} ${row.name}`, 
+                      price: row.price || 699,
+                      image_url: row.imageUrl
+                    }" 
+                    productType="mouse"
+                    type="primary"
+                    size="small"
+                    iconOnly
+                  />
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -147,6 +194,7 @@ import { getDevices } from '@/api/device';
 import FilterPanel from '@/components/database/FilterPanel.vue';
 import SortControls from '@/components/database/SortControls.vue';
 import ViewToggle from '@/components/database/ViewToggle.vue';
+import AddToCartButton from '@/components/cart/AddToCartButton.vue';
 import type { SortDirection } from '@/components/database/SortControls.vue';
 import type { ViewMode } from '@/components/database/ViewToggle.vue';
 
@@ -218,7 +266,9 @@ const sortOptions = [
   { label: '宽度', value: 'dimensions.width' },
   { label: '高度', value: 'dimensions.height' },
   { label: '品牌', value: 'brand' },
-  { label: '型号', value: 'name' }
+  { label: '型号', value: 'name' },
+  { label: '价格', value: 'price' }
+  // 已移除'最新上架'选项
 ];
 
 // 应用的过滤器
@@ -433,12 +483,12 @@ onMounted(() => {
 }
 
 .mouse-card {
-  cursor: pointer;
   transition: transform 0.2s;
 }
 
 .mouse-card:hover {
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .mouse-card-content {
@@ -454,6 +504,7 @@ onMounted(() => {
   margin-bottom: 1rem;
   background-color: #f9f9f9;
   border-radius: 0.25rem;
+  cursor: pointer;
 }
 
 .placeholder-image {
@@ -474,10 +525,16 @@ onMounted(() => {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+.mouse-name:hover {
+  color: var(--claude-primary-purple);
 }
 
 .mouse-specs {
   font-size: 0.875rem;
+  margin-bottom: 1rem;
 }
 
 .spec-item {
@@ -491,12 +548,43 @@ onMounted(() => {
   width: 40px;
 }
 
+.mouse-card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--claude-border-light);
+}
+
+.price-tag {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: #e6603c;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .mouse-table {
   margin-bottom: 1rem;
 }
 
-.mouse-table tbody tr {
+.table-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mouse-link {
+  color: var(--claude-primary-purple);
+  text-decoration: none;
   cursor: pointer;
+}
+
+.mouse-link:hover {
+  text-decoration: underline;
 }
 
 .empty-state, .loading-container {

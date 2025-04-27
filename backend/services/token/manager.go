@@ -1,10 +1,9 @@
 package token
 
 import (
-	"FullStackOfYear/backend/config"
-	"FullStackOfYear/backend/internal/errors"
-	"FullStackOfYear/backend/services/jwt"
-	"FullStackOfYear/backend/types/auth"
+	"project/backend/config"
+	"project/backend/internal/errors"
+	jwtService "project/backend/services/jwt"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
@@ -16,6 +15,15 @@ const (
 	refreshTokenKey = "token:refresh:%s:%s" // userID:deviceID
 	userTokensKey   = "user:tokens:%s"      // userID
 )
+
+// TokenInfo 存储token的相关信息
+type TokenInfo struct {
+	UserID    string
+	DeviceID  string
+	Role      string
+	IssuedAt  time.Time
+	ExpiresAt time.Time
+}
 
 // Manager handles token operations
 type Manager struct {
@@ -30,33 +38,34 @@ func NewManager(rdb *redis.Client) *Manager {
 // GenerateTokenPair creates both access and refresh tokens
 func (m *Manager) GenerateTokenPair(userID, role, deviceID string) (string, string, error) {
 	// Generate access token
-	accessClaims := auth.Claims{
+	accessClaims := jwtService.Claims{
 		UserID:   userID,
 		Role:     role,
 		DeviceID: deviceID,
 		Type:     "access",
 	}
 
-	accessToken, expiresAt, err := jwt.GenerateToken(accessClaims, config.Cfg.JWT.AccessExpire)
+	jwtSvc := jwtService.NewService(config.GetConfig().JWT)
+	accessToken, expiresAt, err := jwtSvc.GenerateToken(accessClaims, config.GetConfig().JWT.AccessExpire)
 	if err != nil {
 		return "", "", err
 	}
 
 	// Generate refresh token
-	refreshClaims := auth.Claims{
+	refreshClaims := jwtService.Claims{
 		UserID:   userID,
 		Role:     role,
 		DeviceID: deviceID,
 		Type:     "refresh",
 	}
 
-	refreshToken, _, err := jwt.GenerateToken(refreshClaims, config.Cfg.JWT.RefreshExpire)
+	refreshToken, _, err := jwtSvc.GenerateToken(refreshClaims, config.GetConfig().JWT.RefreshExpire)
 	if err != nil {
 		return "", "", err
 	}
 
 	// Store tokens
-	info := auth.TokenInfo{
+	info := TokenInfo{
 		UserID:    userID,
 		DeviceID:  deviceID,
 		Role:      role,
@@ -72,7 +81,7 @@ func (m *Manager) GenerateTokenPair(userID, role, deviceID string) (string, stri
 }
 
 // StoreTokens saves tokens to Redis
-func (m *Manager) StoreTokens(ctx context.Context, accessToken, refreshToken string, info auth.TokenInfo) error {
+func (m *Manager) StoreTokens(ctx context.Context, accessToken, refreshToken string, info TokenInfo) error {
 	accessKey := fmt.Sprintf(accessTokenKey, info.UserID, info.DeviceID)
 	refreshKey := fmt.Sprintf(refreshTokenKey, info.UserID, info.DeviceID)
 	userKey := fmt.Sprintf(userTokensKey, info.UserID)
@@ -80,9 +89,9 @@ func (m *Manager) StoreTokens(ctx context.Context, accessToken, refreshToken str
 	pipe := m.rdb.Pipeline()
 
 	pipe.Set(ctx, accessKey, accessToken, time.Until(info.ExpiresAt))
-	pipe.Set(ctx, refreshKey, refreshToken, config.Cfg.JWT.RefreshExpire)
+	pipe.Set(ctx, refreshKey, refreshToken, config.GetConfig().JWT.RefreshExpire)
 	pipe.SAdd(ctx, userKey, info.DeviceID)
-	pipe.Expire(ctx, userKey, config.Cfg.JWT.RefreshExpire)
+	pipe.Expire(ctx, userKey, config.GetConfig().JWT.RefreshExpire)
 
 	_, err := pipe.Exec(ctx)
 	return err
@@ -144,8 +153,9 @@ func (m *Manager) InvalidateTokens(ctx context.Context, userID, deviceID string)
 	return nil
 }
 
-func (m *Manager) ValidateRefreshToken(token string) (*Claims, error) {
-	claims, err := jwt.ParseToken(token)
+func (m *Manager) ValidateRefreshToken(token string) (*jwtService.Claims, error) {
+	jwtSvc := jwtService.NewService(config.GetConfig().JWT)
+	claims, err := jwtSvc.ParseToken(token)
 	if err != nil {
 		return nil, err
 	}
@@ -155,6 +165,7 @@ func (m *Manager) ValidateRefreshToken(token string) (*Claims, error) {
 	return claims, nil
 }
 
+// RevokeTokens 吊销用户某个设备的所有令牌
 func (m *Manager) RevokeTokens(userID, deviceID string) error {
 	return m.InvalidateTokens(context.Background(), userID, deviceID)
 }

@@ -1,0 +1,101 @@
+﻿false,,Name,Length (mm),Width (mm),Height (mm),Weight (g),Shape,Hump placement,Front flare,Side curvature,Hand compatibility,Thumb rest,Ring finger rest,Material,Connectivity,Sensor,Sensor technology,Sensor position,DPI,Polling rate,Tracking speed (IPS),Acceleration (G),Side buttons,Middle buttons
+false,4,AULA SC680,123.2,62.4,39.5,58.0,Symmetrical,Center,Outward - moderate,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (55%),26000,8000,650,50,2,0
+false,3,ASUS ROG Keris II Ace,121.0,67.0,42.0,54.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,ASUS ROG AimPoint Pro,Optical,Front - minimal (53%),42000,8000,750,50,2,0
+false,3,Metapanda P1 Pro Max,123.0,65.1,41.0,65.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (57%),26000,4000,650,50,2,1
+false,3,Metapanda P1 Pro,123.0,65.1,41.0,65.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (57%),26000,4000,650,50,2,1
+false,2,Logitech G303 Shroud Edition,117.0,70.0,40.0,75.0,Symmetrical,Back - moderate,Inward - aggressive,Inward - aggressive,Right,No,No,Plastic,Wireless,Logitech HERO 25K,Optical,Centered (49%),25600,1000,400,40,2,1
+false,3,Metapanda P1,123.0,65.1,41.0,60.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (57%),26000,1000,650,50,2,1
+false,7,LAMZU MAYA 4K,119.0,62.0,38.0,45.0,Symmetrical,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,4000,650,50,2,0
+false,5,AJAZZ AJ199 Pro 4K,119.8,63.4,39.7,59.0,Ergonomic,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (48%),26000,4000,650,50,2,0
+false,1,Darmoshark M3 XS,116.0,60.4,36.0,44.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (53%),26000,4000,650,50,2,0
+false,5,Darmoshark M2,115.8,60.4,36.1,37.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Magnesium (metal),Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,4000,650,50,2,0
+false,3,Corsair Harpoon RGB Wireless,115.3,68.3,40.4,99.0,Ergonomic,Back - moderate,Outward - slight,Flat,Right,Yes,No,Plastic,Wireless,PixArt PMW3325,Optical,Centered (47%),1000,1000,100,20,2,1
+false,3,Corsair Harpoon RGB Pro,115.3,68.3,40.4,85.0,Ergonomic,Back - moderate,Outward - slight,Flat,Right,Yes,No,Plastic,Wired,PixArt PAW3327,Optical,Centered (47%),12000,1000,220,30,2,1
+false,2,Corsair Harpoon RGB,115.3,68.3,40.4,85.0,Ergonomic,Back - moderate,Outward - slight,Flat,Right,Yes,No,Plastic,Wired,PixArt PMW3320,Optical,Centered (47%),6000,1000,80,20,2,1
+false,2,Logitech G604 Lightspeed,130.0,80.0,45.0,135.0,Ergonomic,Back - minimal,Flat,Inward,Right,Yes,No,Plastic,Wireless,Logitech HERO 25K,Optical,-,25600,1000,400,40,6,2
+false,6,Dareu A980 Pro Max,129.0,72.0,40.0,73.0,Ergonomic,Center,Flat,Inward,Right,Yes,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,8000,650,50,3,0
+false,4,Dareu A980 Pro,129.0,72.0,40.0,62.0,Ergonomic,Center,Flat,Inward,Right,Yes,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,8000,650,50,3,0
+false,3,Dareu A980,129.0,72.0,40.0,93.0,Ergonomic,Center,Flat,Inward,Right,Yes,No,Plastic,Wired,PixArt PAW3395,Optical,Front - minimal (54%),26000,8000,650,50,3,2
+false,,Zaunkoenig M3K,79.0,60.0,29.0,24.0,Symmetrical,Back - aggressive,Outward - slight,Flat,Ambidextrous,No,No,Carbon fiber,Wired,PixArt PAW3399,Optical,Back - moderate (43%),20000,8000,650,50,0,0
+false,3,Attack Shark R1,123.5,64.0,41.0,59.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3311,Optical,Front - moderate (57%),18000,1000,300,35,2,1
+false,5,Zaopin Z2,123.0,64.3,39.5,65.0,Ergonomic,Center,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (57%),26000,4000,650,50,2,0
+false,2,Corsair M75 Air Wireless,128.0,65.0,41.6,60.0,Symmetrical,Center,Inward - slight,Flat,Right,No,No,Plastic,Wireless,Corsair MARKSMAN 26K,Optical,Front - minimal (55%),26000,1000,650,50,2,0
+false,2,Corsair M75 Wireless,128.0,65.0,41.6,89.0,Symmetrical,Center,Inward - slight,Flat,Ambidextrous,No,No,Plastic,Wireless,Corsair MARKSMAN 26K,Optical,Front - minimal (55%),26000,1000,650,50,2,0
+false,2,Corsair M75,128.0,65.0,41.6,74.0,Symmetrical,Center,Inward - slight,Flat,Ambidextrous,No,No,Plastic,Wired,Corsair MARKSMAN 26K,Optical,Front - minimal (55%),26000,8000,650,50,2,0
+false,,RAKK Kaptan Trimode,118.1,63.5,38.6,53.0,Ergonomic,Center,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,-,26000,1000,650,50,2,0
+false,3,Logitech G903 Lightspeed,130.0,67.0,40.0,110.0,Symmetrical,Center,Flat,Inward,Ambidextrous,No,No,Plastic,Wireless,Logitech HERO 25K,Optical,-,25600,1000,400,40,2,3
+false,,ELECOM VM501LBK,129.0,69.0,41.0,61.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3311,Optical,-,12000,1000,300,35,2,2
+false,,ELECOM VM501BK,122.0,65.0,40.0,56.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3311,Optical,-,12000,1000,300,35,2,2
+false,1,NZXT Lift 2 Ergo,128.4,65.1,41.4,61.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PAW3395,Optical,Front - minimal (53%),26000,8000,650,50,2,1
+false,1,NZXT Lift 2 Symm,126.8,67.1,38.3,58.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PAW3395,Optical,Front - minimal (54%),26000,8000,650,50,2,1
+false,1,NZXT Lift 2 Starfield,126.8,67.1,38.3,58.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PAW3395,Optical,Front - minimal (54%),26000,8000,650,50,2,1
+false,1,NZXT Lift,126.8,67.1,38.3,67.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - minimal (54%),16000,1000,400,50,2,1
+false,5,Pulsar X2A eS,120.0,63.0,38.0,69.0,Symmetrical,Back - moderate,Flat,Flat,Ambidextrous,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (55%),26000,8000,650,50,2,0
+false,3,ROCCAT Kone XP Air,126.0,76.0,40.0,99.0,Ergonomic,Back - minimal,Outward - slight,Flat,Right,Yes,No,Plastic,Wireless,ROCCAT Owl-Eye 19K,Optical,Front - moderate (58%),19000,1000,400,50,5,1
+false,3,Logitech G Pro Wireless,125.0,63.5,40.0,80.0,Symmetrical,Center,Outward - slight,Flat,Ambidextrous,No,No,Plastic,Wireless,Logitech HERO 25K,Optical,Front - minimal (53%),25600,1000,400,40,2,0
+false,5,Incott GHERO Pro,118.6,66.0,38.6,66.0,Hybrid,Back - moderate,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (56%),32000,8000,650,50,2,1
+false,4,Incott GHERO,118.6,66.0,38.6,60.0,Hybrid,Back - moderate,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (56%),32000,8000,650,50,2,1
+false,4,RAWM SA-MH01,127.2,66.0,40.1,65.0,Symmetrical,Back - minimal,Outward - slight,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (57%),26000,1000,650,50,2,1
+false,4,Attack Shark X3 Pro,118.5,61.0,39.7,59.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (53%),26000,8000,650,50,2,0
+false,,VAXEE ZYGEN NP-01 Wireless 4K,120.0,66.0,39.0,73.0,Hybrid,Back - moderate,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),3200,4000,650,50,2,0
+false,,VAXEE ZYGEN NP-01S Wireless 4K,120.0,63.0,37.0,68.0,Hybrid,Back - moderate,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),3200,4000,650,50,2,0
+false,,VAXEE XE Wireless 4K,124.0,66.0,38.7,76.0,Symmetrical,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (53%),3200,4000,650,50,2,1
+false,,VAXEE OUTSET AX Wireless 4K,117.4,66.0,43.0,73.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (52%),3200,4000,650,50,2,0
+false,,RAKK MAG-AN,114.9,59.6,34.6,53.0,Symmetrical,Back - minimal,Outward - aggressive,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (58%),16000,1000,650,50,2,0
+false,5,Ninjutso Sora V2,119.2,59.8,37.7,39.0,Symmetrical,Back - moderate,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,8000,650,50,2,0
+false,3,Logitech G Pro X Superlight,125.0,63.5,40.0,63.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Plastic,Wireless,Logitech HERO 25K,Optical,Front - minimal (53%),25600,1000,400,40,2,0
+false,3,Kysona Aztec,118.3,61.8,39.6,55.0,Symmetrical,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,-,26000,1000,650,50,2,0
+false,2,Redragon M916 Pro 4K,120.8,64.3,37.9,49.0,Symmetrical,Back - minimal,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (52%),26000,4000,650,50,2,0
+false,2,Redragon M916 Pro,120.8,64.3,37.9,49.0,Symmetrical,Back - minimal,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (52%),26000,1000,650,50,2,0
+false,4,AJAZZ AJ199 4K,118.0,61.6,38.6,65.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (56%),26000,4000,650,50,2,1
+false,4,Delux M800 Pro 3395,124.0,64.0,38.0,68.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,1000,650,50,2,1
+false,2,Rapoo VT3S,128.3,66.2,39.0,84.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,-,26000,1000,650,50,2,1
+false,1,Rapoo VT900S,130.1,74.8,41.0,135.0,Ergonomic,Center,Flat,Flat,Right,Yes,No,Plastic,Wired,PixArt PMW3389,Optical,Centered (49%),16000,1000,400,50,3,2
+false,2,ThundeRobot ML901,124.1,63.7,39.7,76.0,Symmetrical,Back - moderate,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (55%),26000,1000,650,50,2,0
+false,2,ThundeRobot ML602,126.6,63.8,39.8,64.0,Symmetrical,Back - minimal,Outward - moderate,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - aggressive (60%),26000,1000,650,50,2,1
+false,3,Irocks M31R,123.0,66.5,40.0,66.0,Ergonomic,Center,Outward - moderate,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (52%),26000,1000,650,50,2,2
+false,1,Logitech G Pro,116.6,62.2,38.2,85.0,Symmetrical,Back - moderate,Inward - moderate,Flat,Right,No,No,Plastic,Wired,Logitech HERO 25K,Optical,Centered (52%),25600,1000,400,40,2,1
+false,3,Rapoo VT9 Air,120.1,65.8,37.5,59.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (50%),26000,8000,650,50,2,2
+false,4,AJAZZ AJ139 Pro 4K,125.0,63.3,38.0,65.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - aggressive (61%),26000,4000,650,50,2,1
+false,2,Monka G995W,123.0,61.0,39.0,58.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (52%),26000,1000,650,50,2,1
+false,4,Edifier Hecate G3M Pro,118.7,61.0,38.6,63.0,Symmetrical,Center,Outward - moderate,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (53%),26000,1000,650,50,2,1
+false,6,LAMZU x Fnatic Thorn,119.0,65.0,42.0,52.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,4000,650,50,2,0
+false,8,LAMZU Thorn 4K,119.0,65.0,42.0,52.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,4000,650,50,2,0
+false,3,G-Wolves HTS Ace Wireless,113.0,61.0,40.0,56.0,Symmetrical,Back - minimal,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Centered (52%),16000,1000,400,50,2,1
+false,2,G-Wolves HTM Ace,124.0,64.0,40.0,53.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - moderate (56%),16000,1000,400,50,2,1
+false,2,Logitech G403,124.0,68.0,43.0,87.0,Ergonomic,Back - moderate,Outward - moderate,Flat,Right,No,No,Plastic,Wired,PixArt PMW3366,Optical,Front - minimal (55%),12000,1000,400,40,2,1
+false,1,G-Wolves HSK Plus 4K,89.0,58.5,36.0,38.0,Symmetrical,Back - aggressive,Outward - slight,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (51%),26000,4000,650,50,2,0
+false,2,G-Wolves HSK Plus Lite,89.0,58.5,36.0,38.0,Symmetrical,Back - aggressive,Outward - slight,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3399,Optical,Centered (51%),20000,1000,650,50,2,0
+false,2,Fantech Helios XD3V2,120.0,64.0,38.3,83.0,Symmetrical,Back - moderate,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Front - minimal (54%),19000,1000,400,50,2,1
+false,1,Rapoo VT9PRO Air Lite,120.1,65.8,37.5,49.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3398,Optical,Centered (50%),26000,4000,650,50,2,2
+false,2,Rapoo VT9PRO Mini,120.1,65.8,37.5,65.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3398,Optical,Centered (50%),26000,4000,650,50,2,2
+false,3,Rapoo VT9PRO,124.8,67.1,38.7,68.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3398,Optical,Centered (51%),26000,4000,650,50,2,2
+false,,GITOPER G1,117.0,67.0,41.5,58.0,Ergonomic,Back - minimal,Outward - moderate,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (55%),26000,1000,650,50,2,0
+false,4,Attack Shark X6,118.3,62.0,37.3,49.0,Symmetrical,Back - minimal,Outward - slight,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (53%),26000,1000,650,50,2,2
+false,3,Valkyrie M1,119.5,62.0,40.0,58.0,Symmetrical,Center,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,-,26000,4000,650,50,2,0
+false,2,Logitech G603 Lightspeed,124.0,68.0,43.0,89.0,Ergonomic,Back - moderate,Outward - moderate,Flat,Right,No,No,Plastic,Wireless,Logitech HERO 12K,Optical,Front - minimal (55%),12000,1000,400,40,2,1
+false,4,Glorious Model D- Wireless,120.0,66.0,40.0,67.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,Glorious BAMF,Optical,Centered (52%),19000,1000,400,50,2,1
+false,2,Metaphyuni Metapanda01,123.0,65.1,41.0,60.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (57%),26000,1000,650,50,2,1
+false,,GITOPER G3,120.7,64.7,40.5,69.0,Ergonomic,Back - minimal,Outward - moderate,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (55%),26000,1000,650,50,2,1
+false,2,Zowie U2,123.3,64.3,38.1,60.0,Symmetrical,Back - minimal,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (56%),3200,1000,650,50,2,0
+false,2,ASUS ROG Strix Impact III Wireless,120.0,62.0,39.0,72.0,Symmetrical,Back - moderate,Inward - slight,Inward,Right,No,No,Plastic,Wireless,ASUS ROG AimPoint,Optical,Front - minimal (54%),36000,1000,650,50,2,0
+false,2,Cherry Xtrfy M50 Wireless,122.0,63.0,39.0,85.0,Symmetrical,Center,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3311,Optical,Centered (52%),12000,1000,300,35,2,1
+false,1,Cherry Xtrfy M50,122.0,63.0,39.0,69.0,Symmetrical,Center,Flat,Flat,Right,No,No,Plastic,Wired,PixArt PAW3311,Optical,Centered (52%),12000,1000,300,35,2,1
+false,2,Cherry Xtrfy M68 Pro 8K Wireless,123.3,64.0,39.5,55.0,Symmetrical,Center,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (53%),26000,8000,650,50,2,0
+false,1,Cherry Xtrfy M68 Wireless,123.3,64.0,39.5,53.0,Symmetrical,Center,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (53%),26000,1000,650,50,2,0
+false,3,Cherry Xtrfy M64 Pro 8K Wireless,120.0,65.0,39.5,55.0,Ergonomic,Back - minimal,Outward - moderate,Inward - aggressive,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (56%),26000,8000,650,50,2,0
+false,3,Logitech G403 Hero,124.0,68.0,43.0,87.0,Ergonomic,Back - moderate,Outward - moderate,Flat,Right,No,No,Plastic,Wired,Logitech HERO 25K,Optical,Front - minimal (55%),25600,1000,400,40,2,1
+false,2,Cherry Xtrfy M64 Wireless,120.0,65.0,39.5,53.0,Ergonomic,Back - minimal,Outward - moderate,Inward - aggressive,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - moderate (56%),26000,1000,650,50,2,0
+false,1,Delux M600 Pro,118.0,62.5,38.2,52.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Front - minimal (54%),26000,4000,650,50,2,1
+false,3,Delux M600,118.0,62.5,38.2,49.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3311,Optical,Front - minimal (54%),12000,1000,300,35,2,1
+false,2,HyperX Pulsefire Haste 2 Mini,116.6,61.9,36.7,59.0,Symmetrical,Center,Flat,Flat,Right,No,No,Plastic,Wireless,HyperX 26K,Optical,Front - minimal (54%),26000,1000,650,50,2,1
+false,,IXILAB X1 Pro Max,120.0,59.5,39.0,60.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Magnesium (metal),Wireless,PixArt PAW3395,Optical,-,26000,4000,650,50,2,0
+false,,IXILAB X1 Pro,120.0,59.5,39.0,53.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Magnesium (metal),Wireless,PixArt PAW3395,Optical,-,26000,4000,650,50,2,0
+false,,IXILAB X1,120.0,59.5,39.0,53.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Magnesium (metal),Wireless,PixArt PAW3395,Optical,-,26000,1000,650,50,2,0
+false,6,MCHOSE AX5 Pro Max,121.6,61.5,37.7,53.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Magnesium (metal),Wireless,PixArt PAW3395,Optical,Front - moderate (56%),26000,8000,650,50,2,0
+false,6,MCHOSE AX5 Pro,121.6,61.5,37.7,53.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Magnesium (metal),Wireless,PixArt PAW3395,Optical,Front - moderate (56%),26000,4000,650,50,2,0
+false,3,Logitech G203 Prodigy,116.6,62.2,38.2,85.0,Symmetrical,Back - moderate,Inward - moderate,Flat,Right,No,No,Plastic,Wired,PixArt 1855,Optical,Centered (52%),8000,1000,-,-,2,1
+false,5,MCHOSE AX5,121.6,61.5,37.7,49.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Magnesium (metal),Wireless,PixArt PAW3395,Optical,Front - moderate (56%),26000,4000,650,50,2,0
+false,,Ardor Gaming Immortality Pro Wireless,120.0,63.0,39.0,72.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Front - minimal (54%),19000,1000,400,50,2,1
+false,,Ardor Gaming Immortality,120.0,63.0,39.0,56.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PAW3327,Optical,Front - minimal (54%),12400,1000,220,30,2,1
+false,,Ardor Gaming Ulta (big back),120.0,65.0,38.3,69.0,Symmetrical,Back - aggressive,Flat,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3395,Optical,Centered (52%),26000,1000,650,50,2,1

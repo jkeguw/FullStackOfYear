@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
@@ -54,4 +55,44 @@ func HTTPStatusFromError(err error) int {
 	default:
 		return http.StatusInternalServerError
 	}
+}
+
+// HandleError 处理错误并发送适当的响应
+func HandleError(c interface{}, err error) {
+	if err == nil {
+		return
+	}
+
+	// 转换为gin上下文
+	ginCtx, ok := c.(*gin.Context)
+	if !ok {
+		// 日志记录错误，但无法发送响应
+		return
+	}
+
+	// 获取HTTP状态码
+	status := HTTPStatusFromError(err)
+
+	// 构建响应
+	appErr, isAppErr := err.(*AppError)
+	if isAppErr {
+		ginCtx.JSON(status, gin.H{
+			"code":    appErr.Code,
+			"message": appErr.Message,
+		})
+	} else {
+		ginCtx.JSON(status, gin.H{
+			"error": err.Error(),
+		})
+	}
+}
+
+// IsNotFoundError 判断错误是否为NotFound错误
+func IsNotFoundError(err error) bool {
+	return GetErrorCode(err) == NotFound
+}
+
+// IsForbiddenError 判断错误是否为Forbidden错误
+func IsForbiddenError(err error) bool {
+	return GetErrorCode(err) == Forbidden
 }

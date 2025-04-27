@@ -1,0 +1,96 @@
+﻿false,,Name,Length (mm),Width (mm),Height (mm),Weight (g),Shape,Hump placement,Front flare,Side curvature,Hand compatibility,Thumb rest,Ring finger rest,Material,Connectivity,Sensor,Sensor technology,Sensor position,DPI,Polling rate,Tracking speed (IPS),Acceleration (G),Side buttons,Middle buttons
+false,,Dream Machines DM6 Trio,129.0,66.0,40.0,81.0,Ergonomic,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Centered (52%),19000,1000,400,50,2,1
+false,2,Mountain Makalu 67,127.0,70.2,42.2,67.0,Ergonomic,Center,Flat,Inward,Right,No,No,Plastic,Wired,PixArt PAW3370,Optical,Front - minimal (53%),19000,1000,400,50,2,1
+false,1,Gamesense META Wired,119.0,59.0,38.5,65.0,Symmetrical,Back - moderate,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - moderate (57%),12000,1000,250,50,2,1
+false,3,Pwnage Ergo Wireless,120.0,66.0,42.0,69.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Front - minimal (53%),19000,1000,400,50,2,1
+false,2,Pwnage Ergo,120.0,66.0,42.0,62.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - minimal (53%),16000,1000,400,50,2,1
+false,4,Glorious Model O Wireless,128.0,66.0,38.0,69.0,Symmetrical,Center,Outward - slight,Inward,Right,No,No,Plastic,Wireless,Glorious BAMF,Optical,Front - minimal (55%),19000,1000,400,50,2,1
+false,3,Pwnage Ambi Wireless,118.0,60.0,38.0,71.0,Symmetrical,Back - minimal,Flat,Flat,Ambidextrous,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Adjustable (48-62%),19000,1000,400,50,2,1
+false,2,Pwnage Symm 2,118.0,60.0,39.0,59.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - moderate (56%),16000,1000,400,50,2,1
+false,3,Pwnage Symm 2 Wireless,118.0,60.0,39.0,71.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Front - moderate (56%),19000,1000,400,50,2,1
+false,2,Pwnage Symm 1,120.0,60.0,38.0,65.0,Symmetrical,Back - moderate,Flat,Flat,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - minimal (54%),16000,1000,400,50,2,1
+false,2,Pwnage Symm 1 Wireless,120.0,60.0,38.0,74.0,Symmetrical,Back - moderate,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Front - minimal (54%),19000,1000,400,50,2,1
+false,2,ASUS TUF M4 Air,126.0,63.5,39.6,47.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Plastic,Wired,PixArt PAW3335,Optical,Centered (48%),16000,1000,400,40,2,1
+false,2,ASUS TUF M4 Wireless,126.0,63.5,39.6,86.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3311,Optical,Centered (48%),12000,1000,300,35,2,1
+false,1,ASUS ROG Sica,115.0,62.0,39.0,85.0,Symmetrical,Back - moderate,Inward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PMW3310,Optical,Front - minimal (55%),5000,1000,130,30,0,0
+false,2,ASUS ROG Strix Carry,101.0,62.0,36.0,73.0,Ergonomic,Back - minimal,Outward - aggressive,Inward,Right,No,No,Plastic,Wireless,PixArt PMW3330,Optical,Back - minimal (46%),7200,1000,150,30,2,1
+false,1,HyperX Pulsefire Dart,124.8,73.9,43.6,110.0,Ergonomic,Back - minimal,Outward - slight,Inward,Right,Yes,No,Plastic,Wireless,PixArt PMW3389,Optical,Front - minimal (55%),16000,1000,400,50,3,2
+false,2,Zowie FK2-C,125.1,64.9,36.4,70.0,Symmetrical,Center,Outward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - moderate (56%),3200,1000,250,50,2,0
+false,3,HyperX Pulsefire FPS Pro,127.6,71.1,41.9,95.0,Ergonomic,Back - minimal,Outward - aggressive,Flat,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - moderate (58%),16000,1000,400,50,2,1
+false,2,HyperX Pulsefire Core,119.3,63.9,41.3,87.0,Symmetrical,Back - moderate,Outward - aggressive,Flat,Right,No,No,Plastic,Wired,PixArt PAW3327,Optical,Front - aggressive (60%),6200,1000,220,30,2,1
+false,3,HyperX Pulsefire Haste,124.2,66.8,38.2,59.0,Symmetrical,Center,Flat,Flat,Right,No,No,Plastic,Wired,PixArt PAW3335,Optical,Front - minimal (54%),16000,1000,400,40,2,1
+false,3,HyperX Pulsefire Haste Wireless,124.2,66.8,38.2,59.0,Symmetrical,Center,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3335,Optical,Front - minimal (54%),16000,1000,400,40,2,1
+false,1,ASUS ROG Strix Evolve,125.0,65.0,41.0,100.0,Symmetrical,Center,Outward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PMW3310,Optical,Front - minimal (54%),7200,1000,130,30,2,1
+false,1,ASUS ROG Strix Impact,115.0,62.0,39.0,112.0,Symmetrical,Center,Inward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PMW3310,Optical,Front - minimal (54%),5000,1000,130,30,2,1
+false,1,ASUS ROG Gladius II Origin,126.0,67.0,45.0,110.0,Ergonomic,Center,Outward - aggressive,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - minimal (53%),12000,1000,250,50,2,1
+false,2,ASUS ROG Gladius II,126.0,67.0,45.0,110.0,Ergonomic,Center,Outward - aggressive,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - minimal (53%),12000,1000,250,50,2,1
+false,2,ASUS ROG Gladius II Core,126.0,67.0,45.0,93.0,Ergonomic,Center,Outward - aggressive,Inward,Right,No,No,Plastic,Wired,PixArt PAW3327,Optical,Front - minimal (53%),6200,1000,220,30,2,1
+false,2,ASUS ROG Keris,118.0,62.0,39.0,79.0,Ergonomic,Back - minimal,Outward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Centered (49%),16000,1000,400,50,2,0
+false,2,Zowie FK1-C,129.0,67.0,37.0,74.0,Symmetrical,Center,Outward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - moderate (56%),3200,1000,250,50,2,0
+false,4,ASUS ROG Keris Wireless,118.0,62.0,39.0,79.0,Ergonomic,Back - minimal,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3335,Optical,Centered (49%),16000,1000,400,40,2,0
+false,2,ASUS ROG Strix Impact II,120.0,62.0,38.6,79.0,Symmetrical,Back - moderate,Inward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PAW3327,Optical,Centered (52%),6200,1000,220,30,2,0
+false,1,ASUS ROG Strix Impact II Wireless,120.0,62.0,38.6,93.0,Symmetrical,Back - moderate,Inward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3335,Optical,Centered (52%),16000,1000,400,40,2,0
+false,3,ASUS ROG Gladius III,123.0,68.0,44.0,79.0,Ergonomic,Back - minimal,Outward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PAW3370,Optical,Centered (51%),26000,1000,400,50,2,1
+false,3,ASUS ROG Gladius III Wireless,123.0,68.0,44.0,89.0,Ergonomic,Back - minimal,Outward - slight,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Centered (51%),26000,1000,400,50,2,1
+false,3,ASUS ROG Spatha X,137.0,89.0,45.0,168.0,Ergonomic,Back - minimal,Outward - slight,Flat,Right,Yes,Yes,Plastic,Wireless,PixArt PAW3370,Optical,Centered (50%),19000,1000,400,50,6,1
+false,1,ASUS ROG Chakram Core,132.7,76.6,42.8,97.0,Ergonomic,Back - minimal,Flat,Flat,Right,Yes,No,Plastic,Wired,PixArt PAW3335,Optical,Front - moderate (56%),16000,1000,400,40,3,0
+false,1,ASUS ROG Chakram,132.7,76.6,42.8,122.0,Ergonomic,Back - minimal,Flat,Flat,Right,Yes,No,Plastic,Wireless,PixArt PAW3335,Optical,Front - moderate (56%),16000,1000,400,40,3,0
+false,3,ASUS ROG Chakram X,132.7,76.6,42.8,127.0,Ergonomic,Back - minimal,Flat,Flat,Right,Yes,No,Plastic,Wireless,ASUS ROG AimPoint,Optical,Front - moderate (56%),36000,1000,650,50,6,0
+false,2,G-Wolves HTM Wireless,124.0,64.0,40.0,63.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Front - moderate (56%),19000,1000,400,50,2,1
+false,2,Zowie FK1+-C,129.0,69.0,39.0,77.0,Symmetrical,Center,Outward - slight,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - moderate (56%),3200,1000,250,50,2,0
+false,2,G-Wolves HTM,124.0,64.0,40.0,65.0,Symmetrical,Center,Outward - slight,Flat,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - moderate (56%),12000,1000,250,50,2,1
+false,3,G-Wolves Skoll Mini,117.0,64.0,40.0,50.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - moderate (57%),16000,1000,400,50,2,0
+false,1,G-Wolves Skoll,125.0,68.0,42.0,66.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Centered (50%),12000,1000,250,50,2,0
+false,2,Finalmouse Ultralight 2,115.6,60.0,35.2,48.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Centered (50%),3200,500,250,50,2,1
+false,,Finalmouse Scream One,128.0,63.5,40.0,81.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Centered (50%),3200,500,250,50,2,1
+false,1,Finalmouse Ultralight Pro Sunset,128.0,63.5,40.0,67.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Centered (50%),3200,500,250,50,2,1
+false,,Finalmouse Ultralight Pro,128.0,63.5,40.0,67.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Centered (50%),3200,500,250,50,2,1
+false,1,Finalmouse Ultralight Phantom,128.0,63.5,40.0,67.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Centered (50%),3200,500,250,50,2,1
+false,1,Finalmouse Air58,128.0,63.5,40.0,58.0,Symmetrical,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Centered (50%),3200,500,250,50,2,1
+false,,VAXEE OUTSET AX,117.4,66.0,43.0,76.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Centered (52%),3200,1000,400,50,2,0
+false,2,Zowie EC3-C,119.0,66.0,41.0,70.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - minimal (54%),3200,1000,250,50,2,0
+false,,VAXEE ZYGEN NP-01,120.0,66.0,39.0,75.0,Hybrid,Back - moderate,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - minimal (54%),3200,1000,400,50,2,0
+false,1,ROCCAT Tyon,129.0,82.0,46.0,130.0,Ergonomic,Center,Flat,Inward,Right,Yes,No,Plastic,Wired,Avago ADNS-A9800,Optical,Front - aggressive (62%),8200,1000,150,30,4,1
+false,1,ROCCAT Kain 120 AIMO,124.0,65.0,43.0,89.0,Symmetrical,Back - minimal,Flat,Flat,Right,No,No,Plastic,Wired,PixArt PMW3381,Optical,Centered (51%),16000,1000,400,50,2,1
+false,1,ROCCAT Kone Pure Ultra,119.0,69.0,39.0,67.0,Ergonomic,Center,Outward - moderate,Inward,Right,Yes,No,Plastic,Wired,PixArt PMW3381,Optical,Front - minimal (55%),16000,1000,400,50,2,2
+false,2,ROCCAT Kone AIMO Remastered,129.0,85.0,43.0,130.0,Ergonomic,Center,Outward - slight,Inward,Right,Yes,No,Plastic,Wired,PixArt PMW3381,Optical,Centered (48%),16000,1000,400,50,3,2
+false,1,ROCCAT Kain 100 AIMO,124.0,65.0,43.0,89.0,Symmetrical,Back - minimal,Flat,Flat,Right,No,No,Plastic,Wired,PixArt PMW3331,Optical,Centered (51%),8500,1000,300,35,2,1
+false,1,ROCCAT Kain 200 AIMO,124.0,65.0,43.0,105.0,Symmetrical,Back - minimal,Flat,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3335,Optical,Centered (49%),16000,1000,400,40,2,1
+false,2,ROCCAT Kone XP,126.0,76.0,40.0,104.0,Ergonomic,Back - minimal,Outward - slight,Flat,Right,Yes,No,Plastic,Wired,PixArt PAW3371,Optical,Front - moderate (58%),19000,1000,400,50,3,1
+false,3,ROCCAT Kone Pro,125.6,72.0,40.0,66.0,Ergonomic,Back - minimal,Outward - slight,Inward,Right,Yes,No,Plastic,Wired,PixArt PAW3371,Optical,Front - moderate (58%),19000,1000,400,50,2,0
+false,3,ROCCAT Kone Pro Air,125.6,72.0,40.0,75.0,Ergonomic,Back - minimal,Outward - slight,Inward,Right,Yes,No,Plastic,Wireless,PixArt PAW3371,Optical,Front - moderate (58%),19000,1000,400,50,2,0
+false,2,Zowie EC2-C,123.0,65.0,42.0,73.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - minimal (53%),3200,1000,250,50,2,0
+false,2,ROCCAT Burst Core,120.0,67.0,38.0,68.0,Symmetrical,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wired,PixArt PMW3331,Optical,Centered (52%),8500,1000,300,35,2,1
+false,3,ROCCAT Burst Pro,120.0,67.0,38.0,68.0,Symmetrical,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Centered (52%),16000,1000,400,50,2,1
+false,3,ROCCAT Burst Pro Air,120.0,67.0,38.0,81.0,Symmetrical,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3371,Optical,Centered (52%),19000,1000,400,50,2,1
+false,3,SteelSeries Aerox 9 Wireless,128.8,68.2,42.1,89.0,Ergonomic,Center,Flat,Flat,Right,No,No,Plastic,Wireless,SteelSeries TrueMove Air,Optical,Centered (47%),18000,1000,400,40,12,1
+false,3,SteelSeries Aerox 5,128.8,68.2,42.1,66.0,Ergonomic,Center,Flat,Flat,Right,No,No,Plastic,Wired,SteelSeries TrueMove Air,Optical,Centered (47%),18000,1000,400,40,4,1
+false,3,SteelSeries Aerox 5 Wireless,128.8,68.2,42.1,74.0,Ergonomic,Center,Flat,Flat,Right,No,No,Plastic,Wireless,SteelSeries TrueMove Air,Optical,Centered (47%),18000,1000,400,40,4,1
+false,3,SteelSeries Prime Mini,120.3,66.2,40.7,61.0,Ergonomic,Center,Flat,Inward,Right,No,No,Plastic,Wired,SteelSeries TrueMove Pro,Optical,Front - minimal (54%),18000,1000,450,50,2,0
+false,3,SteelSeries Prime Mini Wireless,120.3,66.2,40.7,73.0,Ergonomic,Center,Flat,Inward,Right,No,No,Plastic,Wireless,SteelSeries TrueMove Air,Optical,Front - minimal (54%),18000,1000,400,40,2,0
+false,3,SteelSeries Prime,125.3,67.9,42.4,69.0,Ergonomic,Center,Flat,Inward,Right,No,No,Plastic,Wired,SteelSeries TrueMove Pro,Optical,Front - minimal (54%),18000,1000,450,50,2,1
+false,3,SteelSeries Prime+,125.3,67.9,42.4,71.0,Ergonomic,Center,Flat,Inward,Right,No,No,Plastic,Wired,SteelSeries TrueMove Pro+,Optical,Front - minimal (54%),18000,1000,450,50,2,0
+false,3,Razer Viper Mini,119.0,62.0,39.0,61.0,Symmetrical,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3359,Optical,Front - minimal (53%),8500,1000,300,35,2,1
+false,3,SteelSeries Prime Wireless,125.3,67.9,42.4,80.0,Ergonomic,Center,Flat,Inward,Right,No,No,Plastic,Wireless,SteelSeries TrueMove Air,Optical,Front - minimal (54%),18000,1000,400,40,2,0
+false,3,SteelSeries Aerox 3,120.6,67.0,38.0,59.0,Symmetrical,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wired,SteelSeries TrueMove Core,Optical,Back - minimal (45%),8500,1000,300,35,2,1
+false,3,SteelSeries Rival 3,120.6,67.0,38.0,77.0,Symmetrical,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wired,SteelSeries TrueMove Core,Optical,Back - minimal (45%),8500,1000,300,35,2,1
+false,3,SteelSeries Rival 3 Wireless,120.6,67.0,38.0,96.0,Symmetrical,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wireless,SteelSeries TrueMove Air,Optical,Back - minimal (45%),18000,1000,400,40,2,1
+false,3,SteelSeries Rival 5,128.8,62.9,42.1,85.0,Ergonomic,Center,Flat,Flat,Right,No,No,Plastic,Wired,SteelSeries TrueMove Air,Optical,Front - moderate (56%),18000,1000,400,40,3,1
+false,3,SteelSeries Aerox 3 Wireless,120.6,67.0,38.0,68.0,Symmetrical,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wireless,SteelSeries TrueMove Air,Optical,Back - minimal (45%),18000,1000,400,40,2,1
+false,3,SteelSeries Rival 600,131.0,69.0,43.0,96.0,Ergonomic,Center,Flat,Flat,Right,No,No,Plastic,Wired,SteelSeries TrueMove 3,Optical,Centered (51%),12000,1000,350,50,3,1
+false,3,SteelSeries Rival 650 Wireless,131.0,69.0,43.0,121.0,Ergonomic,Center,Flat,Flat,Right,No,No,Plastic,Wireless,SteelSeries TrueMove 3,Optical,Centered (51%),12000,1000,350,50,3,1
+false,3,SteelSeries Sensei Ten,126.0,68.0,39.0,92.0,Symmetrical,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wired,SteelSeries TrueMove Pro,Optical,Centered (48%),18000,1000,450,50,2,1
+false,2,SteelSeries Rival 310,127.6,70.1,42.0,88.0,Ergonomic,Back - minimal,Flat,Inward,Right,No,No,Plastic,Wired,SteelSeries TrueMove 3,Optical,Centered (50%),12000,1000,350,50,2,1
+false,3,Razer DeathAdder V2 Pro,127.0,70.0,42.7,88.0,Ergonomic,Center,Outward - aggressive,Inward,Right,No,No,Plastic,Wireless,Razer Focus+,Optical,Front - moderate (58%),20000,1000,650,50,2,2
+false,3,Ninjutso Origin One X,121.4,58.0,39.9,66.0,Ergonomic,Center,Outward - aggressive,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3335,Optical,Front - moderate (59%),3200,1000,400,40,2,0
+false,2,Ninjutso Katana Ultralight,125.0,60.0,39.2,58.0,Symmetrical,Center,Outward - moderate,Flat,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - minimal (55%),16000,1000,400,50,2,0
+false,2,Ninjutso Katana Superlight,125.0,60.0,39.2,60.0,Symmetrical,Center,Outward - moderate,Flat,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Front - minimal (55%),19000,1000,400,50,2,0
+false,2,Endgame Gear XM1,122.0,66.0,38.5,70.0,Symmetrical,Back - moderate,Outward - slight,Inward - aggressive,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - moderate (56%),16000,1000,400,50,2,0
+false,3,Endgame Gear XM1 RGB,122.0,66.0,38.5,82.0,Symmetrical,Back - moderate,Outward - slight,Inward - aggressive,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Front - moderate (56%),16000,1000,400,50,2,0
+false,3,Endgame Gear XM1r,122.0,66.0,38.5,70.0,Symmetrical,Back - moderate,Outward - slight,Inward - aggressive,Right,No,No,Plastic,Wired,PixArt PAW3370,Optical,Front - moderate (56%),19000,1000,400,50,2,0
+false,3,Xtrfy M4,120.0,68.0,39.0,69.0,Ergonomic,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Centered (50%),16000,1000,400,50,2,1
+false,3,Xtrfy M4 Wireless,120.0,68.0,39.0,71.0,Ergonomic,Back - minimal,Outward - moderate,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Centered (50%),19000,1000,400,50,2,1
+false,3,Xtrfy MZ1,111.0,58.5,36.5,56.0,Symmetrical,Back - aggressive,Flat,Inward,Right,No,No,Plastic,Wired,PixArt PMW3389,Optical,Centered (51%),16000,1000,400,50,2,1
+false,4,Xtrfy MZ1 Wireless,111.0,58.5,36.5,62.0,Symmetrical,Back - aggressive,Flat,Inward,Right,No,No,Plastic,Wireless,PixArt PAW3370,Optical,Centered (51%),19000,1000,400,50,2,1
+false,3,Razer Orochi V2,107.0,62.0,38.0,68.0,Symmetrical,Back - minimal,Inward - moderate,Inward,Right,No,No,Plastic,Wireless,Razer Razer 5G,Optical,Front - aggressive (61%),18000,1000,450,50,2,1
+false,2,Zowie EC1-C,130.0,69.0,42.0,80.0,Ergonomic,Center,Outward - moderate,Inward,Right,No,No,Plastic,Wired,PixArt PMW3360,Optical,Front - minimal (55%),3200,1000,250,50,2,0

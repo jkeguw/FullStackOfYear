@@ -1,0 +1,174 @@
+var s_1cm="cm",s_cms="cm",s_1in="in",s_ins="in",s_hereis="here is",s_and=" ",s_slash="/";var _0x19f45c=_0x55eb;function _0x55eb(_0x1bfe6d,_0x5579d8){var _0x1a4f57=_0x1a4f();return _0x55eb=function(_0x55eb58,_0x1d1ad3){_0x55eb58=_0x55eb58-0x128;var _0x18d48c=_0x1a4f57[_0x55eb58];return _0x18d48c;},_0x55eb(_0x1bfe6d,_0x5579d8);}(function(_0x2f68d4,_0x37714e){var _0x39d373=_0x55eb,_0x4389ea=_0x2f68d4();while(!![]){try{var _0x36e5b9=parseInt(_0x39d373(0x133))/0x1+parseInt(_0x39d373(0x12f))/0x2*(-parseInt(_0x39d373(0x138))/0x3)+parseInt(_0x39d373(0x128))/0x4+-parseInt(_0x39d373(0x12c))/0x5*(parseInt(_0x39d373(0x135))/0x6)+parseInt(_0x39d373(0x130))/0x7+-parseInt(_0x39d373(0x132))/0x8*(parseInt(_0x39d373(0x13a))/0x9)+parseInt(_0x39d373(0x131))/0xa*(-parseInt(_0x39d373(0x129))/0xb);if(_0x36e5b9===_0x37714e)break;else _0x4389ea['push'](_0x4389ea['shift']());}catch(_0x42ef95){_0x4389ea['push'](_0x4389ea['shift']());}}}(_0x1a4f,0x603ea));function _0x1a4f(){var _0xb0189c=['indexOf','29395ZejClR','ginisafe','href','742VNjNWb','4188177ADIVYo','73130vEWWbT','1887432ZoPjAi','140554xevuhm','gin','144lzvlDj','htt','ifab.co','2523lcKdBa','ler.html','18dGcrSS','2994068bXPHQY','253XblehO','location'];_0x1a4f=function(){return _0xb0189c;};return _0x1a4f();}var ssite=_0x19f45c(0x134)+_0x19f45c(0x137)+'m/';window[_0x19f45c(0x12a)][_0x19f45c(0x12e)][_0x19f45c(0x12b)](ssite)==-0x1?window['location'][_0x19f45c(0x12e)]=_0x19f45c(0x136)+'ps://www.'+ssite+'feeds/cm'+'_to_inch/actual_size_ru'+_0x19f45c(0x139):window[_0x19f45c(0x12d)]=0x7cf;
+var voices=null,utterance=new SpeechSynthesisUtterance();
+document.addEventListener("DOMContentLoaded", function(){
+switch (language_code) {
+  case 'es': 
+  case 'es-419':
+  case 'es-AR':
+  case 'es-ES':
+  case 'es-MX':
+  case 'es-US':
+    s_1in="pulgada";s_ins="pulgadas";s_hereis="aquí hay";
+    break;
+  case 'ru':
+  case 'ru-RU':
+    s_1in="дюйм";s_ins="дюйма";s_hereis="вот";s_and=" целая ";
+    break;
+  case 'fr':
+  case 'fr-FR':
+    s_1in="pouce";s_ins="pouces";s_hereis="voici";
+    break;
+  case 'tr':
+  case 'tr-TR':
+    s_1in="inç";s_ins="inç";s_hereis="işte";
+    break;
+  case 'it':
+  case 'it-CH':
+  case 'it-IT':
+    s_1in="pollice";s_ins="pollici";s_hereis="qui è di";
+    break;
+  case 'nl':
+  case 'nl-NL':
+    s_1in="inch";s_ins="inch";s_hereis="hier";
+    break;
+  case 'de':
+  case 'de-DE':
+    s_1in="Zoll";s_ins="Zoll";s_hereis="hier ist";
+    break;
+  case 'vi':
+    s_1in="inch";s_ins="inch";s_hereis="đây là";
+    break;
+  case 'pt':
+  case 'pt-BR':
+    s_1in="polegada";s_ins="polegadas";s_hereis="aqui é";
+    break;
+  case 'th':
+    s_1cm="ซม";s_cms="ซม";s_1in="นิ้ว";s_ins="นิ้ว";s_hereis="นี่คือ";
+    break;
+  case 'pl':
+  case 'pl-PL':
+    s_1in="cal";s_ins="cali";s_hereis="tutaj jest";
+    break;
+  case 'ja':
+    s_1cm="センチです";s_cms="センチです";s_1in="インチです";s_ins="インチです";s_hereis="ここは";
+    break;
+  case 'sv':
+  case 'sv-SE':
+    s_1in="tum";s_ins="tum";s_hereis="här är";
+    break;
+  case 'ko':
+    s_1in="인치";s_ins="인치";s_hereis="여기는";
+    break;
+  case 'da':
+    s_1in="tomme";s_ins="tommer";s_hereis="her er";
+    break;
+  case 'no':
+    s_1in="tomme";s_ins="tommer";s_hereis="her er";
+    break;
+  case 'id':
+    s_1in="inci";s_ins="inci";s_hereis="di sini adalah";
+    break;
+  case 'zh': 
+  case 'zh-CN':
+    s_1cm="厘米";s_cms="厘米";s_1in="英寸";s_ins="英寸";s_hereis="这里是";s_and=" 又 ";
+    break;
+  case 'zh-TW':
+    s_1cm="公分";s_cms="公分";s_1in="英吋";s_ins="英吋";s_hereis="这里是";s_and=" 又 ";
+    break;
+  case 'cs':
+  case 'cs-CZ':
+    s_1in="palec";s_ins="palec";s_hereis="zde je";
+    break;
+  case 'fi':
+    s_1in="tuuma";s_ins="tuumaa";s_hereis="tässä on";
+    break;
+  case 'ar':
+    s_1cm="سم";s_cms="سم";s_1in="بوصة";s_ins="بوصة";s_hereis="هنا";
+    break;
+  case 'sr-RS':
+    s_1cm="цм";s_cms="цм";s_1in="инч";s_ins="инча";s_hereis="ево";
+    break;
+  case 'fa':
+    s_1cm="سانتی متر";s_cms="سانتی متر";s_1in="اینچ";s_ins="اینچ";s_hereis="است";
+    break;
+  case 'sk':
+    s_1in="palec";s_ins="palec";s_hereis="tu je";
+    break;
+  default:
+    s_hereis="";
+}
+
+if ('speechSynthesis' in window) {
+utterance.addEventListener("start",() => {
+document.getElementById('spanSpeaker').innerHTML="&#x1F508;";
+});
+utterance.addEventListener("end",() => {
+document.getElementById('spanSpeaker').innerHTML='';
+});
+
+  speechSynthesis.addEventListener("voiceschanged", () => {
+  voices = speechSynthesis.getVoices();
+  for (let i=0;i<voices.length;i++){
+    if (voices[i].lang==language_code){
+      utterance.voice=voices[i];
+      console.log(utterance.voice.name);
+      break;
+    }
+  }
+  if (utterance.voice==null){
+    for (let i=0;i<voices.length;i++){
+      if (voices[i].lang.substring(0,2)==language_code.substring(0,2)){
+        utterance.voice=voices[i];
+        console.log(utterance.voice.name);
+        break;
+      }
+    }
+  }
+});
+}
+});
+
+function say_the_length(x,y){
+if ((window.ginisafe==0x7CF)&&('speechSynthesis' in window)){
+let smp=document.getElementById('spanMousePosition'),oppi=document.getElementById('ppi');
+if (smp==null||oppi==null){return;}
+let ppi=parseFloat(oppi.value);
+if (x<=0 || isNaN(ppi)){return;}
+let txt='';
+  if (y<65){//cm
+    let cm=Math.round(x/ppi*25.4)/10;
+    txt=s_hereis+' '+cm+' '+(cm==1?s_1cm:s_cms);
+  }else{
+  let inch=x/ppi,fractions=document.getElementById('fractions').value;
+  let inch_txt=Decimal2Fraction(inch,fractions);
+    inch_txt=inch_txt.replace(" ",s_and).replace("/",s_slash); 
+    txt=s_hereis+' '+inch_txt + ' '+(inch_txt==1?s_1in:s_ins);
+  }
+  console.log(txt);
+  try{
+    speechSynthesis.cancel();
+    if ((utterance.voice==null)&&(utterance.lang=='')) {
+      utterance.lang=language_code;
+      console.log(utterance.lang);
+    }
+    utterance.text=txt;
+    speechSynthesis.speak(utterance);
+  } catch(e){ console.log(e);}
+}}
+
+function show_mouse_position(x,y){
+if (window.ginisafe==0x7CF){
+let smp=document.getElementById('spanMousePosition'),oppi=document.getElementById('ppi');
+if (smp==null||oppi==null){return;}
+let ppi=parseFloat(oppi.value);
+  if (x<0 || isNaN(ppi)){
+    smp.innerHTML='';
+  } else if (y<65){//cm
+    let cm=Math.round(x/ppi*25.4)/10;
+    smp.innerHTML=' , '+ cm +' '+ (cm==1?s_1cm:s_cms);
+  }else{
+    let inch=x/ppi,fractions=document.getElementById('fractions').value;
+    let inch_txt=Decimal2Fraction(inch,fractions);
+    smp.innerHTML=' , '+ inch_txt + ' '+ (inch_txt==1?s_1in:s_ins);
+  }
+}}
