@@ -1,26 +1,34 @@
 package router
 
 import (
-	"FullStackOfYear/backend/api/v1"
-	"FullStackOfYear/backend/middleware"
-	"FullStackOfYear/backend/services/auth"
-	"FullStackOfYear/backend/services/email"
-	"FullStackOfYear/backend/services/measurement" // 新增
 	"github.com/gin-gonic/gin"
+	"project/backend/api/v1"
+	"project/backend/middleware"
+	"project/backend/services/auth"
+	"project/backend/services/i18n"
+	"project/backend/services/jwt"
 )
 
-func InitRouter(authService auth.Service, emailService *email.Service, measurementService measurement.Service) *gin.Engine {
-	r := gin.New()
-
-	r.Use(middleware.Logger())
-	r.Use(middleware.Recovery())
+func InitRouter(r *gin.Engine, authService auth.Service, jwtService jwt.Service, i18nService i18n.Service) {
+	// 添加中间件
 	r.Use(middleware.CORS())
+	r.Use(middleware.Recovery())
+	r.Use(middleware.Logger())
+	r.Use(middleware.XSSProtection())
 
-	// 创建 router 实例并传入三个服务
-	v1Router := v1.NewRouter(authService, emailService, measurementService)
+	// 添加国际化中间件
+	r.Use(middleware.I18n(i18nService))
+	
+	// 为每个请求存储i18n服务
+	r.Use(func(c *gin.Context) {
+		c.Set("i18n", i18nService)
+		c.Next()
+	})
 
-	apiV1 := r.Group("/api/v1")
-	v1Router.RegisterRoutes(apiV1)
+	// 添加JWT认证中间件，但不全局应用
+	authMiddleware := middleware.Auth(jwtService)
 
-	return r
+	// 初始化API路由
+	api := r.Group("/api")
+	v1.RegisterRoutes(api, authService, jwtService, authMiddleware)
 }

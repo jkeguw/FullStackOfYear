@@ -1,8 +1,8 @@
 package measurement
 
 import (
-	"FullStackOfYear/backend/models"
-	"FullStackOfYear/backend/types/measurement"
+	"project/backend/models"
+	"project/backend/types/measurement"
 	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"

@@ -2,9 +2,9 @@
 package auth
 
 import (
-	"FullStackOfYear/backend/models"
-	"FullStackOfYear/backend/types/auth"
-	"FullStackOfYear/backend/types/claims"
+	"project/backend/models"
+	"project/backend/types/auth"
+	"project/backend/types/claims"
 	"context"
 )
 
@@ -30,6 +30,21 @@ type Service interface {
 	// User
 	GetUserByID(ctx context.Context, userID string) (*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+	UpdateUser(ctx context.Context, user *models.User) error
+	
+	// Security
+	UpdateUserTwoFactorPending(ctx context.Context, userID string, secret string) error
+	ActivateUserTwoFactor(ctx context.Context, userID string) error
+	DisableUserTwoFactor(ctx context.Context, userID string) error
+	UpdateUserRecoveryCodes(ctx context.Context, userID string, recoveryCodes []string, usedStatus []bool) error
+	VerifyPassword(ctx context.Context, userID string, password string) (bool, error)
+	UpdateUserPassword(ctx context.Context, userID string, newPassword string) error
+	ValidatePasswordResetToken(ctx context.Context, email string, token string) (*models.User, error)
+	GetTwoFactorStatus(ctx context.Context, userID string) (*auth.TwoFactorStatusResponse, error)
+	
+	// Device
+	GetUserDevices(ctx context.Context, userID string) ([]models.Device, error)
+	RemoveUserDevice(ctx context.Context, userID string, deviceID string) error
 }
 
 // TokenGenerator interface

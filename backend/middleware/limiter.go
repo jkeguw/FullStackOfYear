@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"FullStackOfYear/backend/internal/errors"
-	"FullStackOfYear/backend/services/limiter"
+	"project/backend/internal/errors"
+	"project/backend/services/limiter"
 	"github.com/gin-gonic/gin"
 )
 

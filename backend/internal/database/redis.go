@@ -1,7 +1,7 @@
 package database
 
 import (
-	"FullStackOfYear/backend/config"
+	"project/backend/config"
 	"github.com/go-redis/redis/v8"
 )
 

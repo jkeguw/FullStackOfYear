@@ -1,72 +1,32 @@
 <template>
   <div>
-    <nav class="navbar">
-      <div class="container mx-auto px-4">
-        <div class="flex justify-between items-center py-4">
-          <router-link to="/" class="logo flex items-center">
-            <el-icon class="mr-2 text-xl"><Mouse /></el-icon>
-            <span class="font-bold text-xl text-white">{{ $t('common.app_name') }}</span>
-          </router-link>
-          
-          <div class="flex items-center space-x-4">
-            <el-button v-if="isInCompare" type="primary" size="small" @click="goToComparison">
-              <el-badge :value="comparisonCount" :hidden="comparisonCount === 0">
-                比较中
-              </el-badge>
-            </el-button>
-            
-            <router-link v-if="!isLoggedIn" to="/login">
-              <el-button type="primary" size="small">{{ $t('common.login') }}</el-button>
-            </router-link>
-            
-            <el-dropdown v-else>
-              <el-avatar 
-                :size="32" 
-                :src="userAvatar" 
-                class="cursor-pointer"
-              >
-                {{ userInitials }}
-              </el-avatar>
-              
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="$router.push('/profile')">个人资料</el-dropdown-item>
-                  <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-            
-            <language-switcher class="hidden md:block" />
-            
-            <el-button @click="drawerOpen = true" type="primary" circle>
-              <el-icon><Menu /></el-icon>
-            </el-button>
-          </div>
-        </div>
+    <!-- 抽屉开关按钮 -->
+    <div class="drawer-toggle-button" @click="drawerOpen = true">
+      <div class="handle-icon">
+        <el-icon><Menu /></el-icon>
       </div>
-    </nav>
+    </div>
     
     <!-- 抽屉菜单 -->
     <el-drawer
       v-model="drawerOpen"
-      title="菜单导航"
-      direction="rtl"
+      direction="ltr"
       size="280px"
       :with-header="false"
       :destroy-on-close="false"
       custom-class="nav-drawer"
     >
       <div class="drawer-content">
-        <div class="drawer-header">
-          <div class="flex items-center justify-between px-4 py-4 border-b border-gray-700">
-            <span class="text-lg font-bold text-white">导航菜单</span>
-            <el-button @click="drawerOpen = false" type="text" circle>
-              <el-icon><Close /></el-icon>
-            </el-button>
+        <div class="drawer-body px-4 pb-4 pt-6">
+          <div class="mb-6">
+            <router-link to="/" class="logo flex items-center mb-4" @click="drawerOpen = false">
+              <el-icon class="mr-2 text-xl"><Mouse /></el-icon>
+              <span class="font-bold text-xl text-white">{{ $t('common.app_name') }}</span>
+            </router-link>
+            
+            <language-switcher-flags class="mt-4" />
           </div>
-        </div>
-        
-        <div class="drawer-body px-4 pb-4">
+          
           <div class="mt-4">
             <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">主导航</h3>
             <div class="flex flex-col space-y-4">
@@ -92,17 +52,13 @@
           <div class="mt-6">
             <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">工具集</h3>
             <div class="flex flex-col space-y-4">
-              <router-link to="/tools/dpi" class="drawer-link" active-class="active" @click="drawerOpen = false">
-                <el-icon><Reading /></el-icon>
-                <span>DPI 计算器</span>
+              <router-link to="/tools/sensitivity" class="drawer-link" active-class="active" @click="drawerOpen = false">
+                <el-icon><Operation /></el-icon>
+                <span>灵敏度工具</span>
               </router-link>
               <router-link to="/tools/ruler" class="drawer-link" active-class="active" @click="drawerOpen = false">
                 <el-icon><ScaleToOriginal /></el-icon>
                 <span>测量尺子</span>
-              </router-link>
-              <router-link to="/tools/sensitivity" class="drawer-link" active-class="active" @click="drawerOpen = false">
-                <el-icon><Operation /></el-icon>
-                <span>灵敏度转换</span>
               </router-link>
             </div>
           </div>
@@ -112,11 +68,11 @@
             <div class="flex flex-col space-y-4">
               <router-link to="/cart" class="drawer-link" active-class="active" @click="drawerOpen = false">
                 <el-icon><ShoppingCart /></el-icon>
-                <span>{{ $t('cart.shopping_cart') }}</span>
+                <span>购物车</span>
               </router-link>
               <router-link to="/checkout" class="drawer-link" active-class="active" @click="drawerOpen = false">
                 <el-icon><ShoppingBag /></el-icon>
-                <span>{{ $t('order.checkout') }}</span>
+                <span>结算</span>
               </router-link>
               <router-link v-if="isLoggedIn" to="/orders" class="drawer-link" active-class="active" @click="drawerOpen = false">
                 <el-icon><Finished /></el-icon>
@@ -132,7 +88,6 @@
                 <el-icon><User /></el-icon>
                 <span>个人资料</span>
               </router-link>
-              <!-- 已移除个人设备管理功能 -->
               <router-link to="/orders" class="drawer-link" active-class="active" @click="drawerOpen = false">
                 <el-icon><Document /></el-icon>
                 <span>订单记录</span>
@@ -144,31 +99,39 @@
             </div>
           </div>
           
-          <div class="mt-6">
-            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">{{ $t('common.about') }}</h3>
+          <div class="mt-6" v-else>
             <div class="flex flex-col space-y-4">
-              <router-link to="/about" class="drawer-link" active-class="active" @click="drawerOpen = false">
-                <el-icon><InfoFilled /></el-icon>
-                <span>{{ $t('common.about_us') }}</span>
+              <router-link to="/login" class="drawer-link" active-class="active" @click="drawerOpen = false">
+                <el-icon><Key /></el-icon>
+                <span>{{ $t('common.login') }}</span>
               </router-link>
-              <router-link to="/contact" class="drawer-link" active-class="active" @click="drawerOpen = false">
-                <el-icon><Message /></el-icon>
-                <span>{{ $t('common.contact') }}</span>
-              </router-link>
-              <router-link to="/privacy" class="drawer-link" active-class="active" @click="drawerOpen = false">
-                <el-icon><Lock /></el-icon>
-                <span>{{ $t('common.privacy') }}</span>
-              </router-link>
-              <router-link to="/terms" class="drawer-link" active-class="active" @click="drawerOpen = false">
-                <el-icon><Document /></el-icon>
-                <span>{{ $t('common.terms') }}</span>
+              <router-link to="/register" class="drawer-link" active-class="active" @click="drawerOpen = false">
+                <el-icon><UserFilled /></el-icon>
+                <span>{{ $t('common.register') }}</span>
               </router-link>
             </div>
           </div>
           
           <div class="mt-6">
-            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">{{ $t('common.language') }}</h3>
-            <language-switcher />
+            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">关于</h3>
+            <div class="flex flex-col space-y-4">
+              <router-link to="/about" class="drawer-link" active-class="active" @click="drawerOpen = false">
+                <el-icon><InfoFilled /></el-icon>
+                <span>关于我们</span>
+              </router-link>
+              <router-link to="/contact" class="drawer-link" active-class="active" @click="drawerOpen = false">
+                <el-icon><Message /></el-icon>
+                <span>联系我们</span>
+              </router-link>
+              <router-link to="/privacy" class="drawer-link" active-class="active" @click="drawerOpen = false">
+                <el-icon><Lock /></el-icon>
+                <span>隐私政策</span>
+              </router-link>
+              <router-link to="/terms" class="drawer-link" active-class="active" @click="drawerOpen = false">
+                <el-icon><Document /></el-icon>
+                <span>使用条款</span>
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -184,9 +147,10 @@ import {
   Mouse, Menu, Close, Plus, HomeFilled, DataAnalysis, 
   ChatDotRound, Switch, Reading, ScaleToOriginal, Operation, 
   Pointer, User, Monitor, Document, SwitchButton, ShoppingCart, 
-  ShoppingBag, Finished, InfoFilled, Message, Lock
+  ShoppingBag, Finished, InfoFilled, Message, Lock, Key,
+  UserFilled
 } from '@element-plus/icons-vue';
-import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue';
+import LanguageSwitcherFlags from '@/components/common/LanguageSwitcherFlags.vue';
 import { useI18n } from 'vue-i18n';
 
 // 初始化i18n
@@ -204,15 +168,6 @@ const drawerOpen = ref(false);
 
 // 计算属性
 const isLoggedIn = computed(() => !!userStore.token);
-
-const userAvatar = computed(() => {
-  return userStore.user?.avatar || '';
-});
-
-const userInitials = computed(() => {
-  if (!userStore.user?.name) return '';
-  return userStore.user.name.substring(0, 1).toUpperCase();
-});
 
 const comparisonCount = computed(() => {
   return comparisonStore.selectedMice.length;
@@ -234,13 +189,30 @@ function goToComparison() {
 </script>
 
 <style scoped>
-.navbar {
-  background-color: var(--claude-bg-dark);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  border-bottom: 1px solid var(--claude-border-dark);
+.drawer-toggle-button {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  background: var(--claude-primary-purple);
+  color: white;
+  padding: 12px 8px;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  z-index: 40;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.drawer-toggle-button:hover {
+  transform: translateY(-50%) translateX(5px);
+  background: var(--claude-primary-purple-darker);
+}
+
+.drawer-toggle-button .handle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-drawer :deep(.el-drawer__body) {
@@ -284,5 +256,10 @@ function goToComparison() {
 .drawer-link .el-icon {
   margin-right: 12px;
   font-size: 18px;
+}
+
+.logo {
+  color: white;
+  text-decoration: none;
 }
 </style>

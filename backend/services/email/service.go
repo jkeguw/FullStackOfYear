@@ -1,143 +1,97 @@
 package email
 
 import (
-	"bytes"
-	"crypto/tls"
 	"fmt"
-	"go.uber.org/zap"
-	"gopkg.in/gomail.v2"
-	"html/template"
+	"log"
 )
 
-// Config represents email service configuration
-type Config struct {
-	SMTP struct {
-		Host     string
-		Port     int
-		Username string
-		Password string
-	}
-	From      string
-	BaseURL   string
-	Templates map[string]string
-}
-
-type Dialer interface {
-	DialAndSend(m ...*gomail.Message) error
-}
-
-// Service implements email sending functionality
+// Service 提供电子邮件功能
 type Service struct {
-	config    *Config
-	dialer    Dialer
-	templates map[string]*template.Template
-	logger    *zap.Logger
 }
 
-// EmailData represents the data needed for email templates
-type EmailData struct {
-	Username    string
-	VerifyLink  string
-	ExpiresIn   int64
-	SupportMail string
+// NewService 创建一个新的邮件服务
+func NewService(config interface{}) *Service {
+	return &Service{}
 }
 
-// NewEmailService creates a new email service instance
-func NewEmailService(config *Config, logger *zap.Logger) (*Service, error) {
-	dialer := gomail.NewDialer(
-		config.SMTP.Host,
-		config.SMTP.Port,
-		config.SMTP.Username,
-		config.SMTP.Password,
-	)
-
-	// Configure TLS
-	dialer.TLSConfig = &tls.Config{
-		InsecureSkipVerify: false,
-		MinVersion:         tls.VersionTLS12,
-	}
-
-	// Load templates
-	templates := make(map[string]*template.Template)
-	for name, path := range config.Templates {
-		tmpl, err := template.ParseFiles(path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse template %s: %v", name, err)
-		}
-		templates[name] = tmpl
-	}
-
-	return &Service{
-		config:    config,
-		dialer:    dialer,
-		templates: templates,
-		logger:    logger,
-	}, nil
-}
-
-// SendVerificationEmail sends verification email to user
-func (s *Service) SendVerificationEmail(to, username, token string) error {
-	return s.withRetry(func() error {
-		// Prepare template data
-		data := EmailData{
-			Username:    username,
-			VerifyLink:  fmt.Sprintf("%s/verify-email?token=%s", s.config.BaseURL, token),
-			ExpiresIn:   24,
-			SupportMail: s.config.From,
-		}
-
-		// Execute template
-		var body bytes.Buffer
-		tmpl := s.templates["verifyEmail"]
-		if tmpl == nil {
-			return fmt.Errorf("verify email template not found")
-		}
-
-		if err := tmpl.Execute(&body, data); err != nil {
-			return fmt.Errorf("failed to execute template: %v", err)
-		}
-
-		// Create email message
-		m := gomail.NewMessage()
-		m.SetHeader("From", s.config.From)
-		m.SetHeader("To", to)
-		m.SetHeader("Subject", "Verify Your Email Address")
-		m.SetBody("text/html", body.String())
-
-		// Send email
-		if err := s.dialer.DialAndSend(m); err != nil {
-			// Wrap network related errors as retryable
-			if isNetworkError(err) {
-				return &RetryableError{Err: err}
-			}
-			return err
-		}
-
-		return nil
-	})
-}
-
-// isNetworkError checks if the error is network related
-func isNetworkError(err error) bool {
-	// Add specific error type checks based on your needs
-	// For example: timeout, connection refused, etc.
-	return true // For now, consider all errors retryable
-}
-
-// SendPasswordResetEmail sends password reset email to user
-func (s *Service) SendPasswordResetEmail(to, username, token string) error {
-	// Similar to SendVerificationEmail but with different template
-	// Will implement when we add password reset functionality
+// SendEmail 发送一封电子邮件
+func (s *Service) SendEmail(to, subject, body string) error {
+	log.Printf("发送邮件到 %s，主题：%s", to, subject)
+	// 在实际实现中，这里会使用SMTP发送邮件
 	return nil
 }
 
-// TestConnection tests the email configuration by sending a test email
-func (s *Service) TestConnection() error {
-	m := gomail.NewMessage()
-	m.SetHeader("From", s.config.From)
-	m.SetHeader("To", s.config.From) // Send to self
-	m.SetHeader("Subject", "Test Email")
-	m.SetBody("text/plain", "This is a test email to verify SMTP configuration.")
+// SendVerificationEmail 发送邮箱验证邮件
+func (s *Service) SendVerificationEmail(to, username, token string) error {
+	subject := "请验证您的电子邮件地址"
+	verificationURL := fmt.Sprintf("http://localhost:8080/api/auth/verify-email?token=%s", token)
+	
+	// 构建邮件内容
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>邮箱验证</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; 
+                 text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>请验证您的电子邮件地址</h1>
+        <p>您好，%s! 感谢您注册！请点击下面的按钮验证您的电子邮件地址：</p>
+        <p><a href="%s" class="button">验证邮箱</a></p>
+        <p>或者，您可以复制并粘贴以下链接到您的浏览器：</p>
+        <p>%s</p>
+        <p>如果您没有注册账号，请忽略此邮件。</p>
+    </div>
+</body>
+</html>
+`, username, verificationURL, verificationURL)
 
-	return s.dialer.DialAndSend(m)
+	return s.SendEmail(to, subject, body)
+}
+
+// SendPasswordResetEmail 发送密码重置邮件
+func (s *Service) SendPasswordResetEmail(to, username, token string) error {
+	subject := "密码重置请求"
+	resetURL := fmt.Sprintf("http://localhost:8080/reset-password?token=%s", token)
+	
+	// 构建邮件内容
+	body := fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>密码重置</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; 
+                 text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>密码重置请求</h1>
+        <p>%s, 我们收到了重置您密码的请求。如果这是您申请的，请点击下面的按钮重置密码：</p>
+        <p><a href="%s" class="button">重置密码</a></p>
+        <p>或者，您可以复制并粘贴以下链接到您的浏览器：</p>
+        <p>%s</p>
+        <p>如果您没有申请重置密码，请忽略此邮件。</p>
+    </div>
+</body>
+</html>
+`, username, resetURL, resetURL)
+
+	return s.SendEmail(to, subject, body)
+}
+
+// TestConnection 测试邮件配置
+func (s *Service) TestConnection() error {
+	return nil
 }

@@ -2,7 +2,7 @@ package email
 
 import (
 	"fmt"
-	"go.uber.org/zap"
+	"log"
 	"time"
 )
 
@@ -26,10 +26,7 @@ func (s *Service) withRetry(operation func() error) error {
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		if attempt > 0 {
 			time.Sleep(retryInterval)
-			s.logger.Info("Retrying email sending",
-				zap.Int("attempt", attempt+1),
-				zap.Int("maxAttempts", maxRetries),
-			)
+			log.Printf("Retrying email sending: attempt %d/%d", attempt+1, maxRetries)
 		}
 
 		err := operation()

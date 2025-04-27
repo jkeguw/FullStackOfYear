@@ -1,0 +1,508 @@
+﻿document.addEventListener("DOMContentLoaded", function(){
+let oadjuster=document.getElementById("adjuster");
+if (typeof(oadjuster)=='undefined' || oadjuster == null){return;}  
+var adjusters={name:[],inch:[],selectUI:oadjuster,
+additem: function(name,inch) {
+  this.name.push(name);
+  this.inch.push(inch);
+  var opt = document.createElement('option');
+  opt.value=inch;
+  opt.innerHTML=name;
+  this.selectUI.appendChild(opt);
+  }
+};  
+
+adjusters.additem("standard credit card (width/3.375in)",3.375);
+adjusters.additem("standard credit card (height/2.215in)",2.125);
+if (screen.width>700){adjusters.additem("2 credit cards width (6.75in)",6.75);}
+if (screen.width>1000){adjusters.additem("3 credit cards width (10.125in)",10.125);}
+if (screen.width>500){adjusters.additem("standard CD diameter (120mm)",4.724);}
+
+var xhr = new XMLHttpRequest();
+
+var jsonfile='https://ipapi.co/json/';
+xhr.open('GET',jsonfile,true);
+xhr.responseType = 'json';
+xhr.onreadystatechange = function(e) {
+  if (this.readyState == 4 && this.status == 200) {
+  let c=this.response.country_code,sw=screen.width,oo=oadjuster.options;
+  switch (c) {
+    case "US": {
+      if (sw>500){
+      adjusters.additem("U.S. dollar bill width (6.14in)",6.14);
+      adjusters.additem("print & copy paper, letter size, longer side (11in)",11);
+      }
+      break;
+    }
+    case "RU": {//Rissia
+      oo[1].text="Стандартная кредитная карта (ширина/3.375 дюйма)";
+      oo[2].text="Стандартная кредитная карта (высота/2.215 дюйма)";
+      if (sw>700){oo[3].text="Ширина 2 кредитных карт (6.75 дюйма)";}
+      if (sw>1000){oo[4].text="Ширина 3 кредитных карт (10.125 дюйма)";}
+      if (sw>500){
+        oo[5].text="Стандартный диаметр компакт-диска (120 мм)";
+        adjusters.additem("Банкноты 100 рублей (100 ₽, 150 mm)",5.9055);
+        adjusters.additem("Копировальная бумага формата А4, более длинная сторона (297 мм)",11.693);
+      }
+      break;
+    }
+    case "MX": {//Mexico
+      oo[1].text="Tarjeta de crédito estándar (ancho/3.375 pulg.)";
+      oo[2].text="Tarjeta de crédito estándar (altura/2.215 pulg.)";
+      if (sw>700){oo[3].text="Ancho de 2 tarjetas de crédito (6.75 pulg.)";}
+      if (sw>1000){oo[4].text="Ancho de 3 tarjetas de crédito (10.125 pulg.)";}
+      if (sw>500){
+        oo[5].text="Diámetro de CD estándar (120 mm)";
+        adjusters.additem("Billete de veinte pesos mexicanos (tipo F, 127mm)",5);
+        adjusters.additem("Papel de impresión y copia, tamaño carta, borde más largo (11 pulg.)",11);
+      }
+      break;
+    } 
+    case "ES": {//Spain
+      oo[1].text="Tarjeta de crédito estándar (ancho/3.375 pulg.)";
+      oo[2].text="Tarjeta de crédito estándar (altura/2.215 pulg.)";
+      if (sw>700){oo[3].text="Ancho de 2 tarjetas de crédito (6.75 pulg.)";}
+      if (sw>1000){oo[4].text="Ancho de 3 tarjetas de crédito (10.125 pulg.)";}
+      if (sw>500){
+        oo[5].text="Diámetro de CD estándar (120 mm)";
+        adjusters.additem("billete de cinco euros (5€, 120 mm)",4.724);
+        adjusters.additem("billete de diez euros (10€, 127 mm)",5);
+        adjusters.additem("billete de veinte euros (20€, 133 mm)",5.236);
+        adjusters.additem("Papel para impresión y copia, tamaño A4, lado más largo (297 mm)",11.693);
+      }
+      break;
+    }
+    case "TR": {//Turkey
+      oo[1].text="standart kredi kartı (genişlik/3.375 inç)";
+      oo[2].text="standart kredi kartı (yükseklik/2.215 inç)";
+      if (sw>700){oo[3].text="2 kredi kartı genişliği (6.75 inç)";}
+      if (sw>1000){oo[4].text="3 kredi kartı genişliği (10.125 inç)";}
+      if (sw>500){
+        oo[5].text="standart CD çapı (120mm)";
+        adjusters.additem("türk lirası banknot (₺5 , 130 mm)",5.118);
+        adjusters.additem("türk lirası banknot (₺10 , 136 mm)",5.354);
+        adjusters.additem("türk lirası banknot (₺20 , 142 mm)",5.591);
+        adjusters.additem("baskı ve fotokopi kağıdı, A4 boyutunda, daha uzun kenar (297 mm)",11.693);
+      }
+      break;
+    }
+    case "IT": {//Italy
+      oo[1].text="carta di credito standard (larghezza/3.375 pollici)";
+      oo[2].text="carta di credito standard (altezza/2.215 pollici)";
+      if (sw>700){oo[3].text="Larghezza 2 carte di credito (6.75 pollici)";}
+      if (sw>1000){oo[4].text="Larghezza 3 carte di credito (10.125 pollici)";}
+      if (sw>500){
+        oo[5].text="diametro CD standard (120mm)";
+        adjusters.additem("Banconota da 5 euro (5€, 120 mm)",4.724);
+        adjusters.additem("Banconota da 10 euro (10€, 127 mm)",5);
+        adjusters.additem("Banconota da 20 euro (20€, 133 mm)",5.236);
+        adjusters.additem("carta per stampa e copia, formato A4, lato più lungo (297 mm)",11.693);
+      }
+      break;
+    }    
+    case "CA": {//Canada
+      if (sw>500){
+      adjusters.additem("Canadian vertical $10 note (152.4mm)",6);
+      adjusters.additem("print & copy paper, letter size, longer side (11in)",11);
+      }
+      break;
+    }
+    case "FR": {//France
+      oo[1].text="carte de crédit standard (largeur/3.375 po)";
+      oo[2].text="carte de crédit standard (hauteur/2.215 po)";
+      if (sw>700){oo[3].text="Largeur de 2 cartes de crédit (6.75 po)";}
+      if (sw>1000){oo[4].text="Largeur de 3 cartes de crédit (10.125 po)";}
+      if (sw>500){
+        oo[5].text="diamètre CD standard (120 mm)";
+        adjusters.additem("billet de 5 euros (5€, 120 mm)",4.724);
+        adjusters.additem("billet de 10 euros (10€, 127 mm)",5);
+        adjusters.additem("billet de 20 euros (20€, 133 mm)",5.236);
+        adjusters.additem("papier d'impression et de copie, format A4, côté long (297 mm)",11.693);
+      }
+      break;
+    }
+    case "GB": {//United Kingdom
+      if (sw>500){
+      adjusters.additem("UK polymer £5 note(125mm)",4.921);
+      adjusters.additem("UK polymer £10 note(132mm)",5.197);
+      adjusters.additem("UK polymer £20 note(139mm)",5.472);
+      adjusters.additem("print & copy paper, A4 size, longer side (297mm)",11.693);
+      }
+      break;
+    }
+    case "UA": {//Ukraine
+      oo[1].text="стандартна кредитна картка (ширина/3.375 дюйма)";
+      oo[2].text="стандартна кредитна картка (висота/2.215 дюйма)";
+      if (sw>700){oo[3].text="Ширина 2 кредитних карток (6.75 дюйма)";}
+      if (sw>1000){oo[4].text="Ширина 3 кредитних карток (10.125 дюйма)";}
+      if (sw>500){
+        oo[5].text="стандартний діаметр CD (120 мм)";
+        adjusters.additem("20 гривень (130 mm)",5.118);
+        adjusters.additem("50 гривень (136 mm)",5.354);
+        adjusters.additem("100 гривень (142 mm)",5.591);
+        adjusters.additem("папір для друку та копіювання, розмір А4, довша сторона (297 мм)",11.693);
+      }
+      break;
+    }
+    case "IN": {//India
+      if (sw>500){
+      adjusters.additem("भारतीय १० रुपये का नोट	₹10 (123mm)",4.843);
+      adjusters.additem("प्रिंट और कॉपी पेपर, A4 आकार, लंबा भाग (297mm)",11.693);
+      }
+      break;
+    }
+    case "CL": {//Chile
+      oo[1].text="tarjeta de crédito estándar (ancho/3.375 pulgadas)";
+      oo[2].text="tarjeta de crédito estándar (altura/2.215 pulgadas)";
+      if (sw>700){oo[3].text="Ancho de 2 tarjetas de crédito (6.75 pulgadas)";}
+      if (sw>1000){oo[4].text="Ancho de 3 tarjetas de crédito (10.125 pulgadas)";}
+      if (sw>500){
+        oo[5].text="diámetro de CD estándar (120 mm)";
+        adjusters.additem("billete de 1000 pesos chilenos (120 mm)",4.724);
+        adjusters.additem("billete de 2000 pesos chilenos (127 mm)",5);
+        adjusters.additem("billete de 5000 pesos chilenos (134 mm)",5.276);
+        adjusters.additem("papel de impresión y copia, tamaño carta, lado más largo (11 pulg.)",11);
+      }
+      break;
+    }
+    case "NL": {//Netherlands
+      oo[1].text="standaard creditcard (breedte/3.375 inch)";
+      oo[2].text="standaard creditcard (hoogte/2.215 inch)";
+      if (sw>700){oo[3].text="2 creditcards breed (6.75 inch)";}
+      if (sw>1000){oo[4].text="3 creditcards breedte (10.125 inch)";}
+      if (sw>500){
+        oo[5].text="standaard CD-diameter (120 mm)";
+        adjusters.additem("Bankbiljet van 5 euro (5€, 120 mm)",4.724);
+        adjusters.additem("Bankbiljet van 10 euro (10€, 127 mm)",5);
+        adjusters.additem("Bankbiljet van 20 euro (20€, 133 mm)",5.236);
+        adjusters.additem("kopieer- en printpapier, A4-formaat, lange zijde (297 mm)",11.693);
+      }
+      break;
+    }
+    case "CO": {//Colombia
+      oo[1].text="tarjeta de crédito estándar (ancho/3.375 pulgadas)";
+      oo[2].text="tarjeta de crédito estándar (altura/2.215 pulgadas)";
+      if (sw>700){oo[3].text="Ancho de 2 tarjetas de crédito (6.75 pulgadas)";}
+      if (sw>1000){oo[4].text="Ancho de 3 tarjetas de crédito (10.125 pulgadas)";}
+      if (sw>500){
+        oo[5].text="diámetro de CD estándar (120 mm)";
+        adjusters.additem("Billete de 2 mil pesos (128 mm)",5.039);
+        adjusters.additem("Billete de 5 mil pesos (133 mm)",5.236);
+        adjusters.additem("papel de impresión y copia, tamaño carta, lado más largo (11 pulg.)",11);
+      }
+      break;
+    }
+    case "PE": {//Peru
+      oo[1].text="tarjeta de crédito estándar (ancho/3.375 pulgadas)";
+      oo[2].text="tarjeta de crédito estándar (altura/2.215 pulgadas)";
+      if (sw>700){oo[3].text="Ancho de 2 tarjetas de crédito (6.75 pulgadas)";}
+      if (sw>1000){oo[4].text="Ancho de 3 tarjetas de crédito (10.125 pulgadas)";}
+      if (sw>500){
+        oo[5].text="diámetro de CD estándar (120 mm)";
+        adjusters.additem("papel de impresión y copia, tamaño A4, lado más largo (297 mm)",11.693);
+      }
+      break;
+    }
+    case "VN": {//Vietnam
+      oo[1].text="thẻ tín dụng tiêu chuẩn (chiều rộng/3.375 in)";
+      oo[2].text="thẻ tín dụng tiêu chuẩn (chiều cao/2.215 in)";
+      if (sw>700){oo[3].text="Chiều rộng 2 thẻ tín dụng (6.75 in)";}
+      if (sw>1000){oo[4].text="Chiều rộng 3 thẻ tín dụng (10.125 in)";}
+      if (sw>500){
+        oo[5].text="đường kính đĩa CD tiêu chuẩn (120 mm)";
+        adjusters.additem("1000 Đồng/2000 Đồng/5000 Đồng (134 mm)",5.276);
+        adjusters.additem("giấy A4, cạnh dài hơn (297 mm)",11.693);
+      }
+      break;
+    }
+    case "AU": {//Australia
+      if (sw>500){
+      adjusters.additem("Australian $5 note(130mm)",5.118);
+      adjusters.additem("Australian $10 note(137mm)",5.394);
+      adjusters.additem("Australian $20 note(144mm)",5.669);
+      adjusters.additem("print & copy paper, A4 size, longer side (297mm)",11.693);
+      }
+      break;
+    }
+    case "AR": {//Argentina
+      oo[1].text="tarjeta de crédito estándar (ancho/3.375 pulgadas)";
+      oo[2].text="tarjeta de crédito estándar (altura/2.215 pulgadas)";
+      if (sw>700){oo[3].text="Ancho de 2 tarjetas de crédito (6.75 pulgadas)";}
+      if (sw>1000){oo[4].text="Ancho de 3 tarjetas de crédito (10.125 pulgadas)";}
+      if (sw>500){
+        oo[5].text="diámetro de CD estándar (120 mm)";
+        adjusters.additem("Argentina 200 Pesos (155 mm)",6.102);
+        adjusters.additem("papel de impresión y copia, tamaño A4, lado más largo (297 mm)",11.693);
+      }
+      break;
+    }
+    case "DE": {//Germany
+      oo[1].text="Standard-Kreditkarte (Breite/3.375 Zoll)";
+      oo[2].text="Standard-Kreditkarte (Höhe/2.215 Zoll)";
+      if (sw>700){oo[3].text="2 Kreditkartenbreite (6.75 Zoll)";}
+      if (sw>1000){oo[4].text="3 Kreditkartenbreite (10.125 Zoll)";}
+      if (sw>500){
+        oo[5].text="Standard-CD-Durchmesser (120 mm)";
+        adjusters.additem("5 euro schein (5€, 120 mm)",4.724);
+        adjusters.additem("10 euro schein (10€, 127 mm)",5);
+        adjusters.additem("20 euro schein (20€, 133 mm)",5.236);
+        adjusters.additem("Druck- und Kopierpapier, A4-Format, längere Seite (297 mm)",11.693);
+      }
+      break;
+    } 
+    case "PH": {//Philippines
+      oo[1].text="karaniwang credit card (lapad/3.375 pulgada)";
+      oo[2].text="karaniwang credit card (taas/2.215 pulgada)";
+      if (sw>700){oo[3].text="2 credit card na lapad (6.75 pulgada)";}
+      if (sw>1000){oo[4].text="3 credit card na lapad (10.125 pulgada)";}
+      if (sw>500){
+        oo[5].text="karaniwang diameter ng CD (120 mm)";
+        adjusters.additem("20/50/100/200/1000 piso perang papel (160 mm)",6.299);
+        adjusters.additem("copier bond paper, A4 (297 mm)",11.693);
+        adjusters.additem("copier bond paper, Letter (11 pulgada)",11);
+      }
+      break;
+    }
+    case "KZ": {//Kazakhstan
+      oo[1].text="стандартты несие картасы (ені/3.375 дюйм)";
+      oo[2].text="стандартты несие картасы (биіктігі/2.215 дюйм)";
+      if (sw>700){oo[3].text="2 несие картасының ені (6.75 дюйм)";}
+      if (sw>1000){oo[4].text="3 несие картасының ені (10.125 дюйм)";}
+      if (sw>500){
+        oo[5].text="CD стандартты диаметрі (120 мм)";
+        adjusters.additem("100/200/500/1000 теңгелік банкнот (144 mm)",5.669);
+        adjusters.additem("500 теңгелік банкнот (160 mm)",6.299);
+        adjusters.additem("A4 көшірме қағазы (297 mm)",11.693);
+      }
+      break;
+    }
+    case "TH": {//Thailand
+      oo[1].text="บัตรเครดิตมาตรฐาน (กว้าง/3.375 นิ้ว)";
+      oo[2].text="บัตรเครดิตมาตรฐาน (สูง/2.215 นิ้ว)";
+      if (sw>700){oo[3].text="ความกว้างของบัตรเครดิต 2 ใบ (6.75 นิ้ว)";}
+      if (sw>1000){oo[4].text="ความกว้างของบัตรเครดิต 3 ใบ (10.125 นิ้ว)";}
+      if (sw>500){
+        oo[5].text="เส้นผ่านศูนย์กลางซีดีมาตรฐาน (120 มม.)";
+        adjusters.additem("ธนบัตร 20 บาท  (138 มม)",5.433);
+        adjusters.additem("ธนบัตร 50 บาท  (144 มม)",5.669);
+        adjusters.additem("ธนบัตร 100 บาท  (150 มม)",5.906);
+        adjusters.additem("กระดาษถ่ายเอกสาร A4 (297 mm)",11.693);
+      }
+      break;
+    }
+    case "JP": {//Japan
+      oo[1].text="標準的なクレジットカードサイズ (幅/3.375 インチ)";
+      oo[2].text="標準的なクレジットカードサイズ (高さ/2.215 インチ)";
+      if (sw>700){oo[3].text="クレジットカード2枚分の幅(6.75インチ)";}
+      if (sw>1000){oo[4].text="クレジット カード 3 枚分の幅 (10.125 インチ)";}
+      if (sw>500){
+        oo[5].text="標準コンパクトディスク直径 (120 mm)";
+        adjusters.additem("千円紙幣 (150 mm)",5.906);
+        adjusters.additem("五千円紙幣 (156 mm)",6.142);
+        adjusters.additem("一万円紙幣 (160 mm)",6.299);
+        adjusters.additem("A4 コピー用紙(297 mm)",11.693);
+      }
+      break;
+    }
+    case "CN": {//China
+      oo[1].text="标准信用卡(宽度/3.375 英寸)";
+      oo[2].text="标准信用卡(高度/2.215 英寸)";
+      if (sw>700){oo[3].text="2 张信用卡的宽度(6.75 英寸)";}
+      if (sw>1000){oo[4].text="3 张信用卡的宽度(10.125 英寸)";}
+      if (sw>500){
+        oo[5].text="标准CD直径(120mm)";
+        adjusters.additem("人民币10元的長邊(140mm)",5.512);
+        adjusters.additem("人民币20元的長邊(145mm)",5.709);
+        adjusters.additem("人民币100元的長邊(155mm)",6.102);
+        adjusters.additem("A4印刷纸的长边(297mm)",11.693);
+      }
+      break;
+    }
+    case "PL": {//Poland
+      oo[1].text="standardowa karta kredytowa (szerokość/3.375 cala)";
+      oo[2].text="standardowa karta kredytowa (wysokość/2.215 cala)";
+      if (sw>700){oo[3].text="Szerokość 2 kart kredytowych (6.75 cala)";}
+      if (sw>1000){oo[4].text="Szerokość 3 kart kredytowych (10.125 cala)";}
+      if (sw>500){
+        oo[5].text="standardowa średnica CD (120 mm)";
+        adjusters.additem("banknot 10 złotych(120mm)",4.724);
+        adjusters.additem("banknot 20 złotych(126mm)",4.961);
+        adjusters.additem("banknot 100 złotych(138mm)",5.433);
+        adjusters.additem("papier do drukowania i kopiowania, format A4, dłuższy bok (297 mm)",11.693);
+      }
+      break;
+    }
+    case "BR": {//Brazil
+      oo[1].text="cartão de crédito padrão (largura/3.375 polegadas)";
+      oo[2].text="cartão de crédito padrão (altura/2.215 polegadas)";
+      if (sw>700){oo[3].text="Largura de 2 cartões de crédito (6.75 polegadas)";}
+      if (sw>1000){oo[4].text="Largura de 3 cartões de crédito (10.125 polegadas)";}
+      if (sw>500){
+        oo[5].text="diâmetro CD padrão (120mm)";
+        adjusters.additem("Cédula de 2 reais (121mm)",4.764);
+        adjusters.additem("Cédula de 5 reais (128mm)",5.039);
+        adjusters.additem("Cédula de 10 reais (135mm)",5.315);
+        adjusters.additem("Cédula de 100 reais (156mm)",6.142);
+        adjusters.additem("papel de impressão a4, lado maior (297 mm)",11.693);
+      }
+      break;
+    }
+   case "BY": {//Belarus
+      oo[1].text="стандартная крэдытная карта (шырыня/3.375 цалі)";
+      oo[2].text="стандартная крэдытная карта (вышыня/2.215 цалі)";
+      if (sw>700){oo[3].text="Шырыня 2 крэдытных карт (6.75 цалі)";}
+      if (sw>1000){oo[4].text="Шырыня 3 крэдытных карт (10.125 цалі)";}
+      if (sw>500){
+        oo[5].text="стандартны дыяметр CD (120 мм)";
+        adjusters.additem("Беларускі рубель 1000 (150 mm)",5.9055);
+        adjusters.additem("Папера для друку фармату А4, большы бок (297 мм)",11.693);
+      }
+      break;
+    }
+   case "SE": {//Sweden
+      oo[1].text="standard kreditkort (bredd/3.375 tum)";
+      oo[2].text="standard kreditkort (höjd/2,215 tum)";
+      if (sw>700){oo[3].text="2 kreditkorts bredd (6.75 tum)";}
+      if (sw>1000){oo[4].text="3 kreditkorts bredd (10.125 tum)";}
+      if (sw>500){
+        oo[5].text="standard CD-diameter (120 mm)";
+        adjusters.additem("20-kronorssedel (120 mm)",4.724);
+        adjusters.additem("100-kronorssedel (133 mm)",5.236);
+        adjusters.additem("1000-kronorssedel (154 mm)",6.063);
+        adjusters.additem("kopieringspapper A4, längre sida (297 mm)",11.693);
+      }
+      break;
+    }
+   case "KR": {//South Korea
+      oo[1].text="표준 신용 카드(너비/3.375인치)";
+      oo[2].text="표준 신용 카드(높이/2.215인치)";
+      if (sw>700){oo[3].text="신용카드 폭 2장(6.75인치)";}
+      if (sw>1000){oo[4].text="3 신용 카드 너비(10.125인치) (10.125 tum)";}
+      if (sw>500){
+        oo[5].text="표준 CD 직경(120mm)";
+        adjusters.additem("1000원 지폐 (136 mm)",5.354);
+        adjusters.additem("5000원 지폐 (142 mm)",5.591);
+        adjusters.additem("10000원 지폐 (148 mm)",5.827);
+        adjusters.additem("인쇄 및 복사 용지, A4 크기, 긴 면(297mm)",11.693);
+      }
+      break;
+    }
+   case "NZ": {//New Zealand
+      if (sw>500){
+      adjusters.additem("New Zealand $5 note(135mm)",5.315);
+      adjusters.additem("New Zealand $10 note(140mm)",5.512);
+      adjusters.additem("New Zealand $20 note(145mm)",5.709);
+      adjusters.additem("print & copy paper, A4 size, longer side (297mm)",11.693);
+      }
+      break;
+    }
+    case "MY": {//Malaysia
+      oo[1].text="kad kredit standard (lebar/3.375 inci)";
+      oo[2].text="kad kredit standard (tinggi/2.215 inci)";
+      if (sw>700){oo[3].text="2 kad kredit lebar (6.75 inci)";}
+      if (sw>1000){oo[4].text="3 kad kredit lebar (10.125 inci)";}
+      if (sw>500){
+        oo[5].text="diameter CD standard (120 mm)";
+        adjusters.additem("Wang Kertas RM1 (120mm)",4.724);
+        adjusters.additem("Wang Kertas RM5 (135mm)",5.315);
+        adjusters.additem("Wang Kertas RM10 (140mm)",5.512);
+        adjusters.additem("Kertas Print A4, sisi lebih panjang (297mm)",11.693);
+      }
+      break;
+    }
+    case "EC": {//Ecuador
+      oo[1].text="tarjeta de crédito estándar (ancho/3.375 pulgadas)";
+      oo[2].text="tarjeta de crédito estándar (altura/2.215 pulgadas)";
+      if (sw>700){oo[3].text="Ancho de 2 tarjetas de crédito (6.75 pulgadas)";}
+      if (sw>1000){oo[4].text="Ancho de 3 tarjetas de crédito (10.125 pulgadas)";}
+      if (sw>500){
+        oo[5].text="diámetro de CD estándar (120 mm)";
+        adjusters.additem("billete de un dólar estadounidense(6.14 pulgadas)",6.14);
+        adjusters.additem("papel de impresión A4 (297mm)",11.693);
+      }
+      break;
+    }
+    case "ID": {//Indonesia
+      oo[1].text="kartu kredit standar (lebar/3.375 inci)";
+      oo[2].text="kartu kredit standar (tinggi/2.215 inci)";
+      if (sw>700){oo[3].text="Lebar 2 kartu kredit (6.75 inci)";}
+      if (sw>1000){oo[4].text="Lebar 3 kartu kredit (10.125 inci)";}
+      if (sw>500){
+        oo[5].text="diameter CD standar (120 mm)";
+        adjusters.additem("kertas fotokopi A4, sisi lebih panjang (297 mm)",11.693);
+      }
+      break;
+    }
+    case "IE": {//Ireland
+      oo[1].text="cárta creidmheasa caighdeánach (leithead/3.375 orlach)";
+      oo[2].text="cárta creidmheasa caighdeánach (airde / 2.215 orlach)";
+      if (sw>700){oo[3].text="Leithead 2 chárta creidmheasa (6.75 orlach)";}
+      if (sw>1000){oo[4].text="Leithead 3 chárta creidmheasa (10.125 orlach)";}
+      if (sw>500){
+        oo[5].text="trastomhas caighdeánach CD (120 mm)";
+        adjusters.additem("cló & cóippháipéar, méid A4, taobh níos faide (297 mm)",11.693);
+      }
+      break;
+    }
+    case "NO": {//Norway
+      oo[1].text="standard kredittkort (bredde/3.375 tommer)";
+      oo[2].text="standard kredittkort (høyde/2.215 tommer)";
+      if (sw>700){oo[3].text="2 kredittkort bredde (6.75 tommer)";}
+      if (sw>1000){oo[4].text="3 kredittkort bredde (10.125 tommer)";}
+      if (sw>500){
+        oo[5].text="standard CD-diameter (120 mm)";
+        adjusters.additem("kopipapir A4, lengre side (297 mm)",11.693);
+      }
+      break;
+    }
+    case "CH": {//Switzerland 德语
+      oo[1].text="Standard-Kreditkarte (Breite/3.375 Zoll)";
+      oo[2].text="Standard-Kreditkarte (Höhe/2.215 Zoll)";
+      if (sw>700){oo[3].text="2 Kreditkartenbreite (6.75 Zoll)";}
+      if (sw>1000){oo[4].text="3 Kreditkartenbreite (10.125 Zoll)";}
+      if (sw>500){
+        oo[5].text="Standard-CD-Durchmesser (120 mm)";
+        adjusters.additem("Kopierpapier A4, längere Seite (297 mm)",11.693);
+      }
+      break;
+    }
+    case "FI": {//Finland
+      oo[1].text="tavallinen luottokortti (leveys/3,375 tuumaa)";
+      oo[2].text="tavallinen luottokortti (korkeus/2,215 tuumaa)";
+      if (sw>700){oo[3].text="2 luottokortin leveys (6,75 tuumaa)";}
+      if (sw>1000){oo[4].text="3 luottokortin leveys (10,125 tuumaa)";}
+      if (sw>500){
+        oo[5].text="CD-levyn vakiohalkaisija (120 mm)";
+        adjusters.additem("kopiointipaperi A4, pidempi puoli (297 mm)",11.693);
+      }
+      break;
+    }
+    
+    case "TW": {
+      oo[1].text="標準信用卡(寬度/3.375 英寸)";
+      oo[2].text="標準信用卡(高度/2.215 英寸)";
+      if (sw>700){oo[3].text="2 張信用卡的寬度(6.75 英寸)";}
+      if (sw>1000){oo[4].text="3 張信用卡的寬度(10.125 英寸)";}
+      if (sw>500){
+        oo[5].text="標準CD直徑(120mm)";
+        adjusters.additem("新臺幣100元的長邊(145mm)",5.7086);
+        adjusters.additem("新臺幣1000元的長邊(160mm)",6.299);
+        adjusters.additem("A4印刷紙的長邊(297mm)",11.693);
+      }
+      break;
+    }
+    default: {
+      adjusters.additem("print & copy paper, A4 size, longer side (297mm)",11.693);
+    }    
+  }
+
+  //Letter size United States, Canada, Chile, Colombia, Costa Rica, Mexico, Panama, Guatemala, the Dominican Republic and the Philippines.
+} else if (this.readyState == 4 && this.status == 429) {
+  adjusters.additem("print & copy paper, A4 size, longer side (297mm)",11.693);
+  adjusters.additem("print & copy paper, letter size, longer side (11in)",11);
+}
+};
+xhr.send();
+  
+});
+

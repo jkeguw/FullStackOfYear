@@ -5,7 +5,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func InitLogger() *zap.Logger {
+// CreateLogger creates and returns a new zap logger
+func CreateLogger() *zap.Logger {
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.TimeKey = "timestamp"
 	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder

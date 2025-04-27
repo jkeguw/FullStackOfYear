@@ -3,9 +3,9 @@
 package integration
 
 import (
-	measurementHandler "FullStackOfYear/backend/handlers/measurement"
-	"FullStackOfYear/backend/models"
-	measurementTypes "FullStackOfYear/backend/types/measurement"
+	measurementHandler "project/backend/handlers/measurement"
+	"project/backend/models"
+	measurementTypes "project/backend/types/measurement"
 	"bytes"
 	"context"
 	"encoding/json"

@@ -1,0 +1,54 @@
+{
+  "auth": {
+    "login_success": "Login successful",
+    "logout_success": "Logged out successfully",
+    "register_success": "Registration successful",
+    "verify_email": "Please verify your email",
+    "password_reset": "Password reset email sent",
+    "password_updated": "Password updated successfully",
+    "account_locked": "Account locked. Please try again later"
+  },
+  "validation": {
+    "required_field": "This field is required",
+    "invalid_email": "Invalid email format",
+    "password_length": "Password must be at least 8 characters long",
+    "password_match": "Passwords do not match",
+    "invalid_token": "Invalid or expired token"
+  },
+  "errors": {
+    "not_found": "Resource not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Forbidden access",
+    "internal_server": "Internal server error",
+    "bad_request": "Bad request",
+    "invalid_credentials": "Invalid credentials",
+    "duplicate_email": "Email already registered",
+    "too_many_requests": "Too many requests. Please try again later",
+    "account_not_verified": "Account not verified"
+  },
+  "device": {
+    "created": "Device created successfully",
+    "updated": "Device updated successfully",
+    "deleted": "Device deleted successfully",
+    "not_found": "Device not found"
+  },
+  "measurement": {
+    "created": "Measurement created successfully",
+    "updated": "Measurement updated successfully",
+    "deleted": "Measurement deleted successfully",
+    "not_found": "Measurement not found"
+  },
+  "review": {
+    "created": "Review created successfully",
+    "updated": "Review updated successfully",
+    "deleted": "Review deleted successfully",
+    "reported": "Review reported successfully",
+    "not_found": "Review not found"
+  },
+  "user": {
+    "profile_updated": "Profile updated successfully",
+    "settings_updated": "Settings updated successfully",
+    "account_deleted": "Account deleted successfully",
+    "not_found": "User not found"
+  }
+}

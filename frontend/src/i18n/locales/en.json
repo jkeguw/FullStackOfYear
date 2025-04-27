@@ -1,0 +1,99 @@
+{
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "chinese": "Chinese",
+    "login": "Login",
+    "register": "Register",
+    "profile": "Profile",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "app_name": "Mouse Comparison",
+    "welcome": "Find and compare gaming mice to match your needs",
+    "navigation": "Navigation",
+    "home": "Home",
+    "about": "About",
+    "about_us": "About Us",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "all_rights_reserved": "All Rights Reserved"
+  },
+  "home": {
+    "title": "Mouse Comparison Tool",
+    "subtitle": "Find the perfect gaming mouse for your needs",
+    "search": "Search mice",
+    "compare": "Compare",
+    "latest_reviews": "Latest Reviews",
+    "popular_devices": "Popular Devices"
+  },
+  "device": {
+    "details": "Mouse Details",
+    "dimensions": "Dimensions",
+    "weight": "Weight",
+    "sensor": "Sensor",
+    "buttons": "Buttons",
+    "shape": "Shape",
+    "connection": "Connection Type",
+    "dpi": "DPI Range",
+    "measurements": "Measurements",
+    "reviews": "Reviews"
+  },
+  "mouse": {
+    "database": "Mouse Database",
+    "comparison": "Mouse Comparison",
+    "details": "Mouse Details",
+    "shape": "Mouse Shape"
+  },
+  "comparison": {
+    "title": "Compare Mice",
+    "select": "Select Mice",
+    "compare": "Compare"
+  },
+  "cart": {
+    "shopping_cart": "Shopping Cart",
+    "checkout": "Checkout",
+    "empty": "Your cart is empty",
+    "total": "Total"
+  },
+  "order": {
+    "checkout": "Checkout",
+    "my_orders": "My Orders",
+    "order_details": "Order Details",
+    "shipping": "Shipping",
+    "payment": "Payment"
+  },
+  "review": {
+    "reviews": "Reviews",
+    "write": "Write Review",
+    "read": "Read Reviews"
+  },
+  "tools": {
+    "tools": "Tools",
+    "ruler": "Ruler Tool",
+    "sensitivity_tool": "Sensitivity Tool",
+    "sensitivity_converter": "Sensitivity Converter",
+    "dpi_calculator": "DPI Calculator",
+    "sensitivity_calculator": "Sensitivity Calculator",
+    "mouse_shape": "Mouse Shape Visualization"
+  },
+  "profile": {
+    "personal_info": "Personal Information",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "change_password": "Change Password",
+    "security": "Security Settings",
+    "preferences": "Preferences",
+    "devices": "My Devices"
+  },
+  "errors": {
+    "required_field": "This field is required",
+    "invalid_email": "Invalid email format",
+    "password_mismatch": "Passwords do not match",
+    "login_failed": "Login failed. Please check your credentials",
+    "server_error": "Server error occurred. Please try again later"
+  }
+}

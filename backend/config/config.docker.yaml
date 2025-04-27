@@ -1,0 +1,49 @@
+server:
+  port: :8081
+  readTimeout: 60s
+  writeTimeout: 60s
+
+mongodb:
+  uri: ${MONGODB_URI}
+  database: cpc
+
+redis:
+  addr: ${REDIS_ADDR}
+  password: ${REDIS_PASSWORD}
+  db: ${REDIS_DB}
+
+jwt:
+  secret: ${JWT_SECRET}
+  accessExpireTime: 2h
+  refreshExpireTime: 720h
+  issuer: "peripheral-review-platform"
+
+upload:
+  savePath: "./uploads"
+  allowTypes:
+    - ".jpg"
+    - ".jpeg"
+    - ".png"
+  maxSize: 5
+  urlPrefix: "/static/uploads"
+
+oauth:
+  google:
+    clientId: ${GOOGLE_OAUTH_CLIENT_ID}
+    clientSecret: ${GOOGLE_OAUTH_CLIENT_SECRET}
+    redirectUrl: ${GOOGLE_OAUTH_REDIRECT_URL}
+    scopes:
+      - email
+      - profile
+
+email:
+  smtp:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+  from: "no-reply@yourdomain.com"
+  baseUrl: "http://localhost:80"
+  templates:
+    verifyEmail: "templates/email/verify.html"
+    resetPassword: "templates/email/reset.html"

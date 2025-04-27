@@ -63,10 +63,12 @@ export function useDevice() {
       const mergedParams = { ...defaultParams, ...params }
       const res = await getDevices(mergedParams)
       
-      devices.value = res.data.devices
-      devicePagination.total = res.data.total
-      devicePagination.page = res.data.page
-      devicePagination.pageSize = res.data.pageSize
+      if (res && res.data && res.data.devices) {
+        devices.value = res.data.devices
+        devicePagination.total = res.data.total
+        devicePagination.page = res.data.page
+        devicePagination.pageSize = res.data.pageSize
+      }
       
       return res.data
     } catch (err) {

@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"FullStackOfYear/backend/internal/errors"
+	"project/backend/internal/errors"
 	"golang.org/x/crypto/bcrypt"
 	"unicode"
 )

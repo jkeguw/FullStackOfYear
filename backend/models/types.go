@@ -1,37 +1,31 @@
 package models
 
-import "time"
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+)
 
 // Basic type definitions
-type Role struct {
-	Type                string               `bson:"type" json:"type"`
-	ReviewerApplication *ReviewerApplication `bson:"reviewerApplication,omitempty" json:"reviewerApplication,omitempty"`
-	InviteCode          string               `bson:"inviteCode,omitempty" json:"inviteCode,omitempty"`
-}
-
-type Status struct {
-	EmailVerified bool      `bson:"emailVerified" json:"emailVerified"`
-	VerifyToken   string    `bson:"verifyToken,omitempty" json:"-"`
-	TokenExpires  time.Time `bson:"tokenExpires,omitempty" json:"-"`
-	IsLocked      bool      `bson:"isLocked" json:"isLocked"`
-	LockReason    string    `bson:"lockReason,omitempty" json:"lockReason,omitempty"`
-	LockExpires   time.Time `bson:"lockExpires,omitempty" json:"lockExpires,omitempty"`
-	EmailChange   string    `bson:"emailChange,omitempty" json:"-"`
-}
-
-type UserStats struct {
-	ReviewCount         int       `bson:"reviewCount" json:"reviewCount"`
-	TotalWords          int       `bson:"totalWords" json:"totalWords"`
-	Violations          int       `bson:"violations" json:"violations"`
-	FailedLoginAttempts int       `bson:"failedLoginAttempts"`
-	CreatedAt           time.Time `bson:"createdAt" json:"createdAt"`
-	LastLoginAt         time.Time `bson:"lastLoginAt" json:"lastLoginAt"`
-	LastLoginIP         string    `bson:"lastLoginIP,omitempty" json:"lastLoginIP,omitempty"`
-}
+// 注意：UserRole, Status, UserStats 类型已在 auth.go 中定义
+// 这里定义额外需要的字段
 
 type ReviewerApplication struct {
-	Status      string    `bson:"status" json:"status"`
-	AppliedAt   time.Time `bson:"appliedAt" json:"appliedAt"`
-	ReviewCount int       `bson:"reviewCount" json:"reviewCount"`
-	TotalWords  int       `bson:"totalWords" json:"totalWords"`
+	Status        string            `bson:"status" json:"status"`
+	AppliedAt     time.Time         `bson:"appliedAt" json:"appliedAt"`
+	UpdatedAt     time.Time         `bson:"updatedAt" json:"updatedAt"`
+	ReviewCount   int               `bson:"reviewCount" json:"reviewCount"`
+	TotalWords    int               `bson:"totalWords" json:"totalWords"`
+	Experience    string            `bson:"experience" json:"experience"`
+	ExpertiseAreas []string          `bson:"expertiseAreas" json:"expertiseAreas"`
+	Samples       []string          `bson:"samples" json:"samples"`
+	Motivation    string            `bson:"motivation" json:"motivation"`
+	ReviewNotes   string            `bson:"reviewNotes,omitempty" json:"reviewNotes,omitempty"`
+	ReviewedBy    primitive.ObjectID `bson:"reviewedBy,omitempty" json:"reviewedBy,omitempty"`
 }
+
+// 申请状态常量
+const (
+	ApplicationStatusPending  = "pending"
+	ApplicationStatusApproved = "approved"
+	ApplicationStatusRejected = "rejected"
+)

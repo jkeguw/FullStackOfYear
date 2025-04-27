@@ -1,540 +1,502 @@
 package measurement
 
 import (
-	"FullStackOfYear/backend/internal/errors"
-	"FullStackOfYear/backend/models"
-	"FullStackOfYear/backend/types/measurement"
 	"context"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"project/backend/internal/errors"
+	"project/backend/models"
+	"project/backend/types/measurement"
 	"time"
 )
 
-// Service 定义测量服务接口
-type Service interface {
-	// 基础CRUD操作
-	CreateMeasurement(ctx context.Context, userID string, request measurement.CreateMeasurementRequest) (*models.Measurement, error)
-	GetMeasurement(ctx context.Context, userID, measurementID string) (*models.Measurement, error)
-	UpdateMeasurement(ctx context.Context, userID, measurementID string, request measurement.UpdateMeasurementRequest) (*models.Measurement, error)
-	DeleteMeasurement(ctx context.Context, userID, measurementID string) error
-	ListMeasurements(ctx context.Context, userID string, request measurement.MeasurementListRequest) (*measurement.MeasurementListResponse, error)
+// Collection names
+const (
+	MeasurementsCollection        = "measurements"
+	MeasurementUserStatsCollection = "measurement_user_stats"
+)
 
-	// 统计和分析
-	GetUserStats(ctx context.Context, userID string) (*models.MeasurementUserStats, error)
-	GetRecommendations(ctx context.Context, userID string) (*measurement.MeasurementRecommendationResponse, error)
-}
-
-// 服务实现
-type service struct {
+// Service 是测量服务
+type Service struct {
 	db DatabaseInterface
 }
 
-// New 创建新的测量服务
-func New(db *mongo.Database) Service {
-	return &service{
-		db: &DatabaseAdapter{DB: db},
+// NewService 创建测量服务实例
+func NewService(client *mongo.Client) *Service {
+	var db DatabaseInterface
+	if client != nil {
+		dbAdapter := &DatabaseAdapter{DB: client.Database("cpc")}
+		db = dbAdapter
+	}
+	
+	return &Service{
+		db: db,
 	}
 }
 
-// CreateMeasurement 创建新的测量记录
-func (s *service) CreateMeasurement(ctx context.Context, userID string, request measurement.CreateMeasurementRequest) (*models.Measurement, error) {
-	userObjID, err := primitive.ObjectIDFromHex(userID)
+// CreateMeasurement 创建测量记录
+func (s *Service) CreateMeasurement(ctx context.Context, userID string, req measurement.CreateMeasurementRequest) (*models.Measurement, error) {
+	// 验证用户ID
+	uid, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, errors.NewBadRequestError("无效的用户ID")
+		return nil, apperrors.NewBadRequestError("无效的用户ID")
 	}
 
-	// 转换单位到毫米
-	palm := request.Palm
-	length := request.Length
-
-	if request.Unit == "cm" {
-		palm = palm * 10
-		length = length * 10
-	} else if request.Unit == "inch" {
-		palm = palm * 25.4
-		length = length * 25.4
+	// 单位转换 - 统一为毫米 (mm)
+	palmMm, lengthMm := req.Palm, req.Length
+	switch req.Unit {
+	case "cm":
+		palmMm *= 10
+		lengthMm *= 10
+	case "inch":
+		palmMm *= 25.4
+		lengthMm *= 25.4
 	}
 
-	// 创建新的测量记录
+	// 计算测量质量分数
+	qualityScore := 70 // 基础分数
+	if req.Calibrated {
+		qualityScore += 15 // 校准加分
+	}
+
+	qualityLevel := models.QualityMedium
+	if qualityScore >= 85 {
+		qualityLevel = models.QualityHigh
+	} else if qualityScore < 60 {
+		qualityLevel = models.QualityLow
+	}
+
+	// 创建测量记录
 	now := time.Now()
 	measurement := &models.Measurement{
-		ID:     primitive.NewObjectID(),
-		UserID: userObjID,
-		Measurements: models.MeasurementData{
-			Palm:   palm,
-			Length: length,
-			Unit:   request.Unit,
-		},
-		Metadata: models.MeasurementMetadata{
-			Device: request.Device,
-		},
-		Quality: models.MeasurementQuality{
-			Score: calculateQualityScore(request.Calibrated),
-			Factors: models.MeasurementFactors{
-				Calibration: request.Calibrated,
-				Stability:   1.0, // 默认值
-				Consistency: 1.0, // 默认值
-			},
-		},
+		ID:        primitive.NewObjectID(),
+		UserID:    uid,
+		Palm:      palmMm, 
+		Length:    lengthMm,
+		Unit:      "mm", // 存储始终用毫米
+		Device:    req.Device,
+		Calibrated: req.Calibrated,
+		Quality:   &qualityLevel,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
 
 	// 插入数据库
-	_, err = s.db.Collection(models.MeasurementsCollection).InsertOne(ctx, measurement)
+	_, err = s.db.Collection(MeasurementsCollection).InsertOne(ctx, measurement)
 	if err != nil {
-		return nil, errors.NewInternalServerError("创建测量记录失败: " + err.Error())
+		return nil, apperrors.NewInternalServerError("创建测量记录失败: " + err.Error())
 	}
 
-	// 更新用户统计
-	go s.updateUserStats(context.Background(), userObjID)
+	// 异步更新用户统计
+	go s.updateUserStats(context.Background(), uid)
 
 	return measurement, nil
 }
 
 // GetMeasurement 获取单条测量记录
-func (s *service) GetMeasurement(ctx context.Context, userID, measurementID string) (*models.Measurement, error) {
-	userObjID, err := primitive.ObjectIDFromHex(userID)
+func (s *Service) GetMeasurement(ctx context.Context, userID string, measurementID string) (*models.Measurement, error) {
+	// 验证用户ID
+	uid, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, errors.NewBadRequestError("无效的用户ID")
+		return nil, apperrors.NewBadRequestError("无效的用户ID")
 	}
 
-	measurementObjID, err := primitive.ObjectIDFromHex(measurementID)
+	// 验证测量记录ID
+	mid, err := primitive.ObjectIDFromHex(measurementID)
 	if err != nil {
-		return nil, errors.NewBadRequestError("无效的测量记录ID")
+		return nil, apperrors.NewBadRequestError("无效的测量记录ID")
 	}
 
-	// 查询条件：匹配ID和用户ID，且未删除
+	// 查询条件
 	filter := bson.M{
-		"_id":       measurementObjID,
-		"userId":    userObjID,
-		"deletedAt": bson.M{"$exists": false},
+		"_id":    mid,
+		"userId": uid,
 	}
 
-	var result models.Measurement
-	err = s.db.Collection(models.MeasurementsCollection).FindOne(ctx, filter).Decode(&result)
+	// 查询数据库
+	var measurement models.Measurement
+	err = s.db.Collection(MeasurementsCollection).FindOne(ctx, filter).Decode(&measurement)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, errors.NewNotFoundError("未找到测量记录")
+			return nil, apperrors.NewNotFoundError("未找到测量记录")
 		}
-		return nil, errors.NewInternalServerError("获取测量记录失败: " + err.Error())
+		return nil, apperrors.NewInternalServerError("获取测量记录失败: " + err.Error())
 	}
 
-	return &result, nil
-}
-
-// UpdateMeasurement 更新测量记录
-func (s *service) UpdateMeasurement(ctx context.Context, userID, measurementID string, request measurement.UpdateMeasurementRequest) (*models.Measurement, error) {
-	userObjID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return nil, errors.NewBadRequestError("无效的用户ID")
-	}
-
-	measurementObjID, err := primitive.ObjectIDFromHex(measurementID)
-	if err != nil {
-		return nil, errors.NewBadRequestError("无效的测量记录ID")
-	}
-
-	// 查询现有记录
-	filter := bson.M{
-		"_id":       measurementObjID,
-		"userId":    userObjID,
-		"deletedAt": bson.M{"$exists": false},
-	}
-
-	var existingMeasurement models.Measurement
-	err = s.db.Collection(models.MeasurementsCollection).FindOne(ctx, filter).Decode(&existingMeasurement)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, errors.NewNotFoundError("未找到测量记录")
-		}
-		return nil, errors.NewInternalServerError("获取测量记录失败: " + err.Error())
-	}
-
-	// 准备更新数据
-	updateData := bson.M{
-		"updatedAt": time.Now(),
-	}
-
-	// 更新手掌宽度
-	if request.Palm != nil {
-		palm := *request.Palm
-		// 单位转换
-		if request.Unit != nil && *request.Unit != "mm" {
-			if *request.Unit == "cm" {
-				palm = palm * 10
-			} else if *request.Unit == "inch" {
-				palm = palm * 25.4
-			}
-		}
-		updateData["measurements.palm"] = palm
-	}
-
-	// 更新手指长度
-	if request.Length != nil {
-		length := *request.Length
-		// 单位转换
-		if request.Unit != nil && *request.Unit != "mm" {
-			if *request.Unit == "cm" {
-				length = length * 10
-			} else if *request.Unit == "inch" {
-				length = length * 25.4
-			}
-		}
-		updateData["measurements.length"] = length
-	}
-
-	// 更新单位
-	if request.Unit != nil {
-		updateData["measurements.unit"] = *request.Unit
-	}
-
-	// 更新校准状态
-	if request.Calibrated != nil {
-		updateData["quality.factors.calibration"] = *request.Calibrated
-		updateData["quality.score"] = calculateQualityScore(*request.Calibrated)
-	}
-
-	// 执行更新
-	update := bson.M{"$set": updateData}
-	_, err = s.db.Collection(models.MeasurementsCollection).UpdateOne(ctx, filter, update)
-	if err != nil {
-		return nil, errors.NewInternalServerError("更新测量记录失败: " + err.Error())
-	}
-
-	// 重新查询更新后的记录
-	var updatedMeasurement models.Measurement
-	err = s.db.Collection(models.MeasurementsCollection).FindOne(ctx, filter).Decode(&updatedMeasurement)
-	if err != nil {
-		return nil, errors.NewInternalServerError("获取更新后的测量记录失败: " + err.Error())
-	}
-
-	// 更新用户统计
-	go s.updateUserStats(context.Background(), userObjID)
-
-	return &updatedMeasurement, nil
-}
-
-// DeleteMeasurement 删除测量记录(软删除)
-func (s *service) DeleteMeasurement(ctx context.Context, userID, measurementID string) error {
-	userObjID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return errors.NewBadRequestError("无效的用户ID")
-	}
-
-	measurementObjID, err := primitive.ObjectIDFromHex(measurementID)
-	if err != nil {
-		return errors.NewBadRequestError("无效的测量记录ID")
-	}
-
-	filter := bson.M{
-		"_id":       measurementObjID,
-		"userId":    userObjID,
-		"deletedAt": bson.M{"$exists": false},
-	}
-
-	update := bson.M{
-		"$set": bson.M{
-			"deletedAt": time.Now(),
-		},
-	}
-
-	result, err := s.db.Collection(models.MeasurementsCollection).UpdateOne(ctx, filter, update)
-	if err != nil {
-		return errors.NewInternalServerError("删除测量记录失败: " + err.Error())
-	}
-
-	if result.ModifiedCount == 0 {
-		return errors.NewNotFoundError("未找到测量记录或已被删除")
-	}
-
-	// 更新用户统计
-	go s.updateUserStats(context.Background(), userObjID)
-
-	return nil
+	return &measurement, nil
 }
 
 // ListMeasurements 获取测量记录列表
-func (s *service) ListMeasurements(ctx context.Context, userID string, request measurement.MeasurementListRequest) (*measurement.MeasurementListResponse, error) {
-	userObjID, err := primitive.ObjectIDFromHex(userID)
+func (s *Service) ListMeasurements(ctx context.Context, userID string, req measurement.MeasurementListRequest) (*measurement.MeasurementListResponse, error) {
+	// 验证用户ID
+	uid, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, errors.NewBadRequestError("无效的用户ID")
+		return nil, apperrors.NewBadRequestError("无效的用户ID")
 	}
 
-	// 构建查询过滤条件
-	filter := bson.M{
-		"userId":    userObjID,
-		"deletedAt": bson.M{"$exists": false},
-	}
+	// 查询条件
+	filter := bson.M{"userId": uid}
 
-	// 添加日期过滤
-	if request.StartDate != "" {
-		startDate, err := time.Parse("2006-01-02", request.StartDate)
-		if err == nil {
-			filter["createdAt"] = bson.M{"$gte": startDate}
-		}
-	}
-	if request.EndDate != "" {
-		endDate, err := time.Parse("2006-01-02", request.EndDate)
-		if err == nil {
-			if _, exists := filter["createdAt"]; exists {
-				filter["createdAt"].(bson.M)["$lte"] = endDate.Add(24 * time.Hour)
-			} else {
-				filter["createdAt"] = bson.M{"$lte": endDate.Add(24 * time.Hour)}
-			}
-		}
-	}
+	// 分页
+	skip := int64((req.Page - 1) * req.PageSize)
+	limit := int64(req.PageSize)
+	opts := options.Find().
+		SetSkip(skip).
+		SetLimit(limit).
+		SetSort(bson.M{"createdAt": -1}) // 最新的记录优先
 
-	// 构建排序条件
-	sortField := "createdAt"
-	if request.SortBy != "" {
-		switch request.SortBy {
-		case "palm":
-			sortField = "measurements.palm"
-		case "length":
-			sortField = "measurements.length"
-		case "quality":
-			sortField = "quality.score"
-		}
-	}
-
-	sortOrder := -1 // 默认降序
-	if request.SortOrder == "asc" {
-		sortOrder = 1
-	}
-
-	// 设置分页
-	page := 1
-	if request.Page > 0 {
-		page = request.Page
-	}
-
-	pageSize := 20
-	if request.PageSize > 0 && request.PageSize <= 100 {
-		pageSize = request.PageSize
-	}
-
-	skip := (page - 1) * pageSize
-
-	// 查询选项
-	findOptions := options.Find().
-		SetSort(bson.D{{Key: sortField, Value: sortOrder}}).
-		SetSkip(int64(skip)).
-		SetLimit(int64(pageSize))
-
-	// 执行查询
-	cursor, err := s.db.Collection(models.MeasurementsCollection).Find(ctx, filter, findOptions)
+	// 查询数据库
+	cursor, err := s.db.Collection(MeasurementsCollection).Find(ctx, filter, opts)
 	if err != nil {
-		return nil, errors.NewInternalServerError("查询测量记录失败: " + err.Error())
+		return nil, apperrors.NewInternalServerError("获取测量记录列表失败: " + err.Error())
 	}
 	defer cursor.Close(ctx)
-
-	// 统计总数
-	total, err := s.db.Collection(models.MeasurementsCollection).CountDocuments(ctx, filter)
-	if err != nil {
-		return nil, errors.NewInternalServerError("计算总记录数失败: " + err.Error())
-	}
 
 	// 解析结果
 	var measurements []models.Measurement
 	if err = cursor.All(ctx, &measurements); err != nil {
-		return nil, errors.NewInternalServerError("解析测量记录失败: " + err.Error())
+		return nil, apperrors.NewInternalServerError("解析测量记录失败: " + err.Error())
 	}
 
-	// 构建响应
-	var response measurement.MeasurementListResponse
-	response.Total = int(total)
-	response.Page = page
-	response.PageSize = pageSize
-	response.Measurements = make([]measurement.MeasurementResponse, len(measurements))
+	// 获取总记录数
+	total, err := s.db.Collection(MeasurementsCollection).CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, apperrors.NewInternalServerError("计算总记录数失败: " + err.Error())
+	}
 
-	for i, m := range measurements {
-		response.Measurements[i] = measurement.MeasurementResponse{
+	// 转换为响应格式
+	response := &measurement.MeasurementListResponse{
+		Total:        int(total),
+		Page:         req.Page,
+		PageSize:     req.PageSize,
+		Measurements: make([]measurement.MeasurementResponse, 0, len(measurements)),
+	}
+
+	for _, m := range measurements {
+		response.Measurements = append(response.Measurements, measurement.MeasurementResponse{
 			ID:        m.ID.Hex(),
-			Palm:      m.Measurements.Palm,
-			Length:    m.Measurements.Length,
-			Unit:      m.Measurements.Unit,
-			Quality:   &m.Quality,
+			Palm:      m.Palm,
+			Length:    m.Length,
+			Unit:      m.Unit,
+			Device:    m.Device,
+			Quality:   m.Quality,
 			CreatedAt: m.CreatedAt,
 			UpdatedAt: m.UpdatedAt,
-		}
+		})
 	}
 
-	return &response, nil
+	return response, nil
 }
 
-// GetUserStats 获取用户测量统计信息
-func (s *service) GetUserStats(ctx context.Context, userID string) (*models.MeasurementUserStats, error) {
-	userObjID, err := primitive.ObjectIDFromHex(userID)
+// UpdateMeasurement 更新测量记录
+func (s *Service) UpdateMeasurement(ctx context.Context, userID string, measurementID string, req measurement.UpdateMeasurementRequest) (*models.Measurement, error) {
+	// 验证用户ID
+	uid, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, errors.NewBadRequestError("无效的用户ID")
+		return nil, apperrors.NewBadRequestError("无效的用户ID")
 	}
 
-	filter := bson.M{"userId": userObjID}
-	var stats models.MeasurementUserStats
+	// 验证测量记录ID
+	mid, err := primitive.ObjectIDFromHex(measurementID)
+	if err != nil {
+		return nil, apperrors.NewBadRequestError("无效的测量记录ID")
+	}
 
-	err = s.db.Collection(models.MeasurementUserStatsCollection).FindOne(ctx, filter).Decode(&stats)
+	// 查询现有记录
+	filter := bson.M{
+		"_id":    mid,
+		"userId": uid,
+	}
+
+	var existingMeasurement models.Measurement
+	err = s.db.Collection(MeasurementsCollection).FindOne(ctx, filter).Decode(&existingMeasurement)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			// 如果没有找到统计记录，则计算一个新的
-			return s.calculateAndSaveUserStats(ctx, userObjID)
+			return nil, apperrors.NewNotFoundError("未找到测量记录")
 		}
-		return nil, errors.NewInternalServerError("获取用户统计信息失败: " + err.Error())
+		return nil, apperrors.NewInternalServerError("获取测量记录失败: " + err.Error())
+	}
+
+	// 准备更新内容
+	updateFields := bson.M{
+		"updatedAt": time.Now(),
+	}
+
+	// 更新palm字段（如果提供）
+	if req.Palm != nil {
+		// 单位转换
+		palmMm := *req.Palm
+		switch req.Unit {
+		case "cm":
+			palmMm *= 10
+		case "inch":
+			palmMm *= 25.4
+		}
+		updateFields["palm"] = palmMm
+	}
+
+	// 更新length字段（如果提供）
+	if req.Length != nil {
+		// 单位转换
+		lengthMm := *req.Length
+		switch req.Unit {
+		case "cm":
+			lengthMm *= 10
+		case "inch":
+			lengthMm *= 25.4
+		}
+		updateFields["length"] = lengthMm
+	}
+
+	// 更新设备字段（如果提供）
+	if req.Device != nil {
+		updateFields["device"] = *req.Device
+	}
+
+	// 更新校准字段（如果提供）
+	if req.Calibrated != nil {
+		updateFields["calibrated"] = *req.Calibrated
+
+		// 重新计算质量分数
+		qualityScore := 70 // 基础分数
+		if *req.Calibrated {
+			qualityScore += 15 // 校准加分
+		}
+
+		qualityLevel := models.QualityMedium
+		if qualityScore >= 85 {
+			qualityLevel = models.QualityHigh
+		} else if qualityScore < 60 {
+			qualityLevel = models.QualityLow
+		}
+
+		updateFields["quality"] = qualityLevel
+	}
+
+	// 更新数据库
+	update := bson.M{"$set": updateFields}
+	_, err = s.db.Collection(MeasurementsCollection).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return nil, apperrors.NewInternalServerError("更新测量记录失败: " + err.Error())
+	}
+
+	// 获取更新后的记录
+	var updatedMeasurement models.Measurement
+	err = s.db.Collection(MeasurementsCollection).FindOne(ctx, filter).Decode(&updatedMeasurement)
+	if err != nil {
+		return nil, apperrors.NewInternalServerError("获取更新后的测量记录失败: " + err.Error())
+	}
+
+	// 异步更新用户统计
+	go s.updateUserStats(context.Background(), uid)
+
+	return &updatedMeasurement, nil
+}
+
+// DeleteMeasurement 删除测量记录
+func (s *Service) DeleteMeasurement(ctx context.Context, userID string, measurementID string) error {
+	// 验证用户ID
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return apperrors.NewBadRequestError("无效的用户ID")
+	}
+
+	// 验证测量记录ID
+	mid, err := primitive.ObjectIDFromHex(measurementID)
+	if err != nil {
+		return apperrors.NewBadRequestError("无效的测量记录ID")
+	}
+
+	// 使用软删除 - 标记为已删除而不是真正删除
+	filter := bson.M{
+		"_id":    mid,
+		"userId": uid,
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"deleted":   true,
+			"updatedAt": time.Now(),
+		},
+	}
+
+	result, err := s.db.Collection(MeasurementsCollection).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return apperrors.NewInternalServerError("删除测量记录失败: " + err.Error())
+	}
+
+	// 检查是否有记录被更新
+	if result.ModifiedCount == 0 {
+		return apperrors.NewNotFoundError("未找到测量记录")
+	}
+
+	// 异步更新用户统计
+	go s.updateUserStats(context.Background(), uid)
+
+	return nil
+}
+
+// GetUserStats 获取用户测量统计
+func (s *Service) GetUserStats(ctx context.Context, userID string) (*models.MeasurementStats, error) {
+	// 验证用户ID
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, apperrors.NewBadRequestError("无效的用户ID")
+	}
+
+	// 查询用户统计信息
+	filter := bson.M{"userId": uid}
+	var stats models.MeasurementStats
+	err = s.db.Collection(MeasurementUserStatsCollection).FindOne(ctx, filter).Decode(&stats)
+	if err != nil {
+		// 如果没找到，计算并保存新的统计信息
+		if err == mongo.ErrNoDocuments {
+			stats, err = s.calculateAndSaveUserStats(ctx, uid)
+			if err != nil {
+				return nil, apperrors.NewInternalServerError("计算用户统计信息失败: " + err.Error())
+			}
+			return &stats, nil
+		}
+		return nil, apperrors.NewInternalServerError("获取用户统计信息失败: " + err.Error())
 	}
 
 	return &stats, nil
 }
 
 // GetRecommendations 获取设备推荐
-func (s *service) GetRecommendations(ctx context.Context, userID string) (*measurement.MeasurementRecommendationResponse, error) {
+func (s *Service) GetRecommendations(ctx context.Context, userID string) (*measurement.RecommendationResponse, error) {
 	// 获取用户统计信息
 	stats, err := s.GetUserStats(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	// 如果没有足够的测量数据，返回错误
-	if stats.MeasurementCount == 0 {
-		return nil, errors.NewBadRequestError("没有足够的测量数据进行推荐")
+	// 检查是否有足够的测量数据
+	if stats.MeasurementCount == 0 || stats.AveragePalm == 0 || stats.AverageLength == 0 {
+		return nil, apperrors.NewBadRequestError("没有足够的测量数据进行推荐")
 	}
 
-	// 基于手型推荐设备
-	// 这里仅作为示例，实际应从设备数据库中查询匹配的设备
-	var recommendations []measurement.DeviceRecommendation
-
-	// 这里可以实现一个更复杂的推荐算法，但现在仅返回一个示例
-	response := &measurement.MeasurementRecommendationResponse{
-		HandSize: stats.HandSize,
-		GripType: determineGripType(stats.Averages.Palm, stats.Averages.Length),
-		Devices:  recommendations,
+	// 确定握持类型
+	ratio := stats.AverageLength / stats.AveragePalm
+	gripType := models.GripStylePalm
+	if ratio > 0.9 {
+		gripType = models.GripStyleClaw
+		if ratio > 0.95 {
+			gripType = models.GripStyleFingertip
+		}
 	}
+
+	// 构建推荐响应
+	response := &measurement.RecommendationResponse{
+		Palm:      stats.AveragePalm,
+		Length:    stats.AverageLength,
+		HandSize:  string(stats.HandSize),
+		GripType:  string(gripType),
+		Devices:   []measurement.DeviceRecommendation{},
+	}
+
+	// 设备推荐逻辑 - TODO: 实现具体的设备推荐算法
+	// 这里仅返回手型和握持类型的信息，具体设备推荐需要另外实现
 
 	return response, nil
 }
 
-// 辅助方法
+// updateUserStats 更新用户统计信息
+func (s *Service) updateUserStats(ctx context.Context, userID primitive.ObjectID) {
+	// 防止在计算统计信息过程中出现错误导致程序崩溃
+	defer func() {
+		if r := recover(); r != nil {
+			// 记录恢复的错误，但不中断主逻辑
+			// 这里应该有日志记录，但是为了保持简单，暂不实现
+		}
+	}()
 
-// calculateQualityScore 计算测量质量分数
-func calculateQualityScore(calibrated bool) int {
-	// 简单实现，实际应考虑更多因素
-	if calibrated {
-		return 85 // 校准过的给予较高分数
-	}
-	return 70 // 未校准给予较低分数
+	// 计算并保存统计信息
+	_, _ = s.calculateAndSaveUserStats(ctx, userID)
 }
 
-// updateUserStats 更新用户统计数据
-func (s *service) updateUserStats(ctx context.Context, userID primitive.ObjectID) {
-	s.calculateAndSaveUserStats(ctx, userID)
-}
-
-// calculateAndSaveUserStats 计算并保存用户统计数据
-func (s *service) calculateAndSaveUserStats(ctx context.Context, userID primitive.ObjectID) (*models.MeasurementUserStats, error) {
-	// 计算平均值
-	pipeline := mongo.Pipeline{
-		{{Key: "$match", Value: bson.M{
-			"userId":    userID,
-			"deletedAt": bson.M{"$exists": false},
-		}}},
-		{{Key: "$group", Value: bson.M{
-			"_id":            nil,
-			"avgPalm":        bson.M{"$avg": "$measurements.palm"},
-			"avgLength":      bson.M{"$avg": "$measurements.length"},
-			"count":          bson.M{"$sum": 1},
-			"lastMeasuredAt": bson.M{"$max": "$createdAt"},
-		}}},
+// calculateAndSaveUserStats 计算并保存用户统计信息
+func (s *Service) calculateAndSaveUserStats(ctx context.Context, userID primitive.ObjectID) (models.MeasurementStats, error) {
+	// 查询条件 - 只查询未删除的记录
+	filter := bson.M{
+		"userId":  userID,
+		"deleted": bson.M{"$ne": true},
 	}
 
-	cursor, err := s.db.Collection(models.MeasurementsCollection).Aggregate(ctx, pipeline)
+	// 聚合管道
+	pipeline := []bson.M{
+		{"$match": filter},
+		{"$group": bson.M{
+			"_id":          "$userId",
+			"averagePalm":  bson.M{"$avg": "$palm"},
+			"averageLength": bson.M{"$avg": "$length"},
+			"count":        bson.M{"$sum": 1},
+			"lastMeasured": bson.M{"$max": "$createdAt"},
+		}},
+	}
+
+	// 执行聚合
+	cursor, err := s.db.Collection(MeasurementsCollection).Aggregate(ctx, pipeline)
 	if err != nil {
-		return nil, errors.NewInternalServerError("计算用户统计数据失败: " + err.Error())
+		return models.MeasurementStats{}, err
 	}
 	defer cursor.Close(ctx)
 
-	type result struct {
-		AvgPalm        float64   `bson:"avgPalm"`
-		AvgLength      float64   `bson:"avgLength"`
-		Count          int       `bson:"count"`
-		LastMeasuredAt time.Time `bson:"lastMeasuredAt"`
+	// 解析结果
+	type aggregateResult struct {
+		ID            primitive.ObjectID `bson:"_id"`
+		AveragePalm   float64           `bson:"averagePalm"`
+		AverageLength float64           `bson:"averageLength"`
+		Count         int               `bson:"count"`
+		LastMeasured  time.Time         `bson:"lastMeasured"`
 	}
 
-	var results []result
+	var results []aggregateResult
 	if err = cursor.All(ctx, &results); err != nil {
-		return nil, errors.NewInternalServerError("解析聚合结果失败: " + err.Error())
+		return models.MeasurementStats{}, err
 	}
 
-	// 如果没有测量记录，返回默认值
-	if len(results) == 0 {
-		defaultStats := &models.MeasurementUserStats{
-			UserID:           userID,
-			Averages:         models.MeasurementData{Unit: "mm"},
-			HandSize:         "unknown",
-			MeasurementCount: 0,
-			UpdatedAt:        time.Now(),
-		}
-
-		// 保存默认统计
-		opts := options.Update().SetUpsert(true)
-		filter := bson.M{"userId": userID}
-		update := bson.M{"$set": defaultStats}
-		_, _ = s.db.Collection(models.MeasurementUserStatsCollection).UpdateOne(ctx, filter, update, opts)
-
-		return defaultStats, nil
-	}
-
-	// 计算手型分类
-	handSize := classifyHandSize(results[0].AvgPalm, results[0].AvgLength)
-
-	// 更新或创建统计记录
-	stats := models.MeasurementUserStats{
-		UserID: userID,
-		Averages: models.MeasurementData{
-			Palm:   results[0].AvgPalm,
-			Length: results[0].AvgLength,
-			Unit:   "mm",
-		},
-		HandSize:         handSize,
-		LastMeasuredAt:   results[0].LastMeasuredAt,
-		MeasurementCount: results[0].Count,
+	// 初始化默认值
+	stats := models.MeasurementStats{
+		UserID:           userID,
+		AveragePalm:      0,
+		AverageLength:    0,
+		HandSize:         "unknown",
+		MeasurementCount: 0,
+		LastMeasuredAt:   time.Time{},
 		UpdatedAt:        time.Now(),
 	}
 
-	opts := options.Update().SetUpsert(true)
-	filter := bson.M{"userId": userID}
+	// 如果有测量数据，设置统计信息
+	if len(results) > 0 {
+		agg := results[0]
+		stats.AveragePalm = agg.AveragePalm
+		stats.AverageLength = agg.AverageLength
+		stats.MeasurementCount = agg.Count
+		stats.LastMeasuredAt = agg.LastMeasured
+
+		// 根据手掌宽度确定手型大小（单位: mm）
+		if agg.AveragePalm < 80 {
+			stats.HandSize = models.HandSizeSmall
+		} else if agg.AveragePalm > 95 {
+			stats.HandSize = models.HandSizeLarge
+		} else {
+			stats.HandSize = models.HandSizeMedium
+		}
+	}
+
+	// 保存或更新统计信息
+	filter = bson.M{"userId": userID}
 	update := bson.M{"$set": stats}
+	opts := options.Update().SetUpsert(true)
 
-	// 更新用户统计数据
-	_, err = s.db.Collection(models.MeasurementUserStatsCollection).UpdateOne(ctx, filter, update, opts)
+	_, err = s.db.Collection(MeasurementUserStatsCollection).UpdateOne(ctx, filter, update, opts)
 	if err != nil {
-		return nil, errors.NewInternalServerError("保存用户统计数据失败: " + err.Error())
+		return models.MeasurementStats{}, err
 	}
 
-	return &stats, nil
-}
-
-// classifyHandSize 手型分类
-func classifyHandSize(palm, length float64) string {
-	// 简化的分类逻辑，实际应当更复杂
-	if palm < 80 {
-		return "small"
-	} else if palm > 105 {
-		return "large"
-	}
-	return "medium"
-}
-
-// determineGripType 确定握持类型
-func determineGripType(palm, length float64) string {
-	// 简化的握持类型判断
-	ratio := length / palm
-
-	if ratio > 1.2 {
-		return "claw"
-	} else if ratio < 0.9 {
-		return "palm"
-	}
-
-	return "fingertip"
+	return stats, nil
 }

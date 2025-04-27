@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"FullStackOfYear/backend/internal/errors"
-	"FullStackOfYear/backend/tests/mocks"
-	"FullStackOfYear/backend/tests/testutil"
-	"FullStackOfYear/backend/types/auth"
-	"FullStackOfYear/backend/types/claims"
+	"project/backend/internal/errors"
+	"project/backend/tests/mocks"
+	"project/backend/tests/testutil"
+	"project/backend/types/auth"
+	"project/backend/types/claims"
 	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

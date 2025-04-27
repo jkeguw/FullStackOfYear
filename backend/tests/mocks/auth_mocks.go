@@ -5,9 +5,9 @@
 package mocks
 
 import (
-	models "FullStackOfYear/backend/models"
-	auth "FullStackOfYear/backend/types/auth"
-	claims "FullStackOfYear/backend/types/claims"
+	models "project/backend/models"
+	auth "project/backend/types/auth"
+	claims "project/backend/types/claims"
 	context "context"
 	reflect "reflect"
 

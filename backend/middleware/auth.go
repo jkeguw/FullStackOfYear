@@ -1,16 +1,23 @@
 package middleware
 
 import (
-	"FullStackOfYear/backend/internal/database"
-	"FullStackOfYear/backend/internal/errors"
-	"FullStackOfYear/backend/services/jwt"
-	"FullStackOfYear/backend/services/token"
+	"project/backend/internal/database"
+	"project/backend/internal/errors"
+	"project/backend/services/jwt"
+	"project/backend/services/token"
+	"context"
 	"github.com/gin-gonic/gin"
 	"strings"
+	"time"
 )
 
 // Auth validates the JWT token and adds claims to context
-func Auth() gin.HandlerFunc {
+func Auth(jwtService ...jwt.Service) gin.HandlerFunc {
+	var jwtSvc jwt.Service
+	if len(jwtService) > 0 {
+		jwtSvc = jwtService[0]
+	}
+
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -24,7 +31,21 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := jwt.ParseToken(parts[1])
+		// Use a context with timeout for token operations
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+		defer cancel()
+
+		var claims *jwt.Claims
+		var err error
+
+		if jwtSvc != nil {
+			// 使用注入的JWT服务
+			claims, err = jwtSvc.ParseToken(parts[1])
+		} else {
+			// 使用全局JWT服务（向后兼容）
+			claims, err = jwt.ParseToken(parts[1])
+		}
+
 		if err != nil {
 			c.AbortWithStatusJSON(401, err)
 			return
@@ -32,7 +53,7 @@ func Auth() gin.HandlerFunc {
 
 		// Verify token exists in Redis
 		tokenManager := token.NewManager(database.RedisClient)
-		exists, err := tokenManager.CheckTokenExists(c, claims.UserID, claims.DeviceID, "access")
+		exists, err := tokenManager.CheckTokenExists(ctx, claims.UserID, claims.DeviceID, "access")
 		if err != nil {
 			c.AbortWithStatusJSON(500, errors.NewAppError(errors.InternalError, "Token verification failed"))
 			return
@@ -44,9 +65,10 @@ func Auth() gin.HandlerFunc {
 		}
 
 		// Set claims to context
-		c.Set("userID", claims.UserID)
-		c.Set("role", claims.Role)
+		c.Set("userId", claims.UserID)
+		c.Set("userRole", claims.Role)
 		c.Set("deviceId", claims.DeviceID)
+		c.Set("tokenType", claims.Type)
 
 		c.Next()
 	}
@@ -55,13 +77,13 @@ func Auth() gin.HandlerFunc {
 // RequireRoles validates user roles
 func RequireRoles(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		role := c.GetString("role")
+		role := c.GetString("userRole")
 		for _, r := range roles {
 			if r == role {
 				c.Next()
 				return
 			}
 		}
-		c.AbortWithStatusJSON(403, errors.NewAppError(errors.Forbidden, "Insufficient permissions"))
+		c.AbortWithStatusJSON(403, errors.NewAppError(errors.Forbidden, "权限不足，需要更高级别的权限"))
 	}
 }

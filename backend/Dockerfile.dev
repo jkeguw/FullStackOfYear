@@ -1,0 +1,14 @@
+FROM golang:1.23.4-alpine
+
+WORKDIR /app
+
+# Install development tools
+RUN apk add --no-cache git
+
+# The rest of the build process will happen through mounted volumes
+# This allows for live code reloading during development
+
+EXPOSE 8080
+
+# Command to keep container running and allow for manual execution
+CMD ["tail", "-f", "/dev/null"]

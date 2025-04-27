@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"FullStackOfYear/backend/internal/database"
+	"project/backend/internal/database"
 	"context"
 	"encoding/json"
 	"time"

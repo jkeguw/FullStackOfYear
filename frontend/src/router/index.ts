@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/stores'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -45,38 +46,24 @@ const router = createRouter({
       component: () => import('../pages/ComparePage.vue')
     },
     {
+      path: '/similar',
+      name: 'SimilarMouse',
+      component: () => import('../pages/SimilarMousePage.vue')
+    },
+    {
       path: '/tools',
       name: 'Tools',
-      component: () => import('../pages/ToolsPage.vue'),
-      children: [
-        {
-          path: '',
-          name: 'ToolsList',
-          component: () => import('../components/tools/ToolsList.vue')
-        },
-        {
-          path: 'dpi',
-          name: 'DpiCalculator',
-          component: () => import('../components/tools/DPICalculator.vue')
-        },
-        {
-          path: 'ruler',
-          name: 'RulerTool',
-          component: () => import('../pages/RulerToolPage.vue')
-        },
-        {
-          path: 'sensitivity',
-          name: 'SensitivityTool',
-          component: () => import('../pages/SensitivityToolPage.vue')
-        }
-      ]
+      component: () => import('../pages/ToolsPage.vue')
     },
-    // 已移除个人设备管理功能
-    
     {
-      path: '/i18n-demo',
-      name: 'I18nDemo',
-      component: () => import('../pages/I18nDemoPage.vue')
+      path: '/tools/ruler',
+      name: 'RulerTool',
+      component: () => import('../pages/RulerToolPage.vue')
+    },
+    {
+      path: '/tools/sensitivity',
+      name: 'SensitivityTool',
+      component: () => import('../pages/SensitivityToolPage.vue')
     },
     {
       path: '/reviews',
@@ -119,31 +106,56 @@ const router = createRouter({
       component: () => import('../pages/CheckoutPage.vue'),
       meta: { requiresAuth: true }
     },
-    {
-      path: '/checkout/payment/:id',
-      name: 'OrderPayment',
-      component: () => import('../pages/CheckoutPage.vue'),
-      props: (route) => ({ 
-        orderId: route.params.id,
-        step: 'payment'
-      }),
-      meta: { requiresAuth: true }
-    },
     // 购物车路由
     {
       path: '/cart',
       name: 'Cart',
-      component: () => import('../pages/CartPage.vue')
+      component: () => import('../pages/CartPage.vue'),
+      meta: { requiresAuth: true }
     },
-  ]
+    // 关于页面路由
+    {
+      path: '/about',
+      name: 'About',
+      component: () => import('../pages/AboutPage.vue')
+    },
+    {
+      path: '/contact',
+      name: 'Contact',
+      component: () => import('../pages/ContactPage.vue')
+    },
+    {
+      path: '/privacy',
+      name: 'Privacy',
+      component: () => import('../pages/PrivacyPage.vue')
+    },
+    {
+      path: '/terms',
+      name: 'Terms',
+      component: () => import('../pages/TermsPage.vue')
+    },
+    // 捕获所有未定义路由，重定向到首页
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
+    }
+  ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  }
 })
 
 // 全局导航守卫
 router.beforeEach((to, from, next) => {
+  const userStore = useUserStore()
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const isLoggedIn = !!localStorage.getItem('token')
-
-  if (requiresAuth && !isLoggedIn) {
+  
+  // 如果需要登录但用户未登录，重定向到登录页
+  if (requiresAuth && !userStore.token) {
     next({ name: 'Login', query: { redirect: to.fullPath } })
   } else {
     next()
