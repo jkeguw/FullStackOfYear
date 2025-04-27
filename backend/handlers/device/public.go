@@ -81,7 +81,7 @@ func (h *Handler) GetMouseSVG(c *gin.Context) {
 	}
 
 	// 获取鼠标设备
-	mouse, err := h.deviceService.GetMouseDevice(c, deviceID)
+	mouse, err := h.deviceService.GetMouseDevice(c.Request.Context(), deviceID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"code":    http.StatusNotFound,
@@ -154,7 +154,7 @@ func (h *Handler) CompareSVGs(c *gin.Context) {
 		}
 
 		// 获取鼠标设备
-		mouse, err := h.deviceService.GetMouseDevice(c, objID)
+		mouse, err := h.deviceService.GetMouseDevice(c.Request.Context(), objID)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{
 				"code":    http.StatusNotFound,
@@ -225,7 +225,7 @@ func (h *Handler) GetSVGMouseList(c *gin.Context) {
 	}
 
 	// 获取所有鼠标设备
-	devices, total, err := h.deviceService.ListDevices(c, filter)
+	result, err := h.deviceService.ListDevices(c.Request.Context(), filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    http.StatusInternalServerError,
@@ -233,30 +233,14 @@ func (h *Handler) GetSVGMouseList(c *gin.Context) {
 		})
 		return
 	}
-
-	// 转换为预览格式
-	devicePreviews := make([]device.DevicePreview, 0, len(devices))
-	for _, d := range devices {
-		// 检查是否有对应的SVG文件
-		// 这里简化处理，实际应该基于Views参数检查特定视图
-		hasSVG := true
-		
-		if hasSVG {
-			devicePreviews = append(devicePreviews, device.DevicePreview{
-				ID:          d.ID.Hex(),
-				Name:        d.Name,
-				Brand:       d.Brand,
-				Type:        string(d.Type),
-				ImageURL:    d.ImageURL,
-				Description: d.Description,
-				CreatedAt:   d.CreatedAt,
-			})
-		}
-	}
+	
+	// 使用结果中的设备列表和总数
+	devices := result.Devices
+	total := result.Total
 
 	// 构建响应
 	response := device.SVGListResponse{
-		Devices: devicePreviews,
+		Devices: devices,
 		Total:   total,
 	}
 
