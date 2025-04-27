@@ -21,6 +21,11 @@ func (r *Router) RegisterDeviceRoutes(router *gin.RouterGroup) {
 		deviceGroup.GET("/mice/compare", dHandler.CompareMice)
 		deviceGroup.GET("/mice/:id/similar", dHandler.FindSimilarMice)
 		
+		// 鼠标SVG相关路由
+		deviceGroup.GET("/mice/:id/svg", dHandler.GetMouseSVG)
+		deviceGroup.POST("/mice/svg/compare", dHandler.CompareSVGs)
+		deviceGroup.GET("/mice/svg/list", dHandler.GetSVGMouseList)
+		
 		// 需要认证的路由
 		authDeviceGroup := deviceGroup.Group("")
 		authDeviceGroup.Use(middleware.Auth())
