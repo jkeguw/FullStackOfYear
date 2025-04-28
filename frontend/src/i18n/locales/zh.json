@@ -1,99 +1,99 @@
 {
   "common": {
-    "language": "语言",
-    "english": "英文",
-    "chinese": "中文",
-    "login": "登录",
-    "register": "注册",
-    "profile": "个人资料",
-    "logout": "退出登录",
-    "save": "保存",
-    "cancel": "取消",
-    "submit": "提交",
-    "app_name": "鼠标对比",
-    "welcome": "寻找并对比适合您需求的游戏鼠标",
-    "navigation": "导航",
-    "home": "首页",
-    "about": "关于",
-    "about_us": "关于我们",
-    "contact": "联系我们",
-    "privacy": "隐私政策",
-    "terms": "使用条款",
-    "all_rights_reserved": "版权所有"
+    "language": "Language",
+    "english": "English",
+    "chinese": "Chinese",
+    "login": "Login",
+    "register": "Register",
+    "profile": "Profile",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "app_name": "Mouse Comparison",
+    "welcome": "Find and compare gaming mice for your needs",
+    "navigation": "Navigation",
+    "home": "Home",
+    "about": "About",
+    "about_us": "About Us",
+    "contact": "Contact Us",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "all_rights_reserved": "All Rights Reserved"
   },
   "home": {
-    "title": "鼠标比较工具",
-    "subtitle": "找到最适合您需求的游戏鼠标",
-    "search": "搜索鼠标",
-    "compare": "比较",
-    "latest_reviews": "最新评测",
-    "popular_devices": "热门设备"
+    "title": "Mouse Comparison Tool",
+    "subtitle": "Find the best gaming mouse for your needs",
+    "search": "Search Mice",
+    "compare": "Compare",
+    "latest_reviews": "Latest Reviews",
+    "popular_devices": "Popular Devices"
   },
   "device": {
-    "details": "鼠标详情",
-    "dimensions": "尺寸",
-    "weight": "重量",
-    "sensor": "传感器",
-    "buttons": "按键",
-    "shape": "形状",
-    "connection": "连接方式",
-    "dpi": "DPI范围",
-    "measurements": "测量数据",
-    "reviews": "评测"
+    "details": "Mouse Details",
+    "dimensions": "Dimensions",
+    "weight": "Weight",
+    "sensor": "Sensor",
+    "buttons": "Buttons",
+    "shape": "Shape",
+    "connection": "Connection Type",
+    "dpi": "DPI Range",
+    "measurements": "Measurements",
+    "reviews": "Reviews"
   },
   "mouse": {
-    "database": "鼠标数据库",
-    "comparison": "鼠标对比",
-    "details": "鼠标详情",
-    "shape": "鼠标形状"
+    "database": "Mouse Database",
+    "comparison": "Mouse Comparison",
+    "details": "Mouse Details",
+    "shape": "Mouse Shape"
   },
   "comparison": {
-    "title": "对比鼠标",
-    "select": "选择鼠标",
-    "compare": "开始对比"
+    "title": "Compare Mice",
+    "select": "Select Mice",
+    "compare": "Start Comparison"
   },
   "cart": {
-    "shopping_cart": "购物车",
-    "checkout": "结算",
-    "empty": "购物车为空",
-    "total": "总计"
+    "shopping_cart": "Shopping Cart",
+    "checkout": "Checkout",
+    "empty": "Cart is Empty",
+    "total": "Total"
   },
   "order": {
-    "checkout": "结算",
-    "my_orders": "我的订单",
-    "order_details": "订单详情",
-    "shipping": "配送",
-    "payment": "支付"
+    "checkout": "Checkout",
+    "my_orders": "My Orders",
+    "order_details": "Order Details",
+    "shipping": "Shipping",
+    "payment": "Payment"
   },
   "review": {
-    "reviews": "评测",
-    "write": "撰写评测",
-    "read": "查看评测"
+    "reviews": "Reviews",
+    "write": "Write Review",
+    "read": "View Reviews"
   },
   "tools": {
-    "tools": "工具",
-    "ruler": "尺子工具",
-    "sensitivity_tool": "灵敏度工具",
-    "sensitivity_converter": "灵敏度转换器",
-    "dpi_calculator": "DPI计算器",
-    "sensitivity_calculator": "灵敏度计算器",
-    "mouse_shape": "鼠标形状可视化"
+    "tools": "Tools",
+    "ruler": "Ruler Tool",
+    "sensitivity_tool": "Sensitivity Tool",
+    "sensitivity_converter": "Sensitivity Converter",
+    "dpi_calculator": "DPI Calculator",
+    "sensitivity_calculator": "Sensitivity Calculator",
+    "mouse_shape": "Mouse Shape Visualization"
   },
   "profile": {
-    "personal_info": "个人信息",
-    "username": "用户名",
-    "email": "邮箱",
-    "password": "密码",
-    "change_password": "修改密码",
-    "security": "安全设置",
-    "preferences": "偏好设置",
-    "devices": "我的设备"
+    "personal_info": "Personal Information",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "change_password": "Change Password",
+    "security": "Security Settings",
+    "preferences": "Preferences",
+    "devices": "My Devices"
   },
   "errors": {
-    "required_field": "此字段为必填项",
-    "invalid_email": "邮箱格式不正确",
-    "password_mismatch": "两次输入的密码不一致",
-    "login_failed": "登录失败，请检查您的凭据",
-    "server_error": "服务器错误，请稍后再试"
+    "required_field": "This field is required",
+    "invalid_email": "Invalid email format",
+    "password_mismatch": "Passwords don't match",
+    "login_failed": "Login failed, please check your credentials",
+    "server_error": "Server error, please try again later"
   }
 }

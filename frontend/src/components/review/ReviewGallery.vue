@@ -1,46 +1,48 @@
 <template>
   <div class="review-gallery">
-    <div v-if="!images.length" class="no-images">
-      暂无图片
-    </div>
+    <div v-if="!images.length" class="no-images">暂无图片</div>
     <div v-else class="gallery-container">
       <div class="gallery-thumbnails">
-        <div 
-          v-for="(image, index) in images" 
+        <div
+          v-for="(image, index) in images"
           :key="`thumb-${index}`"
           class="thumbnail"
           :class="{ active: index === activeIndex }"
           @click="setActiveImage(index)"
         >
-          <img :src="image.thumbnailUrl || image.url" :alt="`图片 ${index + 1}`" class="img-fluid">
+          <img
+            :src="image.thumbnailUrl || image.url"
+            :alt="`图片 ${index + 1}`"
+            class="img-fluid"
+          />
         </div>
       </div>
-      
+
       <div class="gallery-main-image">
         <div class="image-container">
-          <img 
-            v-if="activeImage" 
-            :src="activeImage.url" 
-            :alt="activeImage.caption || `图片 ${activeIndex + 1}`" 
+          <img
+            v-if="activeImage"
+            :src="activeImage.url"
+            :alt="activeImage.caption || `图片 ${activeIndex + 1}`"
             class="img-fluid"
-          >
+          />
         </div>
-        
+
         <div v-if="activeImage && activeImage.caption" class="image-caption">
           {{ activeImage.caption }}
         </div>
-        
+
         <div class="gallery-controls">
-          <el-button 
-            circle 
-            @click="prevImage" 
+          <el-button
+            circle
+            @click="prevImage"
             :disabled="activeIndex === 0"
             icon="el-icon-arrow-left"
           />
           <span class="image-counter">{{ activeIndex + 1 }} / {{ images.length }}</span>
-          <el-button 
-            circle 
-            @click="nextImage" 
+          <el-button
+            circle
+            @click="nextImage"
             :disabled="activeIndex === images.length - 1"
             icon="el-icon-arrow-right"
           />
@@ -92,11 +94,14 @@ function prevImage() {
 }
 
 // 监听图片数组变化
-watch(() => props.images, () => {
-  if (activeIndex.value >= props.images.length) {
-    activeIndex.value = props.images.length > 0 ? 0 : -1;
+watch(
+  () => props.images,
+  () => {
+    if (activeIndex.value >= props.images.length) {
+      activeIndex.value = props.images.length > 0 ? 0 : -1;
+    }
   }
-});
+);
 </script>
 
 <style scoped>

@@ -2,11 +2,11 @@
   <div class="static-ruler-container">
     <div class="ruler" :style="rulerStyles">
       <div class="ruler-markings">
-        <div 
-          v-for="tick in ticks" 
-          :key="tick.value" 
+        <div
+          v-for="tick in ticks"
+          :key="tick.value"
           class="ruler-tick"
-          :class="{'major-tick': tick.isMajor}"
+          :class="{ 'major-tick': tick.isMajor }"
           :style="tickStyle(tick)"
         >
           <span v-if="tick.isMajor" class="tick-label">{{ tick.label }}</span>
@@ -28,7 +28,7 @@ interface RulerTick {
 const props = defineProps({
   rulerLength: {
     type: Number,
-    default: 30 // 默认标尺长度，单位厘米
+    default: 30 // 默认标尺长度，单位毫米
   },
   pixelsPerCm: {
     type: Number,
@@ -48,11 +48,12 @@ const props = defineProps({
 // 计算标尺整体样式
 const rulerStyles = computed(() => {
   const width = props.mode === 'horizontal' ? `${props.rulerLength * props.pixelsPerCm}px` : '80px';
-  const height = props.mode === 'vertical' ? `${props.rulerLength * props.pixelsPerCm}px` : `${props.height}px`;
-  
+  const height =
+    props.mode === 'vertical' ? `${props.rulerLength * props.pixelsPerCm}px` : `${props.height}px`;
+
   return {
     width,
-    height,
+    height
   };
 });
 
@@ -61,7 +62,7 @@ const ticks = computed(() => {
   const result: RulerTick[] = [];
   // 计算像素
   const pxPerCm = props.pixelsPerCm;
-  
+
   // 每厘米一个主刻度，每毫米一个小刻度
   for (let cm = 0; cm <= props.rulerLength; cm++) {
     // 添加厘米刻度（主刻度）
@@ -70,7 +71,7 @@ const ticks = computed(() => {
       label: cm.toString(),
       isMajor: true
     });
-    
+
     // 添加毫米刻度（小刻度），但最后一个厘米标记后不再添加毫米刻度
     if (cm < props.rulerLength) {
       for (let mm = 1; mm < 10; mm++) {
@@ -82,7 +83,7 @@ const ticks = computed(() => {
       }
     }
   }
-  
+
   return result;
 });
 
@@ -93,14 +94,14 @@ const tickStyle = (tick: RulerTick) => {
     return {
       left: `${tick.value}px`,
       height,
-      top: '0px',
+      top: '0px'
     };
   } else {
     const width = tick.isMajor ? '18px' : '10px';
     return {
       top: `${tick.value}px`,
       width,
-      left: '0px',
+      left: '0px'
     };
   }
 };
@@ -150,16 +151,16 @@ const tickStyle = (tick: RulerTick) => {
 }
 
 /* Vertical ruler adjustments */
-.static-ruler-container:has(.ruler[style*="vertical"]) .ruler-tick {
+.static-ruler-container:has(.ruler[style*='vertical']) .ruler-tick {
   height: 1px;
   width: auto;
 }
 
-.static-ruler-container:has(.ruler[style*="vertical"]) .major-tick {
+.static-ruler-container:has(.ruler[style*='vertical']) .major-tick {
   height: 2px;
 }
 
-.static-ruler-container:has(.ruler[style*="vertical"]) .tick-label {
+.static-ruler-container:has(.ruler[style*='vertical']) .tick-label {
   top: 50%;
   left: 20px;
   transform: translateY(-50%);

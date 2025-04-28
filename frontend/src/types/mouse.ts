@@ -1,3 +1,4 @@
+import { DeviceListResponse } from "@/api/device";
 export interface MouseDimensions {
   length: number;
   width: number;
@@ -42,18 +43,18 @@ export interface MouseDevice {
 }
 
 export interface MouseComparisonResult {
+  mice: MouseDevice[];
   similarityScore: number;
-  differences: Record<string, {
-    property: string;
-    values: any[];
-    differencePercent: number;
-  }>;
+  differences: Record<
+    string,
+    {
+      property: string;
+      values: any[];
+      differencePercent: number;
+    }
+  >;
 }
 
 export type ComparisonMode = 'overlay' | 'sideBySide';
 export type ViewType = 'topView' | 'sideView';
 
-export interface DeviceListResponse {
-  devices: MouseDevice[];
-  total: number;
-}

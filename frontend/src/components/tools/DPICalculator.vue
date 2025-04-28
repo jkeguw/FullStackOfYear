@@ -4,32 +4,32 @@
     <el-form :model="form" label-position="top" class="max-w-md mx-auto">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <el-form-item label="原始DPI" class="mb-3">
-          <el-input-number 
-            v-model="form.sourceDPI" 
-            :min="100" 
-            :max="32000" 
-            class="w-full" 
-            controls-position="right" 
+          <el-input-number
+            v-model="form.sourceDPI"
+            :min="100"
+            :max="32000"
+            class="w-full"
+            controls-position="right"
           />
         </el-form-item>
         <el-form-item label="目标DPI" class="mb-3">
-          <el-input-number 
-            v-model="form.targetDPI" 
-            :min="100" 
-            :max="32000" 
-            class="w-full" 
-            controls-position="right" 
+          <el-input-number
+            v-model="form.targetDPI"
+            :min="100"
+            :max="32000"
+            class="w-full"
+            controls-position="right"
           />
         </el-form-item>
       </div>
       <el-form-item label="原始灵敏度" class="mb-3">
-        <el-input-number 
-          v-model="form.sensitivity" 
-          :min="0.1" 
-          :max="10" 
-          :step="0.1" 
-          class="w-full" 
-          controls-position="right" 
+        <el-input-number
+          v-model="form.sensitivity"
+          :min="0.1"
+          :max="10"
+          :step="0.1"
+          class="w-full"
+          controls-position="right"
         />
       </el-form-item>
       <el-form-item class="mt-6 text-center">
@@ -39,7 +39,9 @@
         </div>
       </el-form-item>
       <div class="mt-4 p-3 bg-gray-700 rounded-md">
-        <p class="text-sm text-gray-300">cm/360° = <span class="font-semibold text-white">{{ cmPer360 }}</span></p>
+        <p class="text-sm text-gray-300">
+          cm/360° = <span class="font-semibold text-white">{{ cmPer360 }}</span>
+        </p>
       </div>
     </el-form>
 
@@ -57,30 +59,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { convertDPI } from '@/utils/dpi'
+import { ref, computed } from 'vue';
+import { convertDPI } from '@/utils/dpi';
 
 const form = ref({
   sourceDPI: 800,
   targetDPI: 800,
   sensitivity: 1
-})
+});
 
 const convertedSensitivity = computed(() => {
-  return convertDPI(
-    form.value.sourceDPI,
-    form.value.targetDPI,
-    form.value.sensitivity
-  ).toFixed(3)
-})
+  return convertDPI(form.value.sourceDPI, form.value.targetDPI, form.value.sensitivity).toFixed(3);
+});
 
 const cmPer360 = computed(() => {
   // cm/360° = 360 × 2.54 / (灵敏度 × DPI × 游戏系数)
   // 使用CSGO的游戏系数0.022作为默认值
-  const gameCoefficient = 0.022
-  const cm = (360 * 2.54) / (form.value.sensitivity * form.value.sourceDPI * gameCoefficient)
-  return cm.toFixed(2) + ' cm'
-})
+  const gameCoefficient = 0.022;
+  const cm = (360 * 2.54) / (form.value.sensitivity * form.value.sourceDPI * gameCoefficient);
+  return cm.toFixed(2) + ' cm';
+});
 </script>
 
 <style scoped>

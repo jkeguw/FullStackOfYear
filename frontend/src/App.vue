@@ -2,45 +2,45 @@
   <el-config-provider :locale="elementLocale">
     <div class="app-container dark">
       <NavBar />
-      
+
       <main class="main-content">
         <router-view />
       </main>
-      
+
       <el-backtop :right="20" :bottom="20" />
-      
+
       <Notifications v-if="false" title="通知" />
     </div>
   </el-config-provider>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import zhCn from 'element-plus/es/locale/lang/zh-cn'
-import en from 'element-plus/es/locale/lang/en'
+import { computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
+import en from 'element-plus/es/locale/lang/en';
 
-import NavBar from '@/components/layout/NavBar.vue'
-import Notifications from '@/components/common/Notifications.vue'
+import NavBar from '@/components/layout/NavBar.vue';
+import Notifications from '@/components/common/Notifications.vue';
 
-const { locale } = useI18n()
+const { locale } = useI18n();
 
 // 根据当前语言设置 Element Plus 的语言
 const elementLocale = computed(() => {
   if (locale.value.startsWith('zh')) {
-    return zhCn
+    return zhCn;
   }
-  return en
-})
+  return en;
+});
 
 // 设置主题变量
 watch(
   () => locale.value,
   () => {
-    document.documentElement.lang = locale.value
+    document.documentElement.lang = locale.value;
   },
   { immediate: true }
-)
+);
 </script>
 
 <style>
@@ -54,8 +54,8 @@ watch(
   --claude-text-muted: #a0a0a0;
   --claude-border-dark: #333333;
   --claude-border-light: #444444;
-  --claude-primary-purple: #7D5AF3;
-  --claude-primary-purple-darker: #6A48E0;
+  --claude-primary-purple: #7d5af3;
+  --claude-primary-purple-darker: #6a48e0;
   --claude-focus-ring: rgba(125, 90, 243, 0.5);
 }
 
@@ -77,10 +77,23 @@ watch(
   --el-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
   background-color: var(--claude-bg-dark);
   color: var(--claude-text-light);
   min-height: 100vh;

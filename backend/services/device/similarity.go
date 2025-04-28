@@ -3,11 +3,10 @@ package device
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
 	"project/backend/models"
-	"project/backend/services/similarity"
 	"project/backend/types/device"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // CompareMice 比较鼠标形状和尺寸
@@ -43,6 +42,16 @@ func (s *ServiceImpl) CompareMice(ctx context.Context, ids []string) (*device.Co
 	similarityScore := calculateSimilarityScore(differences)
 
 	// 构建响应
+	// 确保mice不为空，避免返回null
+	if len(mice) == 0 {
+		// 返回一个有效的空响应，而不是null
+		return &device.ComparisonResponse{
+			Mice:            []device.MouseResponse{},
+			Differences:     map[string]device.PropertyDiff{},
+			SimilarityScore: 0,
+		}, nil
+	}
+
 	response := &device.ComparisonResponse{
 		Mice:            make([]device.MouseResponse, len(mice)),
 		Differences:     differences,
@@ -131,6 +140,16 @@ func (s *ServiceImpl) FindSimilarMice(ctx context.Context, id string, limit int)
 	if limit > len(similarities) {
 		limit = len(similarities)
 	}
+
+	// 确保有相似的鼠标
+	if len(similarities) == 0 {
+		// 返回只有参考鼠标但没有相似鼠标的响应
+		return &device.SimilarityResponse{
+			Reference:   mapMouseToResponse(reference),
+			SimilarMice: []device.SimilarMouse{},
+		}, nil
+	}
+
 	similarities = similarities[:limit]
 
 	// 构建响应
@@ -196,29 +215,29 @@ func handleDimensionsDiff(mice []*models.MouseDevice, differences map[string]dev
 
 	// 添加到差异map
 	differences["length"] = device.PropertyDiff{
-		Property:         "长度 (mm)",
-		Values:           lengthValues,
+		Property:          "长度 (mm)",
+		Values:            lengthValues,
 		DifferencePercent: lengthDiff,
 	}
 	differences["width"] = device.PropertyDiff{
-		Property:         "宽度 (mm)",
-		Values:           widthValues,
+		Property:          "宽度 (mm)",
+		Values:            widthValues,
 		DifferencePercent: widthDiff,
 	}
 	differences["height"] = device.PropertyDiff{
-		Property:         "高度 (mm)",
-		Values:           heightValues,
+		Property:          "高度 (mm)",
+		Values:            heightValues,
 		DifferencePercent: heightDiff,
 	}
 	differences["weight"] = device.PropertyDiff{
-		Property:         "重量 (g)",
-		Values:           weightValues,
+		Property:          "重量 (g)",
+		Values:            weightValues,
 		DifferencePercent: weightDiff,
 	}
 }
 
 func handleShapeDiff(mice []*models.MouseDevice, differences map[string]device.PropertyDiff) {
-	// 处理形状参数 
+	// 处理形状参数
 	typeValues := make([]any, len(mice))
 	humpValues := make([]any, len(mice))
 	flareValues := make([]any, len(mice))
@@ -242,28 +261,28 @@ func handleShapeDiff(mice []*models.MouseDevice, differences map[string]device.P
 
 	// 添加到差异map
 	differences["shape_type"] = device.PropertyDiff{
-		Property:         "形状类型",
-		Values:           typeValues,
+		Property:          "形状类型",
+		Values:            typeValues,
 		DifferencePercent: typeDiff,
 	}
 	differences["hump_placement"] = device.PropertyDiff{
-		Property:         "坑位位置",
-		Values:           humpValues,
+		Property:          "坑位位置",
+		Values:            humpValues,
 		DifferencePercent: humpDiff,
 	}
 	differences["front_flare"] = device.PropertyDiff{
-		Property:         "前端开叉",
-		Values:           flareValues,
+		Property:          "前端开叉",
+		Values:            flareValues,
 		DifferencePercent: flareDiff,
 	}
 	differences["side_curvature"] = device.PropertyDiff{
-		Property:         "侧面曲线",
-		Values:           curvatureValues,
+		Property:          "侧面曲线",
+		Values:            curvatureValues,
 		DifferencePercent: curvatureDiff,
 	}
 	differences["hand_compatibility"] = device.PropertyDiff{
-		Property:         "手型适配",
-		Values:           handCompValues,
+		Property:          "手型适配",
+		Values:            handCompValues,
 		DifferencePercent: handCompDiff,
 	}
 }
@@ -287,18 +306,18 @@ func handleTechnicalDiff(mice []*models.MouseDevice, differences map[string]devi
 
 	// 添加到差异map
 	differences["max_dpi"] = device.PropertyDiff{
-		Property:         "最大DPI",
-		Values:           dpiValues,
+		Property:          "最大DPI",
+		Values:            dpiValues,
 		DifferencePercent: dpiDiff,
 	}
 	differences["polling_rate"] = device.PropertyDiff{
-		Property:         "轮询率 (Hz)",
-		Values:           pollingRateValues,
+		Property:          "轮询率 (Hz)",
+		Values:            pollingRateValues,
 		DifferencePercent: pollingRateDiff,
 	}
 	differences["side_buttons"] = device.PropertyDiff{
-		Property:         "侧键数量",
-		Values:           sideButtonsValues,
+		Property:          "侧键数量",
+		Values:            sideButtonsValues,
 		DifferencePercent: sideButtonsDiff,
 	}
 }
@@ -386,22 +405,22 @@ func calculateSimilarityScore(differences map[string]device.PropertyDiff) float6
 	// 定义权重
 	weights := map[string]float64{
 		// 尺寸参数 (总权重: 0.5)
-		"length":            0.15,
-		"width":             0.15,
-		"height":            0.10,
-		"weight":            0.10,
-		
+		"length": 0.15,
+		"width":  0.15,
+		"height": 0.10,
+		"weight": 0.10,
+
 		// 形状参数 (总权重: 0.35)
-		"shape_type":        0.07,
-		"hump_placement":    0.07,
-		"front_flare":       0.07,
-		"side_curvature":    0.07,
+		"shape_type":         0.07,
+		"hump_placement":     0.07,
+		"front_flare":        0.07,
+		"side_curvature":     0.07,
 		"hand_compatibility": 0.07,
-		
+
 		// 技术参数 (总权重: 0.15)
-		"max_dpi":           0.05,
-		"polling_rate":      0.05,
-		"side_buttons":      0.05,
+		"max_dpi":      0.05,
+		"polling_rate": 0.05,
+		"side_buttons": 0.05,
 	}
 
 	// 计算加权平均差异

@@ -6,7 +6,7 @@
         <el-icon><Menu /></el-icon>
       </div>
     </div>
-    
+
     <!-- 抽屉菜单 -->
     <el-drawer
       v-model="drawerOpen"
@@ -23,113 +23,205 @@
               <el-icon class="mr-2 text-xl"><Mouse /></el-icon>
               <span class="font-bold text-xl text-white">{{ $t('common.app_name') }}</span>
             </router-link>
-            
-            <language-switcher-flags class="mt-4" />
+
+            <LanguageSwitcherFlags class="mt-4" />
           </div>
-          
+
           <div class="mt-4">
-            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">主导航</h3>
+            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">Main Navigation</h3>
             <div class="flex flex-col space-y-4">
-              <router-link to="/" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><HomeFilled /></el-icon>
                 <span>{{ $t('common.home') }}</span>
               </router-link>
-              <router-link to="/database" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/database"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><DataAnalysis /></el-icon>
                 <span>{{ $t('mouse.database') }}</span>
               </router-link>
-              <router-link to="/reviews" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/reviews"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><ChatDotRound /></el-icon>
                 <span>{{ $t('review.reviews') }}</span>
               </router-link>
-              <router-link to="/compare" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/compare"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><Switch /></el-icon>
                 <span>{{ $t('comparison.title') }}</span>
               </router-link>
             </div>
           </div>
-          
+
           <div class="mt-6">
-            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">工具集</h3>
+            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">Tools</h3>
             <div class="flex flex-col space-y-4">
-              <router-link to="/tools/sensitivity" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/tools/sensitivity"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><Operation /></el-icon>
-                <span>灵敏度工具</span>
+                <span>Sensitivity Tool</span>
               </router-link>
-              <router-link to="/tools/ruler" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/tools/ruler"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><ScaleToOriginal /></el-icon>
-                <span>测量尺子</span>
+                <span>Measurement Ruler</span>
               </router-link>
             </div>
           </div>
-          
+
           <div class="mt-6">
-            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">购物</h3>
+            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">Shopping</h3>
             <div class="flex flex-col space-y-4">
-              <router-link to="/cart" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/cart"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><ShoppingCart /></el-icon>
-                <span>购物车</span>
+                <span>Cart</span>
               </router-link>
-              <router-link to="/checkout" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/checkout"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><ShoppingBag /></el-icon>
-                <span>结算</span>
+                <span>Checkout</span>
               </router-link>
-              <router-link v-if="isLoggedIn" to="/orders" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                v-if="isLoggedIn"
+                to="/orders"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><Finished /></el-icon>
                 <span>{{ $t('order.my_orders') }}</span>
               </router-link>
             </div>
           </div>
-          
+
           <div class="mt-6" v-if="isLoggedIn">
-            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">用户中心</h3>
+            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">User Center</h3>
             <div class="flex flex-col space-y-4">
-              <router-link to="/profile" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/profile"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><User /></el-icon>
-                <span>个人资料</span>
+                <span>Profile</span>
               </router-link>
-              <router-link to="/orders" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/orders"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><Document /></el-icon>
-                <span>订单记录</span>
+                <span>Order History</span>
               </router-link>
-              <div class="drawer-link cursor-pointer" @click="logout(); drawerOpen = false">
+              <div
+                class="drawer-link cursor-pointer"
+                @click="
+                  logout();
+                  drawerOpen = false;
+                "
+              >
                 <el-icon><SwitchButton /></el-icon>
-                <span>退出登录</span>
+                <span>Logout</span>
               </div>
             </div>
           </div>
-          
+
           <div class="mt-6" v-else>
             <div class="flex flex-col space-y-4">
-              <router-link to="/login" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/login"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><Key /></el-icon>
                 <span>{{ $t('common.login') }}</span>
               </router-link>
-              <router-link to="/register" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/register"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><UserFilled /></el-icon>
                 <span>{{ $t('common.register') }}</span>
               </router-link>
             </div>
           </div>
-          
+
           <div class="mt-6">
-            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">关于</h3>
+            <h3 class="text-sm font-bold text-gray-400 mb-2 uppercase">About</h3>
             <div class="flex flex-col space-y-4">
-              <router-link to="/about" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/about"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><InfoFilled /></el-icon>
-                <span>关于我们</span>
+                <span>About Us</span>
               </router-link>
-              <router-link to="/contact" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/contact"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><Message /></el-icon>
-                <span>联系我们</span>
+                <span>Contact Us</span>
               </router-link>
-              <router-link to="/privacy" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/privacy"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><Lock /></el-icon>
-                <span>隐私政策</span>
+                <span>Privacy Policy</span>
               </router-link>
-              <router-link to="/terms" class="drawer-link" active-class="active" @click="drawerOpen = false">
+              <router-link
+                to="/terms"
+                class="drawer-link"
+                active-class="active"
+                @click="drawerOpen = false"
+              >
                 <el-icon><Document /></el-icon>
-                <span>使用条款</span>
+                <span>Terms of Use</span>
               </router-link>
             </div>
           </div>
@@ -143,17 +235,36 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore, useComparisonStore } from '@/stores';
-import { 
-  Mouse, Menu, Close, Plus, HomeFilled, DataAnalysis, 
-  ChatDotRound, Switch, Reading, ScaleToOriginal, Operation, 
-  Pointer, User, Monitor, Document, SwitchButton, ShoppingCart, 
-  ShoppingBag, Finished, InfoFilled, Message, Lock, Key,
+import {
+  Mouse,
+  Menu,
+  Close,
+  Plus,
+  HomeFilled,
+  DataAnalysis,
+  ChatDotRound,
+  Switch,
+  Reading,
+  ScaleToOriginal,
+  Operation,
+  Pointer,
+  User,
+  Monitor,
+  Document,
+  SwitchButton,
+  ShoppingCart,
+  ShoppingBag,
+  Finished,
+  InfoFilled,
+  Message,
+  Lock,
+  Key,
   UserFilled
 } from '@element-plus/icons-vue';
 import LanguageSwitcherFlags from '@/components/common/LanguageSwitcherFlags.vue';
 import { useI18n } from 'vue-i18n';
 
-// 初始化i18n
+// Initialize i18n
 const { t } = useI18n();
 
 // 路由

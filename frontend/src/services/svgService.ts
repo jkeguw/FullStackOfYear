@@ -1,20 +1,21 @@
-// SVG处理服务 - 与后端API集成版本
+// SVG processing service - Integrates with backend API and supports local hardcoded data fallback
 import { getMouseSVG, compareSVGs, getSVGMouseList } from '@/api/device';
+import { hardcodedMice } from '@/data/hardcodedMice'; // Import hardcoded mouse data
 
 /**
- * 解析SVG内容
- * @param svgContent SVG内容
- * @returns 解析后的SVG对象
+ * Parse SVG content
+ * @param svgContent SVG content
+ * @returns Parsed SVG object
  */
 export function parseSvg(svgContent: string): SVGSVGElement {
-  // 确保SVG内容的路径是相对路径，解决可能的路径问题
+  // Ensure SVG content paths are relative, resolving potential path issues
   if (svgContent && typeof svgContent === 'string') {
-    // 尝试修正SVG图像问题：将可能的相对路径转为绝对路径
+    // Try to fix SVG image issues: Convert possible relative paths to absolute paths
     svgContent = svgContent.replace(/href="([^h][^t][^t][^p])/g, 'href="/images/$1');
     svgContent = svgContent.replace(/xlink:href="([^h][^t][^t][^p])/g, 'xlink:href="/images/$1');
   }
   if (!svgContent || typeof svgContent !== 'string') {
-    // 创建一个空的SVG元素并返回
+    // Create an empty SVG element and return it
     const emptySvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     emptySvg.setAttribute('viewBox', '0 0 100 100');
     emptySvg.setAttribute('width', '100');
@@ -36,26 +37,26 @@ export function parseSvg(svgContent: string): SVGSVGElement {
     const parser = new DOMParser();
     const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
 
-    // 检查是否有解析错误
+    // Check if there are any parsing errors
     const parserError = svgDoc.querySelector('parsererror');
     if (parserError) {
-      throw new Error('SVG解析错误');
+      throw new Error('SVG parsing error');
     }
 
     if (svgDoc.documentElement instanceof SVGSVGElement) {
       return svgDoc.documentElement;
     }
     
-    // 如果不是SVGSVGElement，创建一个新的并复制内容
+    // If not an SVGSVGElement, create a new one and copy the content
     const newSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const content = svgDoc.documentElement;
     
-    // 复制属性
+    // Copy attributes
     Array.from(content.attributes).forEach(attr => {
       newSvg.setAttribute(attr.name, attr.value);
     });
     
-    // 复制子节点
+    // Copy child nodes
     // @ts-ignore - SVG Node manipulation type issues
     while (content.firstChild) {
       // @ts-ignore - SVG Node manipulation type issues
@@ -64,9 +65,9 @@ export function parseSvg(svgContent: string): SVGSVGElement {
     
     return newSvg;
   } catch (error) {
-    console.error('SVG解析失败:', error);
+    console.error('SVG parsing failed:', error);
 
-    // 返回带有错误信息的SVG
+    // Return SVG with error message
     const errorSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     errorSvg.setAttribute('viewBox', '0 0 100 100');
     errorSvg.setAttribute('width', '100');
@@ -86,9 +87,9 @@ export function parseSvg(svgContent: string): SVGSVGElement {
 }
 
 /**
- * 获取SVG的视图框
- * @param svgElement SVG元素
- * @returns 视图框数据
+ * Get SVG viewBox
+ * @param svgElement SVG element
+ * @returns ViewBox data
  */
 export function getSvgViewBox(svgElement: SVGElement) {
   const viewBox = svgElement.getAttribute('viewBox');
@@ -99,20 +100,194 @@ export function getSvgViewBox(svgElement: SVGElement) {
 }
 
 /**
- * 获取鼠标SVG数据
- * @param mouseId 鼠标ID
- * @param view 视图类型 (top或side)
- * @returns SVG内容
+ * Get SVG content from hardcoded data
+ * @param mouseId Mouse ID
+ * @param view View type
+ * @returns SVG content or empty string
+ */
+function getHardcodedSvgData(mouseId: string, view: 'top' | 'side' = 'top'): string {
+  // First look in hardcodedMice
+  const mouse = hardcodedMice.find(m => m.id === mouseId);
+  if (mouse && mouse.svgData) {
+    return view === 'top' ? (mouse.svgData.topView || '') : (mouse.svgData.sideView || '');
+  }
+  
+  // If not found, try loading from local SVG file
+  return ''; // Will be loaded later via fetch
+}
+
+/**
+ * Get mouse SVG data
+ * @param mouseId Mouse ID
+ * @param view View type (top or side)
+ * @returns SVG content
  */
 export async function getMouseSvgData(mouseId: string, view: 'top' | 'side' = 'top'): Promise<string> {
   try {
-    const response = await getMouseSVG(mouseId, view);
-    if (response && response.data && response.data.svgData) {
-      return response.data.svgData;
+    // First try to get data from API
+    try {
+      const response = await getMouseSVG(mouseId, view);
+      if (response && response.data && response.data.svgData) {
+        return response.data.svgData;
+      }
+      throw new Error('无法从API获取SVG数据');
+    } catch (apiError) {
+      console.warn(`从API获取鼠标SVG数据失败: ${mouseId} (${view})，尝试使用硬编码数据`, apiError);
+      
+      // 尝试从硬编码数据获取
+      const hardcodedData = getHardcodedSvgData(mouseId, view);
+      if (hardcodedData) {
+        console.log(`使用硬编码数据加载鼠标 ${mouseId} 的 ${view} 视图SVG`);
+        return hardcodedData;
+      }
+      
+      // 尝试从本地SVG文件加载
+      try {
+        const fileName = mouseId.replace(/-/g, ' ');
+        const response = await fetch(`/svg/${fileName} ${view}.svg`);
+        if (response.ok) {
+          const svgText = await response.text();
+          console.log(`使用本地SVG文件加载鼠标 ${mouseId} 的 ${view} 视图`);
+          return svgText;
+        }
+      } catch (localError) {
+        console.error(`从本地加载SVG失败: ${mouseId}`, localError);
+      }
+      
+      throw new Error('无法获取SVG数据');
     }
-    throw new Error('无法获取SVG数据');
   } catch (error) {
     console.error(`获取鼠标SVG数据失败: ${mouseId} (${view})`, error);
+    return '';
+  }
+}
+
+/**
+ * 从硬编码数据创建重叠SVG
+ */
+async function createHardcodedOverlaySvg(
+  deviceIds: string[],
+  view: 'top' | 'side',
+  opacityValues: number[],
+  colors?: string[]
+): Promise<string> {
+  try {
+    // 获取SVG数据
+    const svgPromises = deviceIds.map(async id => {
+      // 先尝试从硬编码数据获取
+      let data = getHardcodedSvgData(id, view);
+      
+      // 如果硬编码数据不存在，尝试从本地文件加载
+      if (!data) {
+        try {
+          const fileName = id.replace(/-/g, ' ');
+          const response = await fetch(`/svg/${fileName} ${view}.svg`);
+          if (response.ok) {
+            data = await response.text();
+          }
+        } catch (error) {
+          console.error(`加载SVG文件失败: ${id}`, error);
+        }
+      }
+      
+      return data;
+    });
+    
+    // 等待所有SVG加载完成
+    const results = await Promise.all(svgPromises);
+    const svgs: string[] = results.filter(data => !!data) as string[];
+    
+    if (svgs.length === 0) {
+      console.error('无SVG数据可用于重叠比较');
+      return '';
+    }
+    
+    // 解析第一个SVG以获取基本信息
+    const baseSvg = parseSvg(svgs[0]);
+    const viewBox = getSvgViewBox(baseSvg);
+
+    // 创建新的SVG容器
+    const svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgContainer.setAttribute(
+      'viewBox',
+      `${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`
+    );
+    svgContainer.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+    // 添加每个SVG作为组
+    svgs.forEach((svgContent, index) => {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = svgContent;
+      const svgElement = tempDiv.querySelector('svg');
+      const pathElement = svgElement?.querySelector('path');
+      
+      if (pathElement) {
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        
+        // 设置组属性
+        group.setAttribute('opacity', opacityValues[index].toString());
+        group.setAttribute('fill', 'none'); // 仅显示轮廓
+        
+        // 应用颜色
+        if (colors && colors[index]) {
+          const color = colors[index];
+          group.setAttribute('stroke', color);
+          group.setAttribute('stroke-width', '2');
+        } else {
+          group.setAttribute('stroke', '#000000');
+          group.setAttribute('stroke-width', '2');
+        }
+        
+        // 复制路径元素
+        const clonedPath = pathElement.cloneNode(true);
+        group.appendChild(clonedPath);
+        svgContainer.appendChild(group);
+      } else {
+        // 如果没有path元素，尝试复制所有子节点
+        const svgElementParsed = parseSvg(svgContent);
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        
+        // 设置组属性
+        group.setAttribute('opacity', opacityValues[index].toString());
+        
+        // 应用颜色
+        if (colors && colors[index]) {
+          const color = colors[index];
+          // 创建并应用颜色滤镜
+          const filterId = `colorize-${index}`;
+          const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+          filter.setAttribute('id', filterId);
+          
+          // 使用feColorMatrix滤镜适用颜色
+          const colorMatrix = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
+          colorMatrix.setAttribute('type', 'matrix');
+          colorMatrix.setAttribute(
+            'values',
+            `0 0 0 0 ${parseInt(color.slice(1, 3), 16) / 255} 
+                                     0 0 0 0 ${parseInt(color.slice(3, 5), 16) / 255} 
+                                     0 0 0 0 ${parseInt(color.slice(5, 7), 16) / 255} 
+                                     0 0 0 1 0`
+          );
+          
+          filter.appendChild(colorMatrix);
+          svgContainer.appendChild(filter);
+          group.setAttribute('filter', `url(#${filterId})`);
+        }
+        
+        // 将SVG元素的所有子节点复制到组中
+        // @ts-ignore - SVG Node manipulation type issues
+        while (svgElementParsed.firstChild) {
+          // @ts-ignore - SVG Node manipulation type issues
+          group.appendChild(svgElementParsed.firstChild);
+        }
+        
+        svgContainer.appendChild(group);
+      }
+    });
+
+    return new XMLSerializer().serializeToString(svgContainer);
+  } catch (error) {
+    console.error('创建硬编码重叠SVG失败:', error);
     return '';
   }
 }
@@ -132,81 +307,291 @@ export async function createOverlaySvg(
   colors?: string[]
 ): Promise<string> {
   try {
-    // 调用后端API获取SVG比较数据
-    const response = await compareSVGs({
-      deviceIds: deviceIds,
-      view: view
-    });
-
-    if (!response || !response.data || !response.data.devices) {
-      throw new Error('无法获取比较数据');
+    if (!deviceIds || deviceIds.length === 0) {
+      console.error('无法创建重叠SVG: 没有提供设备ID');
+      return '';
     }
+    
+    try {
+      // 首先尝试调用后端API
+      const response = await compareSVGs({
+        deviceIds: deviceIds,
+        view: view
+      });
 
-    // 获取SVG数据数组
-    const svgs = response.data.devices.map(device => device.svgData);
+      if (!response || !response.data) {
+        throw new Error('API返回空结果');
+      }
 
-    // 假如我们需要使用前端处理合并SVG，可以使用下面的代码
-    // 但此时我们会更倾向于让后端返回已经处理好的SVG
-    // 这里作为备用方案保留
+      // 没有devices的情况下也抛出错误
+      if (!response.data.devices || response.data.devices.length === 0) {
+        throw new Error('API返回空设备列表');
+      }
 
-    // 解析第一个SVG以获取基本信息
-    if (svgs.length === 0) return '';
-    const baseSvg = parseSvg(svgs[0]);
-    const viewBox = getSvgViewBox(baseSvg);
+      // 获取SVG数据数组
+      const svgs = response.data.devices.map(device => device.svgData || '');
+      if (svgs.length === 0 || !svgs[0]) {
+        throw new Error('API返回的SVG数据为空');
+      }
 
-    // 创建新的SVG容器
-    const svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svgContainer.setAttribute(
-      'viewBox',
-      `${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`
-    );
-    svgContainer.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      // 解析第一个SVG以获取基本信息
+      const baseSvg = parseSvg(svgs[0]);
+      const viewBox = getSvgViewBox(baseSvg);
 
-    // 添加每个SVG作为组
-    svgs.forEach((svgContent, index) => {
-      const svgElement = parseSvg(svgContent);
-      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      // 创建新的SVG容器
+      const svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgContainer.setAttribute(
+        'viewBox',
+        `${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`
+      );
+      svgContainer.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      svgContainer.setAttribute('width', '100%');
+      svgContainer.setAttribute('height', '100%');
 
-      // 设置组属性
-      group.setAttribute('opacity', opacityValues[index].toString());
+      // 添加每个SVG作为组
+      svgs.forEach((svgContent, index) => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = svgContent;
+        const svgElement = tempDiv.querySelector('svg');
+        const pathElement = svgElement?.querySelector('path');
+        
+        if (pathElement) {
+          // 如果有path元素，优先使用path创建轮廓
+          const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          
+          // 设置组属性
+          group.setAttribute('opacity', opacityValues[index].toString());
+          group.setAttribute('fill', 'none'); // 仅显示轮廓
+          
+          // 应用颜色
+          if (colors && colors[index]) {
+            const color = colors[index];
+            group.setAttribute('stroke', color);
+            group.setAttribute('stroke-width', '2');
+          } else {
+            group.setAttribute('stroke', '#000000');
+            group.setAttribute('stroke-width', '2');
+          }
+          
+          // 复制路径元素
+          const clonedPath = pathElement.cloneNode(true);
+          group.appendChild(clonedPath);
+          svgContainer.appendChild(group);
+        } else {
+          // 如果没有path元素，使用原始方法
+          const svgElement = parseSvg(svgContent);
+          const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-      // 如果提供了颜色，应用颜色变换
-      if (colors && colors[index]) {
-        const color = colors[index];
-        // 创建并应用颜色滤镜
-        const filterId = `colorize-${index}`;
-        const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
-        filter.setAttribute('id', filterId);
+          // 设置组属性
+          group.setAttribute('opacity', opacityValues[index].toString());
 
-        // 使用feColorMatrix滤镜适用颜色
-        const colorMatrix = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
-        colorMatrix.setAttribute('type', 'matrix');
-        colorMatrix.setAttribute(
-          'values',
-          `0 0 0 0 ${parseInt(color.slice(1, 3), 16) / 255} 
+          // 如果提供了颜色，应用颜色变换
+          if (colors && colors[index]) {
+            const color = colors[index];
+            // 创建并应用颜色滤镜
+            const filterId = `colorize-${index}`;
+            const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+            filter.setAttribute('id', filterId);
+
+            // 使用feColorMatrix滤镜适用颜色
+            const colorMatrix = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
+            colorMatrix.setAttribute('type', 'matrix');
+            colorMatrix.setAttribute(
+              'values',
+              `0 0 0 0 ${parseInt(color.slice(1, 3), 16) / 255} 
                                            0 0 0 0 ${parseInt(color.slice(3, 5), 16) / 255} 
                                            0 0 0 0 ${parseInt(color.slice(5, 7), 16) / 255} 
                                            0 0 0 1 0`
-        );
+            );
 
-        filter.appendChild(colorMatrix);
-        svgContainer.appendChild(filter);
-        group.setAttribute('filter', `url(#${filterId})`);
+            filter.appendChild(colorMatrix);
+            svgContainer.appendChild(filter);
+            group.setAttribute('filter', `url(#${filterId})`);
+          }
+
+          // 将SVG元素的所有子节点复制到组中
+          // @ts-ignore - SVG Node manipulation type issues
+          while (svgElement.firstChild) {
+            // @ts-ignore - SVG Node manipulation type issues
+            group.appendChild(svgElement.firstChild);
+          }
+
+          svgContainer.appendChild(group);
+        }
+      });
+
+      return new XMLSerializer().serializeToString(svgContainer);
+    } catch (apiError) {
+      console.warn('通过API创建SVG叠加失败，尝试使用硬编码数据:', apiError);
+      
+      // 使用硬编码数据创建
+      try {
+        const hardcodedSvg = await createHardcodedOverlaySvg(deviceIds, view, opacityValues, colors);
+        if (hardcodedSvg) {
+          console.log('使用硬编码数据创建SVG叠加成功');
+          return hardcodedSvg;
+        }
+      } catch (hardcodedError) {
+        console.error('使用硬编码数据创建SVG失败:', hardcodedError);
       }
+      
+      throw new Error('无法使用硬编码数据创建SVG叠加');
+    }
+  } catch (error) {
+    console.error('Failed to create overlay SVG:', error);
+    // Return placeholder SVG
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 150">
+      <rect width="300" height="150" fill="#f5f7fa" stroke="#e4e7ed" stroke-width="1"/>
+      <text x="150" y="75" text-anchor="middle" fill="#909399" font-family="Arial, sans-serif" font-size="16">SVG comparison function cannot load</text>
+      <text x="150" y="100" text-anchor="middle" fill="#909399" font-family="Arial, sans-serif" font-size="12">Please try again later</text>
+    </svg>`;
+  }
+}
 
-      // 将SVG元素的所有子节点复制到组中
-      // @ts-ignore - SVG Node manipulation type issues
-      while (svgElement.firstChild) {
+/**
+ * 创建硬编码的并排比较SVG
+ */
+async function createHardcodedSideBySideSvg(
+  deviceIds: string[],
+  view: 'top' | 'side'
+): Promise<string> {
+  try {
+    // 获取SVG数据
+    const svgPromises = deviceIds.map(async id => {
+      // 先尝试从硬编码数据获取
+      let svgData = '';
+      let label = '';
+      
+      // 尝试从硬编码数据获取
+      const mouse = hardcodedMice.find(m => m.id === id);
+      if (mouse && mouse.svgData) {
+        svgData = view === 'top' ? mouse.svgData.topView : mouse.svgData.sideView;
+        if (svgData) {
+          label = `${mouse.brand} ${mouse.name}`;
+          return { svgData, label };
+        }
+      }
+      
+      // 尝试从本地文件加载
+      try {
+        const fileName = id.replace(/-/g, ' ');
+        const response = await fetch(`/svg/${fileName} ${view}.svg`);
+        if (response.ok) {
+          svgData = await response.text();
+          label = fileName;
+          return { svgData, label };
+        }
+      } catch (error) {
+        console.error(`加载SVG文件失败: ${id}`, error);
+      }
+      
+      return { svgData: '', label: '' };
+    });
+    
+    // 等待所有SVG加载完成
+    const results = await Promise.all(svgPromises);
+    const svgDataList = results.filter(item => !!item.svgData);
+    
+    if (svgDataList.length === 0) {
+      console.error('无SVG数据可用于并排比较');
+      return '';
+    }
+    
+    const svgs = svgDataList.map(item => item.svgData);
+    const labels = svgDataList.map(item => item.label);
+
+    // 解析所有SVG以确定最大尺寸
+    const parsedSvgs = svgs.map((svgContent) => parseSvg(svgContent));
+    const viewBoxes = parsedSvgs.map((svg) => getSvgViewBox(svg));
+
+    // 计算总宽度和最大高度
+    const padding = 20; // SVG之间的间距
+    const totalWidth =
+      viewBoxes.reduce((sum, vb) => sum + vb.width, 0) + (viewBoxes.length - 1) * padding;
+    const maxHeight = Math.max(...viewBoxes.map((vb) => vb.height));
+
+    // 创建新的SVG容器
+    const svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgContainer.setAttribute('viewBox', `0 0 ${totalWidth} ${maxHeight + 30}`); // 额外高度用于标签
+    svgContainer.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    svgContainer.setAttribute('width', '100%');
+    svgContainer.setAttribute('height', '100%');
+
+    // 添加每个SVG
+    let currentX = 0;
+    svgs.forEach((svgContent, index) => {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = svgContent;
+      const svgElement = tempDiv.querySelector('svg');
+      const pathElement = svgElement?.querySelector('path');
+      
+      if (pathElement) {
+        // 如果有path元素，优先使用path创建轮廓
+        const vb = viewBoxes[index];
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('transform', `translate(${currentX}, 0)`);
+        
+        // 设置轮廓属性
+        const pathGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        pathGroup.setAttribute('fill', 'none');
+        pathGroup.setAttribute('stroke', '#000000');
+        pathGroup.setAttribute('stroke-width', '2');
+        
+        // 复制路径元素
+        const clonedPath = pathElement.cloneNode(true);
+        pathGroup.appendChild(clonedPath);
+        group.appendChild(pathGroup);
+        
+        // 添加标签
+        if (labels && labels[index]) {
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', (vb.width / 2).toString());
+          text.setAttribute('y', (maxHeight + 20).toString());
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('font-family', 'Arial, sans-serif');
+          text.setAttribute('font-size', '14');
+          text.textContent = labels[index];
+          group.appendChild(text);
+        }
+        
+        svgContainer.appendChild(group);
+        currentX += vb.width + padding;
+      } else {
+        // 如果没有path元素，使用原始方法
+        const svgElement = parsedSvgs[index];
+        const vb = viewBoxes[index];
+        
+        // 创建组用于放置SVG内容
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.setAttribute('transform', `translate(${currentX}, 0)`);
+  
+        // 将SVG元素的所有子节点复制到组中
         // @ts-ignore - SVG Node manipulation type issues
-        group.appendChild(svgElement.firstChild);
+        while (svgElement.firstChild) {
+          // @ts-ignore - SVG Node manipulation type issues
+          group.appendChild(svgElement.firstChild);
+        }
+  
+        // 添加标签
+        if (labels && labels[index]) {
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', (vb.width / 2).toString());
+          text.setAttribute('y', (maxHeight + 20).toString());
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('font-family', 'Arial, sans-serif');
+          text.setAttribute('font-size', '14');
+          text.textContent = labels[index];
+          group.appendChild(text);
+        }
+  
+        svgContainer.appendChild(group);
+        currentX += vb.width + padding;
       }
-
-      svgContainer.appendChild(group);
     });
 
     return new XMLSerializer().serializeToString(svgContainer);
   } catch (error) {
-    console.error('创建重叠SVG失败:', error);
+    console.error('创建硬编码并排比较SVG失败:', error);
     return '';
   }
 }
@@ -222,71 +607,144 @@ export async function createSideBySideSvg(
   view: 'top' | 'side'
 ): Promise<string> {
   try {
-    // 调用后端API获取SVG比较数据
-    const response = await compareSVGs({
-      deviceIds: deviceIds,
-      view: view
-    });
+    try {
+      // 首先尝试调用后端API
+      const response = await compareSVGs({
+        deviceIds: deviceIds,
+        view: view
+      });
 
-    if (!response || !response.data || !response.data.devices) {
-      throw new Error('无法获取比较数据');
+      if (!response || !response.data) {
+        throw new Error('API返回空结果');
+      }
+
+      // 没有devices的情况下也抛出错误
+      if (!response.data.devices || response.data.devices.length === 0) {
+        throw new Error('API返回空设备列表');
+      }
+
+      // 获取SVG数据和标签
+      const svgs = response.data.devices.map(device => device.svgData || '');
+      if (svgs.length === 0 || !svgs[0]) {
+        throw new Error('API返回的SVG数据为空');
+      }
+      
+      const labels = response.data.devices.map(device => `${device.brand} ${device.deviceName || device.name}`);
+
+      // 解析所有SVG以确定最大尺寸
+      const parsedSvgs = svgs.map((svgContent) => parseSvg(svgContent));
+      const viewBoxes = parsedSvgs.map((svg) => getSvgViewBox(svg));
+
+      // 计算总宽度和最大高度
+      const padding = 20; // SVG之间的间距
+      const totalWidth =
+        viewBoxes.reduce((sum, vb) => sum + vb.width, 0) + (viewBoxes.length - 1) * padding;
+      const maxHeight = Math.max(...viewBoxes.map((vb) => vb.height));
+
+      // 创建新的SVG容器
+      const svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgContainer.setAttribute('viewBox', `0 0 ${totalWidth} ${maxHeight + 30}`); // 额外高度用于标签
+      svgContainer.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      svgContainer.setAttribute('width', '100%');
+      svgContainer.setAttribute('height', '100%');
+
+      // 添加每个SVG
+      let currentX = 0;
+      svgs.forEach((svgContent, index) => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = svgContent;
+        const svgElement = tempDiv.querySelector('svg');
+        const pathElement = svgElement?.querySelector('path');
+        
+        if (pathElement) {
+          // 如果有path元素，优先使用path创建轮廓
+          const vb = viewBoxes[index];
+          const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          group.setAttribute('transform', `translate(${currentX}, 0)`);
+          
+          // 设置轮廓属性
+          const pathGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          pathGroup.setAttribute('fill', 'none');
+          pathGroup.setAttribute('stroke', '#000000');
+          pathGroup.setAttribute('stroke-width', '2');
+          
+          // 复制路径元素
+          const clonedPath = pathElement.cloneNode(true);
+          pathGroup.appendChild(clonedPath);
+          group.appendChild(pathGroup);
+          
+          // 添加标签
+          if (labels && labels[index]) {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', (vb.width / 2).toString());
+            text.setAttribute('y', (maxHeight + 20).toString());
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('font-family', 'Arial, sans-serif');
+            text.setAttribute('font-size', '14');
+            text.textContent = labels[index];
+            group.appendChild(text);
+          }
+          
+          svgContainer.appendChild(group);
+          currentX += vb.width + padding;
+        } else {
+          // 如果没有path元素，使用原始方法
+          const svgElement = parsedSvgs[index];
+          const vb = viewBoxes[index];
+          
+          // 创建组用于放置SVG内容
+          const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          group.setAttribute('transform', `translate(${currentX}, 0)`);
+    
+          // 将SVG元素的所有子节点复制到组中
+          // @ts-ignore - SVG Node manipulation type issues
+          while (svgElement.firstChild) {
+            // @ts-ignore - SVG Node manipulation type issues
+            group.appendChild(svgElement.firstChild);
+          }
+    
+          // 添加标签
+          if (labels && labels[index]) {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', (vb.width / 2).toString());
+            text.setAttribute('y', (maxHeight + 20).toString());
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('font-family', 'Arial, sans-serif');
+            text.setAttribute('font-size', '14');
+            text.textContent = labels[index];
+            group.appendChild(text);
+          }
+    
+          svgContainer.appendChild(group);
+          currentX += vb.width + padding;
+        }
+      });
+
+      return new XMLSerializer().serializeToString(svgContainer);
+    } catch (apiError) {
+      console.warn('通过API创建并排SVG失败，尝试使用硬编码数据:', apiError);
+      
+      // 使用硬编码数据创建
+      try {
+        const hardcodedSvg = await createHardcodedSideBySideSvg(deviceIds, view);
+        if (hardcodedSvg) {
+          console.log('使用硬编码数据创建并排SVG成功');
+          return hardcodedSvg;
+        }
+      } catch (hardcodedError) {
+        console.error('使用硬编码数据创建并排SVG失败:', hardcodedError);
+      }
+      
+      throw new Error('无法使用硬编码数据创建并排SVG');
     }
-
-    // 获取SVG数据和标签
-    const svgs = response.data.devices.map(device => device.svgData);
-    const labels = response.data.devices.map(device => `${device.brand} ${device.deviceName}`);
-
-    // 解析所有SVG以确定最大尺寸
-    const parsedSvgs = svgs.map((svgContent) => parseSvg(svgContent));
-    const viewBoxes = parsedSvgs.map((svg) => getSvgViewBox(svg));
-
-    // 计算总宽度和最大高度
-    const padding = 10; // SVG之间的间距
-    const totalWidth =
-      viewBoxes.reduce((sum, vb) => sum + vb.width, 0) + (viewBoxes.length - 1) * padding;
-    const maxHeight = Math.max(...viewBoxes.map((vb) => vb.height));
-
-    // 创建新的SVG容器
-    const svgContainer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svgContainer.setAttribute('viewBox', `0 0 ${totalWidth} ${maxHeight + 30}`); // 额外高度用于标签
-    svgContainer.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-    // 添加每个SVG
-    let currentX = 0;
-    parsedSvgs.forEach((svgElement, index) => {
-      const vb = viewBoxes[index];
-
-      // 创建组用于放置SVG内容
-      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      group.setAttribute('transform', `translate(${currentX}, 0)`);
-
-      // 将SVG元素的所有子节点复制到组中
-      // @ts-ignore - SVG Node manipulation type issues
-      while (svgElement.firstChild) {
-        // @ts-ignore - SVG Node manipulation type issues
-        group.appendChild(svgElement.firstChild);
-      }
-
-      // 添加标签
-      if (labels && labels[index]) {
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', (vb.width / 2).toString());
-        text.setAttribute('y', (maxHeight + 20).toString());
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('font-family', 'Arial, sans-serif');
-        text.setAttribute('font-size', '12');
-        text.textContent = labels[index];
-        group.appendChild(text);
-      }
-
-      svgContainer.appendChild(group);
-      currentX += vb.width + padding;
-    });
-
-    return new XMLSerializer().serializeToString(svgContainer);
   } catch (error) {
     console.error('创建并排比较SVG失败:', error);
-    return '';
+    // Return placeholder SVG
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 150">
+      <rect width="300" height="150" fill="#f5f7fa" stroke="#e4e7ed" stroke-width="1"/>
+      <text x="150" y="75" text-anchor="middle" fill="#909399" font-family="Arial, sans-serif" font-size="16">SVG comparison function cannot load</text>
+      <text x="150" y="100" text-anchor="middle" fill="#909399" font-family="Arial, sans-serif" font-size="12">Please try again later</text>
+    </svg>`;
   }
 }
 
@@ -298,8 +756,21 @@ export async function createSideBySideSvg(
  */
 export async function getSvgMouseList(type?: string, brand?: string) {
   try {
-    const response = await getSVGMouseList({ type, brand });
-    return response.data;
+    try {
+      // 首先尝试从API获取数据
+      const response = await getSVGMouseList({ type, brand });
+      if (response && response.data && response.data.devices && response.data.devices.length > 0) {
+        return response.data;
+      }
+      throw new Error('API返回空结果或没有鼠标');
+    } catch (apiError) {
+      console.warn('无法从API获取鼠标列表，使用硬编码数据', apiError);
+      // 使用硬编码数据
+      return { 
+        devices: hardcodedMice,
+        total: hardcodedMice.length
+      };
+    }
   } catch (error) {
     console.error('获取SVG鼠标列表失败:', error);
     return { devices: [], total: 0 };

@@ -3,14 +3,14 @@
     <div v-if="loading" class="loading-container">
       <el-spinner size="large" />
     </div>
-    
+
     <div v-else-if="!review" class="empty-state">
       <el-empty description="找不到该评测" />
       <router-link to="/reviews">
         <el-button type="primary">返回评测列表</el-button>
       </router-link>
     </div>
-    
+
     <template v-else>
       <div class="review-header">
         <div class="review-title-section">
@@ -22,23 +22,21 @@
               </el-avatar>
               <span class="author-name">{{ review.author.name }}</span>
             </div>
-            <div class="published-date">
-              发布于 {{ formatDate(review.publishedAt) }}
-            </div>
+            <div class="published-date">发布于 {{ formatDate(review.publishedAt) }}</div>
             <div class="review-score" :class="getScoreClass(review.score)">
               {{ review.score }}/10
             </div>
           </div>
         </div>
-        
+
         <div class="review-mouse-card">
           <el-card shadow="hover" class="mouse-info-card">
             <div class="mouse-card-content">
               <div class="mouse-image">
-                <img 
-                  v-if="review.mouse.imageUrl" 
-                  :src="review.mouse.imageUrl" 
-                  :alt="review.mouse.name" 
+                <img
+                  v-if="review.mouse.imageUrl"
+                  :src="review.mouse.imageUrl"
+                  :alt="review.mouse.name"
                   class="img-fluid"
                 />
                 <div v-else class="placeholder-image">
@@ -51,7 +49,9 @@
                   <div class="spec-item">
                     <span class="spec-label">尺寸:</span>
                     <span class="spec-value">
-                      {{ review.mouse.dimensions.length }}x{{ review.mouse.dimensions.width }}x{{ review.mouse.dimensions.height }}mm
+                      {{ review.mouse.dimensions.length }}x{{ review.mouse.dimensions.width }}x{{
+                        review.mouse.dimensions.height
+                      }}mm
                     </span>
                   </div>
                   <div class="spec-item">
@@ -67,11 +67,11 @@
                   <router-link :to="`/mice/${review.mouse.id}`">
                     <el-button size="small">查看详情</el-button>
                   </router-link>
-                  <el-button 
-                    size="small" 
-                    type="primary" 
-                    @click="addToComparison(review.mouse)"
+                  <el-button
+                    size="small"
+                    type="primary"
                     :disabled="isInComparison(review.mouse.id)"
+                    @click="addToComparison(review.mouse)"
                   >
                     {{ isInComparison(review.mouse.id) ? '已添加比较' : '添加到比较' }}
                   </el-button>
@@ -81,17 +81,17 @@
           </el-card>
         </div>
       </div>
-      
+
       <div class="review-gallery">
-        <review-gallery :images="review.images" />
+        <ReviewGallery :images="review.images" />
       </div>
-      
+
       <div class="review-content">
         <div class="content-section">
           <h2 class="section-title">概述</h2>
-          <div class="section-content" v-html="review.summary"></div>
+          <div class="section-content">{{ review.summary }}</div>
         </div>
-        
+
         <div class="content-section">
           <h2 class="section-title">优点</h2>
           <ul class="pros-cons-list">
@@ -100,7 +100,7 @@
             </li>
           </ul>
         </div>
-        
+
         <div class="content-section">
           <h2 class="section-title">缺点</h2>
           <ul class="pros-cons-list">
@@ -109,12 +109,12 @@
             </li>
           </ul>
         </div>
-        
+
         <div class="content-section">
           <h2 class="section-title">详细评测</h2>
-          <div class="section-content" v-html="review.content"></div>
+          <div class="section-content">{{ review.content }}</div>
         </div>
-        
+
         <div class="content-section">
           <h2 class="section-title">规格参数</h2>
           <el-table :data="specsTableData" border stripe size="small">
@@ -122,11 +122,11 @@
             <el-table-column prop="value" label="数值" />
           </el-table>
         </div>
-        
+
         <div class="content-section">
           <h2 class="section-title">总结</h2>
-          <div class="section-content" v-html="review.conclusion"></div>
-          
+          <div class="section-content">{{ review.conclusion }}</div>
+
           <div class="final-score-section">
             <div class="final-score" :class="getScoreClass(review.score)">
               {{ review.score }}/10
@@ -137,12 +137,10 @@
           </div>
         </div>
       </div>
-      
+
       <div class="review-actions">
         <el-button @click="$router.push('/reviews')">返回评测列表</el-button>
-        <el-button type="primary" @click="addToComparison(review.mouse)">
-          添加到比较
-        </el-button>
+        <el-button type="primary" @click="addToComparison(review.mouse)"> 添加到比较 </el-button>
       </div>
     </template>
   </div>
@@ -154,6 +152,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useComparisonStore } from '@/stores';
 import { getReview } from '@/api/review';
 import { formatDate } from '@/utils/date';
+import { ElMessage } from 'element-plus';
 import ReviewGallery from '@/components/review/ReviewGallery.vue';
 import type { Review, MouseDevice } from '@/types/review';
 
@@ -169,7 +168,7 @@ const loading = ref(true);
 // 计算属性
 const specsTableData = computed(() => {
   if (!review.value) return [];
-  
+
   const mouse = review.value.mouse;
   return [
     { property: '品牌', value: mouse.brand },
@@ -183,7 +182,7 @@ const specsTableData = computed(() => {
     { property: '传感器', value: mouse.sensor },
     { property: 'DPI', value: `${mouse.dpi}` },
     { property: '按键开关', value: mouse.switches },
-    { property: '连接方式', value: mouse.connectivity },
+    { property: '连接方式', value: mouse.connectivity }
   ];
 });
 
@@ -205,34 +204,34 @@ function getScoreDescription(score: number) {
 
 function addToComparison(mouse: MouseDevice) {
   if (comparisonStore.selectedMice.length >= 3) {
-    window.ElMessage.warning('最多只能同时比较3个鼠标');
+    ElMessage.warning('最多只能同时比较3个鼠标');
     return;
   }
-  
+
   comparisonStore.addMouse(mouse);
-  window.ElMessage.success(`已添加 ${mouse.brand} ${mouse.name} 到比较列表`);
+  ElMessage.success(`已添加 ${mouse.brand} ${mouse.name} 到比较列表`);
 }
 
 function isInComparison(mouseId: string) {
-  return comparisonStore.selectedMice.some(m => m.id === mouseId);
+  return comparisonStore.selectedMice.some((m) => m.id === mouseId);
 }
 
 // 生命周期钩子
 onMounted(async () => {
   const reviewId = route.params.id as string;
-  
+
   if (!reviewId) {
     router.push('/reviews');
     return;
   }
-  
+
   try {
     loading.value = true;
     const data = await getReview(reviewId);
     review.value = data.review as Review;
   } catch (error) {
     console.error('Error fetching review:', error);
-    window.ElMessage.error('获取评测详情失败');
+    ElMessage.error('获取评测详情失败');
   } finally {
     loading.value = false;
   }
@@ -246,7 +245,8 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
-.loading-container, .empty-state {
+.loading-container,
+.empty-state {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -403,12 +403,12 @@ onMounted(async () => {
 
 .pro-item::before {
   content: '✓';
-  color: #67C23A;
+  color: #67c23a;
 }
 
 .con-item::before {
   content: '✕';
-  color: #F56C6C;
+  color: #f56c6c;
 }
 
 .final-score-section {
@@ -433,19 +433,19 @@ onMounted(async () => {
 }
 
 .score-excellent {
-  color: #67C23A;
+  color: #67c23a;
 }
 
 .score-good {
-  color: #409EFF;
+  color: #409eff;
 }
 
 .score-average {
-  color: #E6A23C;
+  color: #e6a23c;
 }
 
 .score-poor {
-  color: #F56C6C;
+  color: #f56c6c;
 }
 
 .review-actions {

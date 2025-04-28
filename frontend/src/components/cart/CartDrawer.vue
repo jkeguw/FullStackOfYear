@@ -20,10 +20,7 @@
             <div v-for="item in cart.items" :key="item.product_id" class="cart-item">
               <div class="cart-item-header">
                 <div class="cart-item-image">
-                  <img 
-                    :src="item.image_url || '/placeholder.png'" 
-                    :alt="item.name"
-                  />
+                  <img :src="item.image_url || '/placeholder.png'" :alt="item.name" />
                 </div>
                 <div class="cart-item-info">
                   <div class="cart-item-name">{{ item.name }}</div>
@@ -31,17 +28,17 @@
                 </div>
               </div>
               <div class="cart-item-actions">
-                <el-input-number 
-                  v-model="item.quantity" 
-                  :min="1" 
+                <el-input-number
+                  v-model="item.quantity"
+                  :min="1"
                   :max="99"
                   size="small"
                   @change="(val) => handleQuantityChange(item.product_id, val)"
                 />
-                <el-button 
-                  type="danger" 
-                  size="small" 
-                  icon="Delete" 
+                <el-button
+                  type="danger"
+                  size="small"
+                  icon="Delete"
                   circle
                   @click="removeItem(item.product_id)"
                 />
@@ -65,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from 'element-plus';
 import { ref, defineEmits, defineProps, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
@@ -84,16 +82,22 @@ const drawerVisible = ref(props.visible);
 const { cart, loading, total, updateQuantity, removeFromCart, clearCart } = useCart();
 
 // 同步drawer显示状态
-watch(() => props.visible, (val) => {
-  drawerVisible.value = val;
-});
-
-watch(() => drawerVisible.value, (val) => {
-  emit('update:visible', val);
-  if (!val) {
-    emit('close');
+watch(
+  () => props.visible,
+  (val) => {
+    drawerVisible.value = val;
   }
-});
+);
+
+watch(
+  () => drawerVisible.value,
+  (val) => {
+    emit('update:visible', val);
+    if (!val) {
+      emit('close');
+    }
+  }
+);
 
 // 处理数量变更
 async function handleQuantityChange(productId: string, quantity: number) {
@@ -111,9 +115,11 @@ async function handleClearCart() {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(async () => {
-    await clearCart();
-  }).catch(() => {});
+  })
+    .then(async () => {
+      await clearCart();
+    })
+    .catch(() => {});
 }
 
 // 前往商店

@@ -7,10 +7,10 @@
         </div>
       </div>
       <div v-if="showMarkers" class="ruler-markers">
-        <div 
-          v-for="(marker, index) in markers" 
-          :key="index" 
-          class="ruler-marker" 
+        <div
+          v-for="(marker, index) in markers"
+          :key="index"
+          class="ruler-marker"
           :style="{ left: `${marker.position}px` }"
           :title="marker.label"
         >
@@ -32,50 +32,47 @@
         <button @click="zoomOut" class="zoom-button">-</button>
       </div>
     </div>
-    
+
     <div class="ruler-settings">
       <div class="length-setting">
         <label for="ruler-length" class="text-sm text-white">尺子长度 (像素)</label>
         <div class="flex gap-2">
-          <input 
-            id="ruler-length" 
-            type="number" 
-            v-model.number="customWidth" 
-            min="200" 
-            max="1200" 
+          <input
+            id="ruler-length"
+            type="number"
+            v-model.number="customWidth"
+            min="200"
+            max="1200"
             step="50"
             class="length-input"
           />
           <button @click="resetSize" class="reset-button">重置</button>
         </div>
       </div>
-      
+
       <div class="real-size-display">
-        <div class="text-xs text-gray-400 mt-1">
-          实际长度: {{ realLength }}
-        </div>
+        <div class="text-xs text-gray-400 mt-1">实际长度: {{ realLength }}</div>
       </div>
     </div>
-    
+
     <div class="custom-marker-section mt-4" v-if="markers.length === 0">
       <div class="flex gap-2 mb-2">
-        <input 
-          type="number" 
-          v-model.number="newMarkerPosition" 
-          placeholder="标记位置(px)" 
+        <input
+          type="number"
+          v-model.number="newMarkerPosition"
+          placeholder="标记位置(px)"
           class="marker-input"
         />
-        <input 
-          type="text" 
-          v-model="newMarkerLabel" 
-          placeholder="标记名称" 
-          class="marker-input"
-        />
+        <input type="text" v-model="newMarkerLabel" placeholder="标记名称" class="marker-input" />
         <button @click="addMarker" class="add-marker-button">添加</button>
       </div>
       <div v-if="customMarkers.length > 0" class="custom-markers-list">
-        <div v-for="(marker, index) in customMarkers" :key="index" class="flex justify-between items-center p-1 border-b border-gray-600">
-          <span class="text-sm">{{marker.label}}: {{marker.position}}px</span>
+        <div
+          v-for="(marker, index) in customMarkers"
+          :key="index"
+          class="flex justify-between items-center p-1 border-b border-gray-600"
+        >
+          <span class="text-sm">{{ marker.label }}: {{ marker.position }}px</span>
           <button @click="removeMarker(index)" class="text-red-400 text-xs">删除</button>
         </div>
       </div>
@@ -102,15 +99,15 @@ export default defineComponent({
   props: {
     width: {
       type: Number,
-      default: 400,
+      default: 400
     },
     initialUnit: {
       type: String,
-      default: 'mm',
+      default: 'mm'
     },
     markers: {
       type: Array as PropType<Marker[]>,
-      default: () => [],
+      default: () => []
     },
     showMarkers: {
       type: Boolean,
@@ -124,15 +121,15 @@ export default defineComponent({
     const customMarkers = ref<Marker[]>([]);
     const newMarkerPosition = ref<number>(0);
     const newMarkerLabel = ref('');
-    
+
     // Calculate the ticks based on selected unit and zoom level
     const ticks = computed(() => {
       const result: Tick[] = [];
-      
+
       let step = 0;
       let majorStep = 0;
       let unitConversion = 0;
-      
+
       switch (selectedUnit.value) {
         case 'mm':
           step = 5 * zoomLevel.value;
@@ -150,27 +147,27 @@ export default defineComponent({
           unitConversion = 1 / 25.4;
           break;
       }
-      
+
       const numTicks = Math.floor(customWidth.value / step);
-      
+
       for (let i = 0; i <= numTicks; i++) {
         const value = i * step;
-        const unitValue = (i * step) / (zoomLevel.value) * unitConversion;
+        const unitValue = ((i * step) / zoomLevel.value) * unitConversion;
         const isMajor = Math.abs(Math.round(unitValue / majorStep) * majorStep - unitValue) < 0.001;
-        
+
         result.push({
           value,
-          label: isMajor ? unitValue.toFixed(1) : undefined,
+          label: isMajor ? unitValue.toFixed(1) : undefined
         });
       }
-      
+
       return result;
     });
-    
+
     const realLength = computed(() => {
       let unit = '';
       let length = 0;
-      
+
       switch (selectedUnit.value) {
         case 'mm':
           unit = '毫米';
@@ -185,7 +182,7 @@ export default defineComponent({
           length = (customWidth.value / (25.4 * zoomLevel.value)) * 1;
           break;
       }
-      
+
       return `${length.toFixed(1)} ${unit}`;
     });
 
@@ -193,7 +190,7 @@ export default defineComponent({
       const height = tick.label ? '15px' : '8px';
       return {
         left: `${tick.value}px`,
-        height,
+        height
       };
     };
 
@@ -208,30 +205,30 @@ export default defineComponent({
         zoomLevel.value /= 1.25;
       }
     };
-    
+
     const resetSize = () => {
       customWidth.value = props.width;
     };
-    
+
     const addMarker = () => {
       if (newMarkerPosition.value <= 0 || newMarkerPosition.value >= customWidth.value) {
         return;
       }
-      
+
       if (!newMarkerLabel.value) {
         newMarkerLabel.value = `标记 ${customMarkers.value.length + 1}`;
       }
-      
+
       customMarkers.value.push({
         position: newMarkerPosition.value,
         label: newMarkerLabel.value,
         color: '#ff5252'
       });
-      
+
       newMarkerPosition.value = 0;
       newMarkerLabel.value = '';
     };
-    
+
     const removeMarker = (index: number) => {
       customMarkers.value.splice(index, 1);
     };
@@ -256,7 +253,7 @@ export default defineComponent({
       addMarker,
       removeMarker
     };
-  },
+  }
 });
 </script>
 

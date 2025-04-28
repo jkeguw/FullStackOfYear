@@ -73,18 +73,16 @@ func HandleError(c interface{}, err error) {
 	// 获取HTTP状态码
 	status := HTTPStatusFromError(err)
 
-	// 构建响应
-	appErr, isAppErr := err.(*AppError)
-	if isAppErr {
-		ginCtx.JSON(status, gin.H{
-			"code":    appErr.Code,
-			"message": appErr.Message,
-		})
-	} else {
-		ginCtx.JSON(status, gin.H{
-			"error": err.Error(),
-		})
-	}
+	// 无论错误类型如何，都使用统一的格式
+	code := GetErrorCode(err)
+	message := err.Error()
+
+	// 构建统一响应格式，包含data: nil字段
+	ginCtx.JSON(status, gin.H{
+		"code":    code,
+		"message": message,
+		"data":    nil,
+	})
 }
 
 // IsNotFoundError 判断错误是否为NotFound错误

@@ -1,9 +1,9 @@
 <template>
-  <div 
-    ref="rulerContainer" 
-    class="simple-ruler" 
-    :style="{ 
-      left: `${position.x}px`, 
+  <div
+    ref="rulerContainer"
+    class="simple-ruler"
+    :style="{
+      left: `${position.x}px`,
       top: `${position.y}px`
     }"
     @mousedown="startDrag"
@@ -12,13 +12,7 @@
       <div class="handle" @mousedown.stop="startDrag"></div>
       <div class="length-control">
         <span class="length-label">长度:</span>
-        <input 
-          type="range" 
-          min="10" 
-          max="50" 
-          v-model="rulerLength" 
-          class="length-slider"
-        />
+        <input type="range" min="10" max="50" v-model="rulerLength" class="length-slider" />
         <span>{{ rulerLength }}cm</span>
       </div>
     </div>
@@ -45,7 +39,7 @@ export default defineComponent({
   props: {
     initialPosition: {
       type: Object,
-      default: () => ({ x: 100, y: 100 }),
+      default: () => ({ x: 100, y: 100 })
     }
   },
   setup(props) {
@@ -54,14 +48,14 @@ export default defineComponent({
     const rulerLength = ref(30); // 默认长度为30厘米
     const isDragging = ref(false);
     const dragOffset = ref({ x: 0, y: 0 });
-    
+
     // 计算刻度
     const ticks = computed(() => {
       const result: Tick[] = [];
       // 1cm = 37.8px (这是一个近似值，实际应该根据显示器DPI校准)
       const pixelsPerCm = 37.8;
       const totalLength = rulerLength.value * pixelsPerCm;
-      
+
       // 每厘米生成一个主刻度和9个小刻度
       for (let cm = 0; cm <= rulerLength.value; cm++) {
         // 添加厘米刻度（主刻度）
@@ -69,7 +63,7 @@ export default defineComponent({
           value: cm * pixelsPerCm,
           label: cm.toString()
         });
-        
+
         // 添加毫米刻度（小刻度）
         if (cm < rulerLength.value) {
           for (let mm = 1; mm < 10; mm++) {
@@ -80,7 +74,7 @@ export default defineComponent({
           }
         }
       }
-      
+
       return result;
     });
 
@@ -89,7 +83,7 @@ export default defineComponent({
       const height = tick.label ? '15px' : '8px';
       return {
         left: `${tick.value}px`,
-        height,
+        height
       };
     };
 
@@ -97,21 +91,22 @@ export default defineComponent({
     const startDrag = (event: MouseEvent) => {
       // 检查点击是否在刻度尺区域内
       const target = event.target as HTMLElement;
-      const isScaleArea = target.classList.contains('ruler-scale') || 
-                          target.classList.contains('ruler-tick') || 
-                          target.classList.contains('tick-label') ||
-                          target.classList.contains('handle');
-      
+      const isScaleArea =
+        target.classList.contains('ruler-scale') ||
+        target.classList.contains('ruler-tick') ||
+        target.classList.contains('tick-label') ||
+        target.classList.contains('handle');
+
       if (!isScaleArea && !target.closest('.handle')) {
         return; // 如果不是刻度区域或拖动手柄，不启动拖动
       }
-      
+
       isDragging.value = true;
       if (rulerContainer.value) {
         const rect = rulerContainer.value.getBoundingClientRect();
         dragOffset.value = {
           x: event.clientX - rect.left,
-          y: event.clientY - rect.top,
+          y: event.clientY - rect.top
         };
       }
       document.addEventListener('mousemove', onDrag);
@@ -123,22 +118,22 @@ export default defineComponent({
         // 计算新位置
         let newX = event.clientX - dragOffset.value.x;
         let newY = event.clientY - dragOffset.value.y;
-        
+
         // 获取窗口边界
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
-        
+
         // 获取尺子尺寸
         const rulerWidth = rulerContainer.value?.offsetWidth || 0;
         const rulerHeight = rulerContainer.value?.offsetHeight || 0;
-        
+
         // 防止尺子移出视窗
         newX = Math.max(0, Math.min(newX, windowWidth - rulerWidth));
         newY = Math.max(0, Math.min(newY, windowHeight - rulerHeight));
-        
+
         position.value = {
           x: newX,
-          y: newY,
+          y: newY
         };
       }
     };
@@ -161,9 +156,9 @@ export default defineComponent({
       rulerLength,
       ticks,
       tickStyle,
-      startDrag,
+      startDrag
     };
-  },
+  }
 });
 </script>
 

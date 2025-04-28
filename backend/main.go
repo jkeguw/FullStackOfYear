@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"log"
 	"net/http"
 	"os"
@@ -24,13 +23,9 @@ import (
 )
 
 func main() {
-	// 解析命令行参数
-	configPath := flag.String("config", "config/config.yaml", "path to config file")
-	flag.Parse()
-
 	// 初始化配置
-	if err := config.InitConfig(*configPath); err != nil {
-		log.Fatalf("Failed to initialize config: %v", err)
+	if err := config.InitConfig(); err != nil {
+		log.Fatalf("Failed to initialize configuration: %v", err)
 	}
 
 	// 初始化日志
@@ -39,37 +34,64 @@ func main() {
 	}
 
 	// 创建上下文
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// 初始化数据库连接
-	if err := database.InitMongoDB(ctx); err != nil {
-		log.Printf("警告: MongoDB连接失败: %v", err)
-		log.Println("继续运行，但数据库功能将不可用...")
-	} else {
-		log.Println("MongoDB连接成功")
+	// 尝试连接MongoDB，添加重试逻辑
+	var mongoErr error
+	maxRetries := 5
+
+	// 打印MongoDB连接配置信息（不含密码）
+	mongoURI := config.GetConfig().MongoDB.URI
+	parts := strings.Split(mongoURI, "@")
+	if len(parts) > 1 {
+		hiddenURI := "mongodb://***:***@" + parts[1]
+		log.Printf("正在连接MongoDB: %s, 数据库: %s", hiddenURI, config.GetConfig().MongoDB.Database)
 	}
 
-	redisClient := database.InitRedis()
-	_, err := redisClient.Ping(ctx).Result()
-	if err != nil {
-		log.Printf("警告: Redis连接失败: %v", err)
+	for i := 0; i < maxRetries; i++ {
+		mongoErr = database.InitMongoDB(ctx)
+		if mongoErr == nil {
+			log.Println("MongoDB连接成功")
+			break
+		}
+		log.Printf("尝试 %d/%d: MongoDB连接失败: %v, 10秒后重试...", i+1, maxRetries, mongoErr)
+		time.Sleep(10 * time.Second)
+	}
+	if mongoErr != nil {
+		log.Printf("警告: MongoDB连接失败: %v", mongoErr)
+		log.Println("继续运行，但数据库功能将不可用...")
+	}
+
+	// 尝试连接Redis，添加重试逻辑
+	var redisClient = database.InitRedis()
+	var redisErr error
+	for i := 0; i < maxRetries; i++ {
+		_, redisErr = redisClient.Ping(ctx).Result()
+		if redisErr == nil {
+			log.Println("Redis连接成功")
+			break
+		}
+		log.Printf("尝试 %d/%d: Redis连接失败: %v, 10秒后重试...", i+1, maxRetries, redisErr)
+		time.Sleep(10 * time.Second)
+	}
+	if redisErr != nil {
+		log.Printf("警告: Redis连接失败: %v", redisErr)
 		log.Println("继续运行，但Redis缓存和会话功能将不可用...")
-	} else {
-		log.Println("Redis连接成功")
 	}
 
 	// 初始化服务
 	jwtService := jwt.NewService(config.GetConfig().JWT)
 	emailService := email.NewService(config.GetConfig().Email)
 	oauthProvider := auth.NewMockOAuthProvider()
-	
+
 	// 获取用户集合
 	var userCollection *mongo.Collection
 	if database.MongoClient != nil {
-		userCollection = database.MongoClient.Database("app").Collection("users")
+		// 使用配置文件中的数据库名称
+		userCollection = database.MongoClient.Database(config.GetConfig().MongoDB.Database).Collection("users")
 	}
-	
+
 	// 初始化身份验证服务
 	tokenGenerator := auth.NewSimpleTokenGenerator(jwtService)
 	authService := auth.NewService(
@@ -78,13 +100,13 @@ func main() {
 		emailService,
 		oauthProvider,
 	)
-	
+
 	i18nService := i18n.NewService()
 
 	// 初始化路由
 	r := gin.Default()
-	
-	// 健康检查路由
+
+	// 健康检查路由 - 只在根路由添加，不在子路由添加
 	r.GET("/api/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "ok",
@@ -100,7 +122,7 @@ func main() {
 	// 启动服务器
 	cfg := config.GetConfig()
 	port := cfg.Server.Port
-	
+
 	// 清理端口格式
 	port = strings.TrimPrefix(port, ":")
 	if port == "" {

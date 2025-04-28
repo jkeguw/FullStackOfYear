@@ -1,11 +1,11 @@
 <template>
   <div class="user-device-list-page">
     <!-- 功能介绍通知 -->
-    <notifications
+    <Notifications
       v-if="showWelcomeNotification"
       type="info"
       title="欢迎使用我的设备配置管理"
-      message="在这里，您可以创建和管理自己的设备配置，记录各种设备的特定设置，并可以选择公开分享给其他用户。点击"创建新配置"按钮开始。"
+      message="在这里，您可以创建和管理自己的设备配置，记录各种设备的特定设置，并可以选择公开分享给其他用户。点击'创建新配置'按钮开始。"
       :actions="[
         { label: '不再显示', onClick: dismissWelcomeNotification },
         { label: '创建配置', onClick: () => { dismissWelcomeNotification(); handleCreateUserDevice(); }, primary: true }
@@ -153,7 +153,7 @@
       width="80%"
       :before-close="closeUserDeviceDialog"
     >
-      <user-device-form 
+      <UserDeviceForm 
         :user-device-id="currentUserDeviceId" 
         @saved="handleUserDeviceSaved" 
         @canceled="closeUserDeviceDialog"
@@ -172,6 +172,7 @@ import UserDeviceForm from '@/components/form/UserDeviceForm.vue'
 import Notifications from '@/components/common/Notifications.vue'
 
 // 设备钩子
+// @ts-ignore - Missing properties in useDevice composable
 const { 
   userDevices, 
   userDeviceLoading: loading, 

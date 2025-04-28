@@ -2,17 +2,17 @@
   <div class="compare-page">
     <div class="container mx-auto py-6 px-4">
       <h1 class="text-2xl font-bold mb-6">鼠标比较工具</h1>
-      
+
       <el-card class="mb-6">
         <template #header>
           <div class="flex justify-between items-center">
             <h2 class="text-xl">选择鼠标</h2>
-            <el-button type="primary" @click="resetComparison" plain v-if="selectedMice.length > 0">
+            <el-button v-if="selectedMice.length > 0" type="primary" plain @click="resetComparison">
               重置比较
             </el-button>
           </div>
         </template>
-        
+
         <div v-if="selectedMice.length === 0" class="py-4">
           <p class="text-center text-gray-500 mb-4">请选择要比较的鼠标</p>
           <el-row :gutter="16">
@@ -36,11 +36,11 @@
             </el-col>
           </el-row>
         </div>
-        
+
         <div v-else>
           <div class="selected-mice flex flex-wrap gap-4">
-            <el-card 
-              v-for="mouse in selectedMice" 
+            <el-card
+              v-for="mouse in selectedMice"
               :key="mouse.id"
               class="selected-mouse-card"
               shadow="hover"
@@ -48,10 +48,14 @@
               <div class="flex flex-col items-center">
                 <div class="mouse-image w-32 h-32 mb-2">
                   <template v-if="mouse.imageUrl">
-                    <img :src="mouse.imageUrl" class="w-full h-full object-contain" :alt="mouse.name" />
+                    <img
+                      :src="mouse.imageUrl"
+                      class="w-full h-full object-contain"
+                      :alt="mouse.name"
+                    />
                   </template>
                   <template v-else-if="mouse.svgData?.topView">
-                    <div class="w-full h-full" v-html="mouse.svgData.topView"></div>
+                    <div class="w-full h-full svg-container">{{ mouse.svgData.topView }}</div>
                   </template>
                   <template v-else>
                     <div class="w-full h-full bg-gray-100 flex items-center justify-center">
@@ -60,11 +64,17 @@
                   </template>
                 </div>
                 <h3 class="text-base font-medium">{{ mouse.brand }} {{ mouse.name }}</h3>
-                <p class="text-xs text-gray-500 mt-1">{{ mouse.dimensions?.length || '未知' }}×{{ mouse.dimensions?.width || '未知' }}×{{ mouse.dimensions?.height || '未知' }}mm</p>
-                <p class="text-xs text-gray-500">{{ mouse.dimensions?.weight || '未知' }}g · {{ mouse.shape?.type || '未知' }}</p>
-                <el-button 
-                  size="small" 
-                  type="danger" 
+                <p class="text-xs text-gray-500 mt-1">
+                  {{ mouse.dimensions?.length || '未知' }}×{{
+                    mouse.dimensions?.width || '未知'
+                  }}×{{ mouse.dimensions?.height || '未知' }}mm
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ mouse.dimensions?.weight || '未知' }}g · {{ mouse.shape?.type || '未知' }}
+                </p>
+                <el-button
+                  size="small"
+                  type="danger"
                   text
                   class="mt-2"
                   @click="removeMouse(mouse.id)"
@@ -73,9 +83,9 @@
                 </el-button>
               </div>
             </el-card>
-            
+
             <!-- 添加鼠标卡片 -->
-            <el-card 
+            <el-card
               v-if="selectedMice.length < 3"
               class="selected-mouse-card add-card"
               shadow="hover"
@@ -89,54 +99,45 @@
           </div>
         </div>
       </el-card>
-      
+
       <!-- 比较内容 -->
       <MouseComparisonView v-if="selectedMice.length >= 2" />
-      
+
       <!-- 移除相似鼠标推荐窗口，改为提示去相似页面 -->
       <el-card v-if="selectedMice.length === 1" class="mt-6">
         <div class="py-4 text-center">
-          <p class="text-gray-500 mb-4">
-            您当前只选择了一个鼠标，需要至少两个鼠标才能进行比较。
-          </p>
+          <p class="text-gray-500 mb-4">您当前只选择了一个鼠标，需要至少两个鼠标才能进行比较。</p>
           <div class="flex justify-center gap-4">
             <el-button type="primary" @click="openMouseSelectorMode('mice')">
               添加另一个鼠标
             </el-button>
             <router-link to="/similar">
-              <el-button>
-                查找相似鼠标
-              </el-button>
+              <el-button> 查找相似鼠标 </el-button>
             </router-link>
           </div>
         </div>
       </el-card>
     </div>
-    
+
     <!-- 选择鼠标对话框 -->
-    <el-dialog 
-      v-model="showMouseDialog" 
-      :title="dialogTitle"
-      width="70%"
-      destroy-on-close
-    >
-      <MouseSelector 
+    <el-dialog v-model="showMouseDialog" :title="dialogTitle" width="70%" destroy-on-close>
+      <MouseSelector
         v-if="selectMode === 'mice'"
         :initial-selected-mice="selectedMice"
         :max-selection="3"
         @select="handleMouseSelection"
         @cancel="showMouseDialog = false"
       />
-      
+
       <div v-else-if="selectMode === 'recent'" class="recent-mice">
         <div v-if="recentlyViewedMice.length === 0" class="empty-state text-center py-12">
           <el-icon class="text-3xl mb-3"><InfoFilled /></el-icon>
           <p class="text-gray-500">您还没有浏览过任何鼠标</p>
         </div>
-        
+
         <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <el-card 
-            v-for="mouse in recentlyViewedMice" 
+          <el-card
+            v-for="mouse in recentlyViewedMice"
             :key="mouse.id"
             class="recent-mouse-card"
             shadow="hover"
@@ -145,7 +146,11 @@
             <div class="flex items-center">
               <div class="mouse-image w-16 h-16 mr-3 flex-shrink-0">
                 <template v-if="mouse.imageUrl">
-                  <img :src="mouse.imageUrl" class="w-full h-full object-contain" :alt="mouse.name" />
+                  <img
+                    :src="mouse.imageUrl"
+                    class="w-full h-full object-contain"
+                    :alt="mouse.name"
+                  />
                 </template>
                 <template v-else>
                   <div class="w-full h-full bg-gray-100 flex items-center justify-center">
@@ -155,14 +160,20 @@
               </div>
               <div>
                 <h3 class="text-base font-medium">{{ mouse.brand }} {{ mouse.name }}</h3>
-                <p class="text-xs text-gray-500 mt-1">{{ mouse.dimensions?.length || '未知' }}×{{ mouse.dimensions?.width || '未知' }}×{{ mouse.dimensions?.height || '未知' }}mm</p>
-                <p class="text-xs text-gray-500">{{ mouse.dimensions?.weight || '未知' }}g · {{ mouse.shape?.type || '未知' }}</p>
+                <p class="text-xs text-gray-500 mt-1">
+                  {{ mouse.dimensions?.length || '未知' }}×{{
+                    mouse.dimensions?.width || '未知'
+                  }}×{{ mouse.dimensions?.height || '未知' }}mm
+                </p>
+                <p class="text-xs text-gray-500">
+                  {{ mouse.dimensions?.weight || '未知' }}g · {{ mouse.shape?.type || '未知' }}
+                </p>
               </div>
             </div>
           </el-card>
         </div>
       </div>
-      
+
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="showMouseDialog = false">取消</el-button>
@@ -228,13 +239,9 @@ async function findSimilarMice() {
     similarMice.value = [];
     return;
   }
-  
+
   // 使用本地相似度服务找出相似鼠标
-  similarMice.value = comparisonService.findSimilarMice(
-    selectedMice.value[0], 
-    allMice.value,
-    5
-  );
+  similarMice.value = comparisonService.findSimilarMice(selectedMice.value[0], allMice.value, 5);
 }
 
 // 获取所有鼠标数据
@@ -295,12 +302,14 @@ onMounted(() => {
   object-fit: contain;
 }
 
-.similar-mouse-card, .recent-mouse-card {
+.similar-mouse-card,
+.recent-mouse-card {
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.similar-mouse-card:hover, .recent-mouse-card:hover {
+.similar-mouse-card:hover,
+.recent-mouse-card:hover {
   transform: translateY(-2px);
   border-color: var(--el-color-primary-light-5);
 }

@@ -1,9 +1,9 @@
 <template>
   <div class="tools-list">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div 
-        v-for="tool in tools" 
-        :key="tool.id" 
+      <div
+        v-for="tool in tools"
+        :key="tool.id"
         class="tool-card bg-gray-800 rounded-lg overflow-hidden hover:shadow-xl transition duration-300"
       >
         <div class="p-6">
@@ -15,7 +15,10 @@
           <h3 class="text-xl font-bold mb-3 text-center">{{ tool.name }}</h3>
           <p class="text-gray-400 mb-4 text-center">{{ tool.description }}</p>
           <div class="text-center">
-            <router-link :to="tool.route" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+            <router-link
+              :to="tool.route"
+              class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+            >
               使用工具
             </router-link>
           </div>
@@ -26,10 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { 
-  ScaleToOriginal, 
-  Monitor
-} from '@element-plus/icons-vue';
+import { ScaleToOriginal, Monitor } from '@element-plus/icons-vue';
 
 // 工具列表
 const tools = [

@@ -30,6 +30,10 @@ export interface Review {
   images: ReviewImage[];
   publishedAt: string;
   createdAt: string;
+  updatedAt: string;
+  type: string;
+  contentType: string;
+  viewCount: number;
   author: ReviewAuthor;
   mouse: MouseDevice;
 }

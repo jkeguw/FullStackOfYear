@@ -7,11 +7,13 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - MONGODB_URI=mongodb://root:example@mongodb:27017
+      - MONGODB_URI=mongodb://root:example@mongodb:27017/?authSource=admin
       - REDIS_ADDR=redis:6379
       - REDIS_PASSWORD=
       - REDIS_DB=0
       - JWT_SECRET=your-secret-key
+      - CONFIG_FILE=/app/config/config.docker.yaml
+      - DEBUG=true
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
       - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
       - GOOGLE_OAUTH_REDIRECT_URL=${GOOGLE_OAUTH_REDIRECT_URL}
@@ -22,6 +24,8 @@ services:
       - redis
     volumes:
       - backend_uploads:/app/uploads
+      - ./backend/scripts:/app/scripts
+      - .:/app/csvdata
     restart: unless-stopped
     networks:
       - app-network
@@ -44,9 +48,11 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+      - ./mongodb-init:/docker-entrypoint-initdb.d
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: cpc
     restart: unless-stopped
     networks:
       - app-network
@@ -59,6 +65,25 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    networks:
+      - app-network
+
+  mongo-express:
+    image: mongo-express
+    restart: unless-stopped
+    ports:
+      - "8082:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: pass
+      ME_CONFIG_BASICAUTH: "true"
+    depends_on:
+      - mongodb
     networks:
       - app-network
 

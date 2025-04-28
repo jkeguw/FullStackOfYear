@@ -92,7 +92,7 @@ export interface MouseComparisonResult {
       property: string;
       values: any[];
       differencePercent: number;
-    }
+    };
   };
   similarityScore: number;
 }

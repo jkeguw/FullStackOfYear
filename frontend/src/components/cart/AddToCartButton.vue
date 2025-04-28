@@ -72,8 +72,8 @@ const { isAuthenticated } = useAuth();
 // 计算属性
 const buttonType = computed(() => props.type);
 const buttonSize = computed(() => props.size);
-const buttonText = computed(() => props.iconOnly ? '' : props.text);
-const buttonIcon = computed(() => props.iconOnly ? ShoppingCart : Plus);
+const buttonText = computed(() => (props.iconOnly ? '' : props.text));
+const buttonIcon = computed(() => (props.iconOnly ? ShoppingCart : Plus));
 
 // 添加到购物车
 async function handleAddToCart() {
@@ -83,17 +83,17 @@ async function handleAddToCart() {
   }
 
   loading.value = true;
-  
+
   try {
     const cartItem: CartItem = {
-      product_id: props.product.id,
-      product_type: props.productType,
+      productId: props.product.id,
+      productType: props.productType,
       name: props.product.name,
       price: props.product.price,
       quantity: props.quantity,
-      image_url: props.product.image || props.product.image_url
+      imageUrl: props.product.image || props.product.imageUrl
     };
-    
+
     await addToCart(cartItem);
   } catch (error) {
     console.error('添加到购物车失败', error);

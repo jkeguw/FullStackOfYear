@@ -122,7 +122,7 @@ export default {
     login_success: 'Login successful',
     register_success: 'Registration successful',
     already_have_account: 'Already have an account?',
-    dont_have_account: 'Don\'t have an account?'
+    dont_have_account: "Don't have an account?"
   },
   tools: {
     tools: 'Tools',
@@ -150,8 +150,8 @@ export default {
     invalid_credentials: 'Invalid email or password',
     email_taken: 'Email already in use',
     username_taken: 'Username already in use',
-    passwords_dont_match: 'Passwords don\'t match',
+    passwords_dont_match: "Passwords don't match",
     weak_password: 'Password is too weak',
     something_went_wrong: 'Something went wrong'
   }
-}
+};

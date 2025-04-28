@@ -1,0 +1,44 @@
+// 这是一个带有模拟数据的main.ts版本，用于测试鼠标对比功能
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+import router from './router'
+import { createPinia } from 'pinia'
+import ElementPlus from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import 'element-plus/dist/index.css'
+import i18n from './i18n'
+
+// 导入模拟API，替换真实API
+import * as deviceApi from './api/deviceMock'
+import * as svgServiceMock from './services/svgServiceMock'
+
+// 创建应用实例
+const app = createApp(App)
+
+// 全局属性设置
+app.config.globalProperties.$deviceApi = deviceApi
+app.config.globalProperties.$svgService = {
+  ...svgServiceMock.default,
+  // 保留原始SVG服务的解析函数
+  parseSvg: svgServiceMock.default.parseSvg,
+  getSvgViewBox: svgServiceMock.default.getSvgViewBox,
+  // 使用模拟函数覆盖API交互函数
+  getMouseSvgData: svgServiceMock.default.getLocalMouseSvgData,
+  createOverlaySvg: svgServiceMock.default.createLocalOverlaySvg,
+  createSideBySideSvg: svgServiceMock.default.createLocalSideBySideSvg,
+  getSvgMouseList: svgServiceMock.default.getLocalSvgMouseList
+}
+
+// 添加插件
+app.use(createPinia())
+app.use(router)
+app.use(ElementPlus, {
+  locale: zhCn
+})
+app.use(i18n)
+
+// 挂载应用
+app.mount('#app')
+
+console.log('正在使用模拟数据进行鼠标对比测试')

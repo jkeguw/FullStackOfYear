@@ -1,6 +1,6 @@
 <template>
   <transition name="fade">
-    <div 
+    <div
       v-if="show"
       class="fixed top-16 right-4 z-50 max-w-md shadow-lg rounded-lg overflow-hidden"
       :class="typeClasses"
@@ -20,7 +20,7 @@
           </div>
         </div>
       </div>
-      
+
       <div v-if="actions && actions.length" class="border-t border-gray-200 bg-gray-50 px-4 py-3">
         <div class="flex justify-end space-x-3">
           <button
@@ -39,21 +39,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 
 interface Action {
-  label: string
-  onClick?: () => void
-  primary?: boolean
+  label: string;
+  onClick?: () => void;
+  primary?: boolean;
 }
 
 interface Props {
-  type?: 'success' | 'info' | 'warning' | 'error'
-  title: string
-  message?: string
-  duration?: number
-  actions?: Action[]
-  autoClose?: boolean
+  type?: 'success' | 'info' | 'warning' | 'error';
+  title: string;
+  message?: string;
+  duration?: number;
+  actions?: Action[];
+  autoClose?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -61,116 +61,118 @@ const props = withDefaults(defineProps<Props>(), {
   duration: 5000,
   autoClose: true,
   actions: () => []
-})
+});
 
 const emit = defineEmits<{
-  (e: 'close'): void
-}>()
+  (e: 'close'): void;
+}>();
 
-const show = ref(true)
-let timer: number | null = null
+const show = ref(true);
+let timer: number | null = null;
 
 // 类型相关样式
 const typeClasses = computed(() => {
   switch (props.type) {
     case 'success':
-      return 'bg-green-50 border-l-4 border-green-400'
+      return 'bg-green-50 border-l-4 border-green-400';
     case 'warning':
-      return 'bg-yellow-50 border-l-4 border-yellow-400'
+      return 'bg-yellow-50 border-l-4 border-yellow-400';
     case 'error':
-      return 'bg-red-50 border-l-4 border-red-400'
+      return 'bg-red-50 border-l-4 border-red-400';
     case 'info':
     default:
-      return 'bg-blue-50 border-l-4 border-blue-400'
+      return 'bg-blue-50 border-l-4 border-blue-400';
   }
-})
+});
 
 const textColorClass = computed(() => {
   switch (props.type) {
     case 'success':
-      return 'text-green-800'
+      return 'text-green-800';
     case 'warning':
-      return 'text-yellow-800'
+      return 'text-yellow-800';
     case 'error':
-      return 'text-red-800'
+      return 'text-red-800';
     case 'info':
     default:
-      return 'text-blue-800'
+      return 'text-blue-800';
   }
-})
+});
 
 const textClass = computed(() => {
   switch (props.type) {
     case 'success':
-      return 'text-green-700'
+      return 'text-green-700';
     case 'warning':
-      return 'text-yellow-700'
+      return 'text-yellow-700';
     case 'error':
-      return 'text-red-700'
+      return 'text-red-700';
     case 'info':
     default:
-      return 'text-blue-700'
+      return 'text-blue-700';
   }
-})
+});
 
 const iconClass = computed(() => {
   switch (props.type) {
     case 'success':
-      return 'el-icon-circle-check text-green-400'
+      return 'el-icon-circle-check text-green-400';
     case 'warning':
-      return 'el-icon-warning text-yellow-400'
+      return 'el-icon-warning text-yellow-400';
     case 'error':
-      return 'el-icon-circle-close text-red-400'
+      return 'el-icon-circle-close text-red-400';
     case 'info':
     default:
-      return 'el-icon-info text-blue-400'
+      return 'el-icon-info text-blue-400';
   }
-})
+});
 
 const primaryButtonClass = computed(() => {
   switch (props.type) {
     case 'success':
-      return 'bg-green-600 hover:bg-green-700 text-white'
+      return 'bg-green-600 hover:bg-green-700 text-white';
     case 'warning':
-      return 'bg-yellow-600 hover:bg-yellow-700 text-white'
+      return 'bg-yellow-600 hover:bg-yellow-700 text-white';
     case 'error':
-      return 'bg-red-600 hover:bg-red-700 text-white'
+      return 'bg-red-600 hover:bg-red-700 text-white';
     case 'info':
     default:
-      return 'bg-blue-600 hover:bg-blue-700 text-white'
+      return 'bg-blue-600 hover:bg-blue-700 text-white';
   }
-})
+});
 
-const secondaryButtonClass = 'bg-white hover:bg-gray-50 text-gray-700'
+const secondaryButtonClass = 'bg-white hover:bg-gray-50 text-gray-700';
 
 // 自动关闭
 onMounted(() => {
   if (props.autoClose) {
     timer = window.setTimeout(() => {
-      close()
-    }, props.duration)
+      close();
+    }, props.duration);
   }
-})
+});
 
 onBeforeUnmount(() => {
   if (timer) {
-    clearTimeout(timer)
+    clearTimeout(timer);
   }
-})
+});
 
 // 关闭通知
 const close = () => {
-  show.value = false
+  show.value = false;
   setTimeout(() => {
-    emit('close')
-  }, 300) // 等待动画完成
-}
+    emit('close');
+  }, 300); // 等待动画完成
+};
 </script>
 
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .fade-enter-from,

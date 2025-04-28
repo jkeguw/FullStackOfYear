@@ -1,7 +1,7 @@
 <template>
   <div class="cart-page">
     <h1 class="page-title">我的购物车</h1>
-    
+
     <div class="cart-container">
       <div v-if="loading" class="loading-container">
         <el-skeleton :rows="8" animated />
@@ -18,68 +18,59 @@
                 <template #default="{ row }">
                   <div class="product-info">
                     <div class="product-image">
-                      <img 
-                        :src="row.image_url || '/placeholder.png'" 
-                        :alt="row.name"
-                      />
+                      <img :src="row.imageUrl || '/placeholder.png'" :alt="row.name" />
                     </div>
                     <div class="product-name">{{ row.name }}</div>
                   </div>
                 </template>
               </el-table-column>
-              
+
               <el-table-column label="单价" width="120">
                 <template #default="{ row }">
                   <div class="product-price">¥{{ row.price.toFixed(2) }}</div>
                 </template>
               </el-table-column>
-              
+
               <el-table-column label="数量" width="160">
                 <template #default="{ row }">
-                  <el-input-number 
-                    v-model="row.quantity" 
-                    :min="1" 
+                  <el-input-number
+                    v-model="row.quantity"
+                    :min="1"
                     :max="99"
                     size="small"
-                    @change="(val) => handleQuantityChange(row.product_id, val)"
+                    @change="(val) => handleQuantityChange(row.productId, val)"
                   />
                 </template>
               </el-table-column>
-              
+
               <el-table-column label="小计" width="120">
                 <template #default="{ row }">
                   <div class="product-subtotal">¥{{ (row.price * row.quantity).toFixed(2) }}</div>
                 </template>
               </el-table-column>
-              
+
               <el-table-column label="操作" width="100">
                 <template #default="{ row }">
-                  <el-button 
-                    type="danger" 
-                    size="small" 
-                    @click="removeItem(row.product_id)"
-                  >
+                  <el-button type="danger" size="small" @click="removeItem(row.productId)">
                     删除
                   </el-button>
                 </template>
               </el-table-column>
             </el-table>
           </div>
-          
+
           <div class="cart-summary">
             <div class="cart-actions">
               <el-button @click="goToShop">继续购物</el-button>
               <el-button type="danger" @click="handleClearCart">清空购物车</el-button>
             </div>
-            
+
             <div class="cart-checkout">
               <div class="cart-total">
-                <span>商品总计 ({{ cart.item_count }} 件商品):</span>
+                <span>商品总计 ({{ cart.itemCount }} 件商品):</span>
                 <span class="price">¥{{ total.toFixed(2) }}</span>
               </div>
-              <el-button type="primary" size="large" @click="goToCheckout">
-                去结算
-              </el-button>
+              <el-button type="primary" size="large" @click="goToCheckout"> 去结算 </el-button>
             </div>
           </div>
         </template>
@@ -89,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from 'element-plus';
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
@@ -113,9 +105,11 @@ async function removeItem(productId: string) {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(async () => {
-    await removeFromCart(productId);
-  }).catch(() => {});
+  })
+    .then(async () => {
+      await removeFromCart(productId);
+    })
+    .catch(() => {});
 }
 
 // 清空购物车
@@ -124,9 +118,11 @@ async function handleClearCart() {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(async () => {
-    await clearCart();
-  }).catch(() => {});
+  })
+    .then(async () => {
+      await clearCart();
+    })
+    .catch(() => {});
 }
 
 // 前往商店
@@ -197,7 +193,8 @@ function goToCheckout() {
   font-weight: 500;
 }
 
-.product-price, .product-subtotal {
+.product-price,
+.product-subtotal {
   font-weight: 600;
   color: #ff6700;
 }

@@ -1,5 +1,3 @@
-// handlers/measurement/handlers.go
-
 package measurement
 
 import (

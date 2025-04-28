@@ -1,7 +1,7 @@
 <template>
   <div class="i18n-demo container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-6">{{ $t('home.title') }}</h1>
-    
+
     <div class="mb-8">
       <h2 class="text-xl font-semibold mb-4">{{ $t('common.language') }}</h2>
       <el-radio-group v-model="currentLanguage" @change="changeLanguage">
@@ -9,7 +9,7 @@
         <el-radio label="zh">{{ $t('common.chinese') }}</el-radio>
       </el-radio-group>
     </div>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- 表单示例 -->
       <div class="bg-white p-6 rounded-lg shadow">
@@ -27,7 +27,7 @@
           </el-form-item>
         </el-form>
       </div>
-      
+
       <!-- 信息展示 -->
       <div class="bg-white p-6 rounded-lg shadow">
         <h3 class="text-lg font-semibold mb-4">{{ $t('device.details') }}</h3>
@@ -55,10 +55,12 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 错误消息示例 -->
     <div class="mt-8 bg-white p-6 rounded-lg shadow">
-      <h3 class="text-lg font-semibold mb-4">{{ $t('errors.required_field') }} ({{ $t('errors.server_error') }})</h3>
+      <h3 class="text-lg font-semibold mb-4">
+        {{ $t('errors.required_field') }} ({{ $t('errors.server_error') }})
+      </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <el-alert
           v-for="(error, index) in errorMessages"
@@ -74,18 +76,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { setLanguage } from '@/i18n'
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { setLanguage } from '@/i18n';
 
-const { t, locale } = useI18n()
-const currentLanguage = ref(locale.value)
+const { t, locale } = useI18n();
+const currentLanguage = ref(locale.value);
 
 // 表单数据
 const form = ref({
   username: 'John Doe',
   email: 'john@example.com'
-})
+});
 
 // 错误消息示例
 const errorMessages = [
@@ -94,12 +96,12 @@ const errorMessages = [
   'errors.password_mismatch',
   'errors.login_failed',
   'errors.server_error'
-]
+];
 
 // 切换语言
 const changeLanguage = (lang: 'en' | 'zh') => {
-  setLanguage(lang)
-}
+  setLanguage(lang);
+};
 </script>
 
 <style scoped>

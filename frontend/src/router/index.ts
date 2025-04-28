@@ -1,9 +1,15 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/stores'
+import { createRouter, createWebHistory } from 'vue-router';
+import { useUserStore } from '@/stores';
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    // 测试页面
+    {
+      path: '/test-comparison',
+      name: 'TestComparison',
+      component: () => import('../pages/TestComparisonPage.vue')
+    },
     {
       path: '/',
       name: 'Home',
@@ -142,24 +148,24 @@ const router = createRouter({
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
-      return savedPosition
+      return savedPosition;
     } else {
-      return { top: 0 }
+      return { top: 0 };
     }
   }
-})
+});
 
 // 全局导航守卫
 router.beforeEach((to, from, next) => {
-  const userStore = useUserStore()
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  
+  const userStore = useUserStore();
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+
   // 如果需要登录但用户未登录，重定向到登录页
   if (requiresAuth && !userStore.token) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
+    next({ name: 'Login', query: { redirect: to.fullPath } });
   } else {
-    next()
+    next();
   }
-})
+});
 
-export default router
+export default router;
