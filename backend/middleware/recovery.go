@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"github.com/gin-gonic/gin"
 	"project/backend/config"
 	"project/backend/internal/errors"
-	"github.com/gin-gonic/gin"
 )
 
 func Recovery() gin.HandlerFunc {
@@ -13,6 +13,10 @@ func Recovery() gin.HandlerFunc {
 				"error", err,
 				"path", c.Request.URL.Path,
 			)
-			c.JSON(500, errors.NewAppError(errors.InternalError, "服务器内部错误"))
+			// 使用统一的响应格式
+			c.JSON(500, gin.H{
+				"code":    errors.InternalError,
+				"message": "服务器内部错误",
+			})
 		})
 }

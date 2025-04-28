@@ -10,13 +10,13 @@ export function useCart() {
     items: [],
     total: 0,
     item_count: 0,
-    updated_at: '',
+    updated_at: ''
   });
   const loading = ref(false);
 
   // 购物车商品总数
   const itemCount = computed(() => cart.value.item_count);
-  
+
   // 购物车总价
   const total = computed(() => cart.value.total);
 
@@ -25,7 +25,7 @@ export function useCart() {
    */
   async function fetchCart() {
     if (!isAuthenticated.value) return;
-    
+
     loading.value = true;
     try {
       const response = await cartApi.getCart();

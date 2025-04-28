@@ -1,12 +1,12 @@
 package review
 
 import (
+	"github.com/gin-gonic/gin"
+	"net/http"
 	"project/backend/internal/errors"
 	"project/backend/models"
 	reviewService "project/backend/services/review"
 	"project/backend/types/review"
-	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type Handler struct {
@@ -161,7 +161,7 @@ func (h *Handler) GetUserReviewStats(c *gin.Context) {
 // GetPendingReviews 获取待审核评测列表
 func (h *Handler) GetPendingReviews(c *gin.Context) {
 	// 从查询参数中获取筛选条件
-	reviewType := c.Query("type") 
+	reviewType := c.Query("type")
 	page := 1
 	pageSize := 10
 
@@ -276,15 +276,15 @@ func mapReviewToResponse(r *models.Review) review.ReviewResponse {
 		CreatedAt:      r.CreatedAt,
 		UpdatedAt:      r.UpdatedAt,
 	}
-	
+
 	if r.ReviewerID != nil {
 		response.ReviewerID = r.ReviewerID.Hex()
 	}
-	
+
 	response.ReviewerNotes = r.ReviewerNotes
 	response.ReviewedAt = r.ReviewedAt
 	response.PublishedAt = r.PublishedAt
 	response.FeaturedRank = r.FeaturedRank
-	
+
 	return response
 }

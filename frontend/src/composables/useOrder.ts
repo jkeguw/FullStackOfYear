@@ -1,17 +1,17 @@
 import { ref, reactive, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { 
-  createOrder, 
-  getOrder, 
-  getOrderList, 
-  updateOrderStatus, 
-  processPayment 
+import {
+  createOrder,
+  getOrder,
+  getOrderList,
+  updateOrderStatus,
+  processPayment
 } from '../api/order';
-import type { 
-  CreateOrderRequest, 
-  OrderResponse, 
-  UpdateOrderStatusRequest, 
-  PaymentCompleteRequest 
+import type {
+  CreateOrderRequest,
+  OrderResponse,
+  UpdateOrderStatusRequest,
+  PaymentCompleteRequest
 } from '../types/order';
 
 export function useOrder() {
@@ -46,7 +46,7 @@ export default function _useOrder() {
   // 获取订单详情
   const fetchOrderDetail = async (orderId: string) => {
     if (!orderId) return;
-    
+
     loading.value = true;
     try {
       const { data } = await getOrder(orderId);
@@ -83,18 +83,18 @@ export default function _useOrder() {
     loading.value = true;
     try {
       const { data } = await updateOrderStatus(orderId, statusData);
-      
+
       // 如果正在查看的是当前订单，更新详情
       if (orderDetail.value && orderDetail.value.id === orderId) {
         orderDetail.value = data;
       }
-      
+
       // 更新列表中的订单状态
-      const index = orderList.value.findIndex(item => item.id === orderId);
+      const index = orderList.value.findIndex((item) => item.id === orderId);
       if (index !== -1) {
         orderList.value[index] = data;
       }
-      
+
       ElMessage.success('订单状态更新成功');
       return data;
     } catch (error: any) {
@@ -108,20 +108,16 @@ export default function _useOrder() {
   // 取消订单
   const cancelOrder = async (orderId: string, reason: string) => {
     try {
-      const result = await ElMessageBox.confirm(
-        '确定要取消此订单吗？此操作不可逆。',
-        '取消订单',
-        {
-          confirmButtonText: '确定取消',
-          cancelButtonText: '保留订单',
-          type: 'warning'
-        }
-      );
-      
+      const result = await ElMessageBox.confirm('确定要取消此订单吗？此操作不可逆。', '取消订单', {
+        confirmButtonText: '确定取消',
+        cancelButtonText: '保留订单',
+        type: 'warning'
+      });
+
       if (result === 'confirm') {
-        return await changeOrderStatus(orderId, { 
-          status: 'cancelled', 
-          cancelReason: reason 
+        return await changeOrderStatus(orderId, {
+          status: 'cancelled',
+          cancelReason: reason
         });
       }
     } catch {
@@ -135,18 +131,18 @@ export default function _useOrder() {
     loading.value = true;
     try {
       const { data } = await processPayment(orderId, paymentData);
-      
+
       // 如果正在查看的是当前订单，更新详情
       if (orderDetail.value && orderDetail.value.id === orderId) {
         orderDetail.value = data;
       }
-      
+
       // 更新列表中的订单
-      const index = orderList.value.findIndex(item => item.id === orderId);
+      const index = orderList.value.findIndex((item) => item.id === orderId);
       if (index !== -1) {
         orderList.value[index] = data;
       }
-      
+
       ElMessage.success('支付处理成功');
       return data;
     } catch (error: any) {
@@ -162,7 +158,7 @@ export default function _useOrder() {
     if (!status || status === 'all') {
       return orderList.value;
     }
-    return orderList.value.filter(order => order.status === status);
+    return orderList.value.filter((order) => order.status === status);
   };
 
   // 计算订单状态统计
@@ -176,13 +172,13 @@ export default function _useOrder() {
       refunded: 0,
       total: orderList.value.length
     };
-    
-    orderList.value.forEach(order => {
-      if (stats.hasOwnProperty(order.status)) {
+
+    orderList.value.forEach((order) => {
+      if (Object.prototype.hasOwnProperty.call(stats, order.status)) {
         stats[order.status as keyof typeof stats]++;
       }
     });
-    
+
     return stats;
   });
 

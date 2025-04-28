@@ -16,7 +16,9 @@
     <div class="order-detail-card">
       <div class="order-detail-header">
         <h3>订单信息</h3>
-        <div class="order-number">订单号: <span>{{ order.orderNumber }}</span></div>
+        <div class="order-number">
+          订单号: <span>{{ order.orderNumber }}</span>
+        </div>
       </div>
 
       <div class="order-detail-content">
@@ -123,10 +125,17 @@
 </template>
 
 <script setup lang="ts">
+import { ElMessage } from 'element-plus';
 import { computed, defineProps, defineEmits } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
-import { OrderResponse, OrderStatus, OrderStatusText, PaymentMethod, PaymentMethodText } from '@/types/order';
+import {
+  OrderResponse,
+  OrderStatus,
+  OrderStatusText,
+  PaymentMethod,
+  PaymentMethodText
+} from '@/types/order';
 import type { ShippingInfoResponse } from '@/types/order';
 
 const props = defineProps<{
@@ -183,8 +192,8 @@ const getPaymentMethodText = (method: string) => {
 // 获取配送方式文本
 const getShippingMethodText = (method: string) => {
   const methodMap: Record<string, string> = {
-    'standard': '标准配送 (3-5个工作日)',
-    'express': '快速配送 (1-2个工作日)',
+    standard: '标准配送 (3-5个工作日)',
+    express: '快速配送 (1-2个工作日)'
   };
   return methodMap[method] || method;
 };
@@ -192,10 +201,10 @@ const getShippingMethodText = (method: string) => {
 // 获取支付状态文本
 const getPaymentStatusText = (status: string) => {
   const statusMap: Record<string, string> = {
-    'pending': '待支付',
-    'success': '支付成功',
-    'failed': '支付失败',
-    'refunded': '已退款',
+    pending: '待支付',
+    success: '支付成功',
+    failed: '支付失败',
+    refunded: '已退款'
   };
   return statusMap[status] || status;
 };
@@ -239,16 +248,12 @@ const handlePay = () => {
 // 处理取消订单
 const handleCancel = async () => {
   try {
-    await ElMessageBox.confirm(
-      '确定要取消此订单吗？此操作不可逆。',
-      '取消订单',
-      {
-        confirmButtonText: '确定取消',
-        cancelButtonText: '继续保留',
-        type: 'warning'
-      }
-    );
-    
+    await ElMessageBox.confirm('确定要取消此订单吗？此操作不可逆。', '取消订单', {
+      confirmButtonText: '确定取消',
+      cancelButtonText: '继续保留',
+      type: 'warning'
+    });
+
     emit('cancel', props.order.id);
   } catch {
     // 用户取消操作
@@ -387,7 +392,8 @@ const handleCancel = async () => {
   color: #ff6700;
 }
 
-.shipping-info, .payment-info {
+.shipping-info,
+.payment-info {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 15px;

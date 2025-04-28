@@ -1,12 +1,11 @@
 package token
 
 import (
-	"project/backend/config"
-	"project/backend/internal/errors"
-	jwtService "project/backend/services/jwt"
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"project/backend/config"
+	"project/backend/internal/errors"
 	"time"
 )
 
@@ -82,8 +81,13 @@ func (m *Manager) GenerateTokenPair(userID, role, deviceID string) (string, stri
 
 // StoreTokens saves tokens to Redis
 func (m *Manager) StoreTokens(ctx context.Context, accessToken, refreshToken string, info TokenInfo) error {
+	// 如果Redis不可用，直接返回成功，不影响用户登录
+	if m.rdb == nil {
+		return nil
+	}
+
 	accessKey := fmt.Sprintf(accessTokenKey, info.UserID, info.DeviceID)
-	refreshKey := fmt.Sprintf(refreshTokenKey, info.UserID, info.DeviceID)
+
 	userKey := fmt.Sprintf(userTokensKey, info.UserID)
 
 	pipe := m.rdb.Pipeline()
@@ -99,12 +103,13 @@ func (m *Manager) StoreTokens(ctx context.Context, accessToken, refreshToken str
 
 // CheckTokenExists verifies if a token exists
 func (m *Manager) CheckTokenExists(ctx context.Context, userID, deviceID, tokenType string) (bool, error) {
-	var key string
-	if tokenType == "access" {
-		key = fmt.Sprintf(accessTokenKey, userID, deviceID)
-	} else {
-		key = fmt.Sprintf(refreshTokenKey, userID, deviceID)
+	// 如果Redis不可用，返回true避免影响用户登录
+	if m.rdb == nil {
+		return true, nil
 	}
+
+	var key string
+	key = fmt.Sprintf(accessTokenKey, userID, deviceID)
 
 	exists, err := m.rdb.Exists(ctx, key).Result()
 	return exists == 1, err
@@ -112,6 +117,11 @@ func (m *Manager) CheckTokenExists(ctx context.Context, userID, deviceID, tokenT
 
 // InvalidateTokens removes tokens for a specific device
 func (m *Manager) InvalidateTokens(ctx context.Context, userID, deviceID string) error {
+	// 如果Redis不可用，直接返回成功，不影响用户登出
+	if m.rdb == nil {
+		return nil
+	}
+
 	// Get all related keys
 	accessKey := fmt.Sprintf(accessTokenKey, userID, deviceID)
 	refreshKey := fmt.Sprintf(refreshTokenKey, userID, deviceID)

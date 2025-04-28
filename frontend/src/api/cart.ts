@@ -7,7 +7,7 @@ import type { CartItem, CartResponse } from '@/types/cart';
 export function getCart() {
   return request<CartResponse>({
     url: '/api/cart',
-    method: 'get',
+    method: 'get'
   });
 }
 
@@ -18,7 +18,14 @@ export function addToCart(item: CartItem) {
   return request<{ message: string }>({
     url: '/api/cart',
     method: 'post',
-    data: item,
+    data: {
+      product_id: item.id,
+      product_type: item.type || 'mouse',
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      image_url: item.image
+    }
   });
 }
 
@@ -31,8 +38,8 @@ export function updateQuantity(productId: string, quantity: number) {
     method: 'patch',
     data: {
       product_id: productId,
-      quantity,
-    },
+      quantity
+    }
   });
 }
 
@@ -42,7 +49,7 @@ export function updateQuantity(productId: string, quantity: number) {
 export function removeFromCart(productId: string) {
   return request<{ message: string }>({
     url: `/api/cart/${productId}`,
-    method: 'delete',
+    method: 'delete'
   });
 }
 
@@ -52,6 +59,6 @@ export function removeFromCart(productId: string) {
 export function clearCart() {
   return request<{ message: string }>({
     url: '/api/cart',
-    method: 'delete',
+    method: 'delete'
   });
 }

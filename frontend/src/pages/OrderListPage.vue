@@ -2,7 +2,7 @@
   <div class="order-list-page">
     <div class="page-container">
       <h2 class="page-title">我的订单</h2>
-      
+
       <div class="page-tabs">
         <el-tabs v-model="activeTab" @tab-click="handleTabClick">
           <el-tab-pane name="all" label="全部订单"></el-tab-pane>
@@ -12,17 +12,17 @@
           <el-tab-pane name="completed" label="已完成"></el-tab-pane>
         </el-tabs>
       </div>
-      
+
       <div v-if="loading" class="loading-orders">
         <el-skeleton :rows="10" animated />
       </div>
-      
+
       <template v-else>
         <div v-if="filteredOrders.length === 0" class="empty-orders">
           <el-empty description="暂无订单" />
           <el-button type="primary" @click="goToShop">去购物</el-button>
         </div>
-        
+
         <div v-else class="order-list">
           <div v-for="order in filteredOrders" :key="order.id" class="order-card">
             <div class="order-header">
@@ -36,11 +36,11 @@
                 </el-tag>
               </div>
             </div>
-            
+
             <div class="order-items">
               <div v-for="item in order.items" :key="item.productId" class="order-item">
-                <el-image 
-                  :src="item.imageUrl || '/placeholder.png'" 
+                <el-image
+                  :src="item.imageUrl || '/placeholder.png'"
                   :alt="item.name"
                   class="item-image"
                 />
@@ -50,51 +50,46 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="order-footer">
               <div class="order-total">
                 <span>共{{ getTotalQuantity(order.items) }}件商品，总计：</span>
                 <span class="price">¥{{ order.total.toFixed(2) }}</span>
               </div>
-              
+
               <div class="order-actions">
-                <el-button 
-                  v-if="order.status === 'pending'" 
-                  type="primary" 
+                <el-button
+                  v-if="order.status === 'pending'"
+                  type="primary"
                   size="small"
                   @click="handlePayment(order.id)"
                 >
                   立即支付
                 </el-button>
-                
-                <el-button 
-                  v-if="['pending', 'paid'].includes(order.status)" 
-                  type="danger" 
+
+                <el-button
+                  v-if="['pending', 'paid'].includes(order.status)"
+                  type="danger"
                   size="small"
                   @click="handleCancelOrder(order.id)"
                 >
                   取消订单
                 </el-button>
-                
-                <el-button 
-                  v-if="order.status === 'shipped'" 
-                  type="success" 
+
+                <el-button
+                  v-if="order.status === 'shipped'"
+                  type="success"
                   size="small"
                   @click="handleConfirmReceipt(order.id)"
                 >
                   确认收货
                 </el-button>
-                
-                <el-button 
-                  size="small"
-                  @click="viewOrderDetail(order.id)"
-                >
-                  查看详情
-                </el-button>
+
+                <el-button size="small" @click="viewOrderDetail(order.id)"> 查看详情 </el-button>
               </div>
             </div>
           </div>
-          
+
           <div class="pagination-container">
             <el-pagination
               v-model:current-page="pagination.current"
@@ -122,14 +117,8 @@ import type { OrderItemResponse } from '@/types/order';
 import { formatDateTime } from '@/utils/date';
 
 const router = useRouter();
-const {
-  loading,
-  orderList,
-  pagination,
-  fetchOrderList,
-  cancelOrder,
-  changeOrderStatus,
-} = useOrder();
+const { loading, orderList, pagination, fetchOrderList, cancelOrder, changeOrderStatus } =
+  useOrder();
 
 // 活动标签页
 const activeTab = ref('all');
@@ -144,12 +133,12 @@ const filteredOrders = computed(() => {
   if (activeTab.value === 'all') {
     return orderList.value;
   }
-  
+
   if (activeTab.value === 'completed') {
-    return orderList.value.filter(order => order.status === OrderStatus.DELIVERED);
+    return orderList.value.filter((order) => order.status === OrderStatus.DELIVERED);
   }
-  
-  return orderList.value.filter(order => order.status === activeTab.value);
+
+  return orderList.value.filter((order) => order.status === activeTab.value);
 });
 
 // 获取订单状态文字
@@ -211,22 +200,17 @@ const handlePayment = (orderId: string) => {
 // 处理取消订单
 const handleCancelOrder = async (orderId: string) => {
   try {
-    await ElMessageBox.confirm(
-      '确定要取消此订单吗？取消后无法恢复。',
-      '取消订单',
-      {
-        confirmButtonText: '确定取消',
-        cancelButtonText: '继续保留',
-        type: 'warning'
-      }
-    );
-    
+    await ElMessageBox.confirm('确定要取消此订单吗？取消后无法恢复。', '取消订单', {
+      confirmButtonText: '确定取消',
+      cancelButtonText: '继续保留',
+      type: 'warning'
+    });
+
     await cancelOrder(orderId, '用户主动取消');
     ElMessage.success('订单已取消');
-    
+
     // 刷新订单列表
     await fetchOrderList(pagination.current, pagination.pageSize);
-    
   } catch (error) {
     // 用户取消操作或发生错误
     if (error instanceof Error) {
@@ -238,22 +222,17 @@ const handleCancelOrder = async (orderId: string) => {
 // 处理确认收货
 const handleConfirmReceipt = async (orderId: string) => {
   try {
-    await ElMessageBox.confirm(
-      '确认已收到商品吗？',
-      '确认收货',
-      {
-        confirmButtonText: '确认收货',
-        cancelButtonText: '取消',
-        type: 'info'
-      }
-    );
-    
+    await ElMessageBox.confirm('确认已收到商品吗？', '确认收货', {
+      confirmButtonText: '确认收货',
+      cancelButtonText: '取消',
+      type: 'info'
+    });
+
     await changeOrderStatus(orderId, { status: OrderStatus.DELIVERED });
     ElMessage.success('确认收货成功');
-    
+
     // 刷新订单列表
     await fetchOrderList(pagination.current, pagination.pageSize);
-    
   } catch (error) {
     // 用户取消操作或发生错误
     if (error instanceof Error) {

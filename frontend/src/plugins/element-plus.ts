@@ -14,7 +14,7 @@ import { ElMessage, ElMessageBox, ElNotification, ElLoading } from 'element-plus
 export const setupElementPlus = (app: App) => {
   // 注册ElementPlus
   app.use(ElementPlus, {
-    locale: zhCn, // 默认使用中文
+    locale: zhCn // 默认使用中文
   });
 
   // 注册所有图标

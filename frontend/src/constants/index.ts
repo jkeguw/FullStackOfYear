@@ -6,7 +6,7 @@ export const StatusCode = {
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   INTERNAL_ERROR: 500
-} as const
+} as const;
 
 // route name
 export const RouteName = {
@@ -16,7 +16,7 @@ export const RouteName = {
   DEVICE_LIST: 'DeviceList',
   DEVICE_DETAIL: 'DeviceDetail',
   REVIEW_LIST: 'ReviewList'
-} as const
+} as const;
 
 // device type
 export const DeviceType = {
@@ -24,18 +24,18 @@ export const DeviceType = {
   KEYBOARD: 'keyboard',
   MOUSEPAD: 'mousepad',
   HEADSET: 'headset'
-} as const
+} as const;
 
 // comment type
 export const ReviewType = {
   NORMAL: 1,
   PROFESSIONAL: 2,
   VERIFIED: 3
-} as const
+} as const;
 
 // user character
 export const UserRole = {
   USER: 'user',
   REVIEWER: 'reviewer',
   ADMIN: 'admin'
-} as const
+} as const;

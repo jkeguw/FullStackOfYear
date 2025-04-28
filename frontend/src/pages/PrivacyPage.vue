@@ -1,12 +1,14 @@
 <template>
   <div class="privacy-page container mx-auto py-8 px-4">
     <h1 class="text-3xl font-bold mb-8 text-white">隐私政策</h1>
-    
+
     <div class="bg-[#1E1E1E] rounded-lg p-6 mb-8 text-gray-300">
       <p class="mb-4">最后更新日期：2025年4月26日</p>
-      <p>本隐私政策描述了我们在您使用我们的服务时如何收集、使用和披露您的个人信息，以及您可以如何访问和控制这些信息。</p>
+      <p>
+        本隐私政策描述了我们在您使用我们的服务时如何收集、使用和披露您的个人信息，以及您可以如何访问和控制这些信息。
+      </p>
     </div>
-    
+
     <div class="bg-[#1E1E1E] rounded-lg p-6 mb-8 text-gray-300">
       <h2 class="text-2xl font-bold mb-4 text-white">信息收集</h2>
       <p class="mb-4">我们可能会收集以下类型的信息：</p>
@@ -17,7 +19,7 @@
         <li>设备信息：如IP地址、浏览器类型和设备标识符。</li>
       </ul>
     </div>
-    
+
     <div class="bg-[#1E1E1E] rounded-lg p-6 mb-8 text-gray-300">
       <h2 class="text-2xl font-bold mb-4 text-white">信息使用</h2>
       <p class="mb-4">我们使用收集的信息：</p>
@@ -29,7 +31,7 @@
         <li>防止欺诈活动和确保服务安全。</li>
       </ul>
     </div>
-    
+
     <div class="bg-[#1E1E1E] rounded-lg p-6 mb-8 text-gray-300">
       <h2 class="text-2xl font-bold mb-4 text-white">信息共享</h2>
       <p class="mb-4">我们不会出售您的个人信息。我们可能在以下情况下共享您的信息：</p>
@@ -40,7 +42,7 @@
         <li>在公司交易中，如合并、收购或资产出售。</li>
       </ul>
     </div>
-    
+
     <div class="bg-[#1E1E1E] rounded-lg p-6 mb-8 text-gray-300">
       <h2 class="text-2xl font-bold mb-4 text-white">您的权利</h2>
       <p class="mb-4">您有权：</p>
@@ -51,7 +53,7 @@
         <li>请求您的个人数据的可移植性。</li>
       </ul>
     </div>
-    
+
     <div class="bg-[#1E1E1E] rounded-lg p-6 text-gray-300">
       <h2 class="text-2xl font-bold mb-4 text-white">联系我们</h2>
       <p>如果您对我们的隐私政策有任何疑问，请通过以下方式联系我们：</p>

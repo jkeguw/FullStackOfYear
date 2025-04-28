@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import { request } from '../utils/request';
-import { 
+import {
   CreateOrderRequest,
   OrderResponse,
   OrderListResponse,
@@ -15,7 +15,7 @@ import {
  */
 export const createOrder = (data: CreateOrderRequest): Promise<AxiosResponse<OrderResponse>> => {
   return request({
-    url: '/v1/orders',
+    url: '/api/orders',
     method: 'post',
     data
   });
@@ -28,7 +28,7 @@ export const createOrder = (data: CreateOrderRequest): Promise<AxiosResponse<Ord
  */
 export const getOrder = (orderId: string): Promise<AxiosResponse<OrderResponse>> => {
   return request({
-    url: `/v1/orders/${orderId}`,
+    url: `/api/orders/${orderId}`,
     method: 'get'
   });
 };
@@ -39,9 +39,12 @@ export const getOrder = (orderId: string): Promise<AxiosResponse<OrderResponse>>
  * @param pageSize 每页数量
  * @returns 订单列表
  */
-export const getOrderList = (page = 1, pageSize = 10): Promise<AxiosResponse<OrderListResponse>> => {
+export const getOrderList = (
+  page = 1,
+  pageSize = 10
+): Promise<AxiosResponse<OrderListResponse>> => {
   return request({
-    url: '/v1/orders',
+    url: '/api/orders',
     method: 'get',
     params: {
       page,
@@ -61,7 +64,7 @@ export const updateOrderStatus = (
   data: UpdateOrderStatusRequest
 ): Promise<AxiosResponse<OrderResponse>> => {
   return request({
-    url: `/v1/orders/${orderId}/status`,
+    url: `/api/orders/${orderId}/status`,
     method: 'patch',
     data
   });
@@ -78,7 +81,7 @@ export const processPayment = (
   data: PaymentCompleteRequest
 ): Promise<AxiosResponse<OrderResponse>> => {
   return request({
-    url: `/v1/orders/${orderId}/payment`,
+    url: `/api/orders/${orderId}/payment`,
     method: 'post',
     data
   });
@@ -87,10 +90,11 @@ export const processPayment = (
 /**
  * 获取订单统计信息
  * @returns 订单统计
+ * 注意：此API目前在后端未实现
  */
 export const getOrderStats = (): Promise<AxiosResponse<any>> => {
   return request({
-    url: '/v1/orders/stats',
+    url: '/api/orders/stats',
     method: 'get'
   });
 };

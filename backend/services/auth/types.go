@@ -2,14 +2,15 @@
 package auth
 
 import (
+	"context"
 	"project/backend/models"
 	"project/backend/types/auth"
 	"project/backend/types/claims"
-	"context"
 )
 
 type Service interface {
 	// Auth
+	Register(ctx context.Context, req *auth.RegisterRequest) (*models.User, error)
 	Login(ctx context.Context, req *auth.LoginRequest) (*auth.LoginResponse, error)
 	ValidateEmailPassword(ctx context.Context, email, password string) (*models.User, error)
 
@@ -31,7 +32,7 @@ type Service interface {
 	GetUserByID(ctx context.Context, userID string) (*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 	UpdateUser(ctx context.Context, user *models.User) error
-	
+
 	// Security
 	UpdateUserTwoFactorPending(ctx context.Context, userID string, secret string) error
 	ActivateUserTwoFactor(ctx context.Context, userID string) error
@@ -41,7 +42,7 @@ type Service interface {
 	UpdateUserPassword(ctx context.Context, userID string, newPassword string) error
 	ValidatePasswordResetToken(ctx context.Context, email string, token string) (*models.User, error)
 	GetTwoFactorStatus(ctx context.Context, userID string) (*auth.TwoFactorStatusResponse, error)
-	
+
 	// Device
 	GetUserDevices(ctx context.Context, userID string) ([]models.Device, error)
 	RemoveUserDevice(ctx context.Context, userID string, deviceID string) error

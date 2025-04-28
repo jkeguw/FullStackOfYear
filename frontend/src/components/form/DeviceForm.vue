@@ -441,6 +441,7 @@ const fetchDeviceData = async () => {
     form.imageUrl = device.imageUrl || ''
     form.dimensions = { ...device.dimensions }
     form.shape = { ...device.shape }
+    // @ts-ignore - Optional vs required property issue
     form.technical = { ...device.technical }
     form.recommended = { ...device.recommended }
   }

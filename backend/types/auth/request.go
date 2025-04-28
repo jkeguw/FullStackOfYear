@@ -1,27 +1,41 @@
 package auth
 
+// RegisterRequest represents user registration request
+type RegisterRequest struct {
+	Username        string `json:"username" binding:"required"`
+	Email           string `json:"email" binding:"required,email"`
+	Password        string `json:"password" binding:"required"`
+	ConfirmPassword string `json:"confirmPassword" binding:"required,eqfield=Password"`
+	DeviceID        string `json:"deviceId" binding:"required"`
+	DeviceName      string `json:"deviceName,omitempty"`
+	DeviceType      string `json:"deviceType,omitempty"`
+	DeviceOS        string `json:"deviceOS,omitempty"`
+	DeviceBrowser   string `json:"deviceBrowser,omitempty"`
+	IP              string `json:"ip,omitempty"`
+}
+
 // LoginRequest represents a unified login request
 type LoginRequest struct {
 	// Common fields
-	LoginType LoginType `json:"loginType" binding:"required"`
+	LoginType LoginType `json:"loginType" binding:"-"` // 移除required，在登录时自动设置
 	DeviceID  string    `json:"deviceId" binding:"required"`
 
 	// Email login fields
-	Email    string `json:"email,omitempty"`
-	Password string `json:"password,omitempty"`
+	Email    string `json:"email" binding:"required_if=LoginType email"`
+	Password string `json:"password" binding:"required_if=LoginType email"`
 
 	// OAuth login fields
 	Code  string `json:"code,omitempty"`
 	State string `json:"state,omitempty"`
-	
+
 	// Two-factor auth fields
-	TwoFactorToken string `json:"twoFactorToken,omitempty"` 
+	TwoFactorToken string `json:"twoFactorToken,omitempty"`
 	TwoFactorCode  string `json:"twoFactorCode,omitempty"`
-	
+
 	// Device info fields
 	DeviceName    string `json:"deviceName,omitempty"`
 	DeviceType    string `json:"deviceType,omitempty"`
-	DeviceOS      string `json:"deviceOS,omitempty"` 
+	DeviceOS      string `json:"deviceOS,omitempty"`
 	DeviceBrowser string `json:"deviceBrowser,omitempty"`
 	IP            string `json:"ip,omitempty"`
 }

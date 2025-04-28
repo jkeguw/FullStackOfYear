@@ -1,33 +1,22 @@
 <template>
-  <div class="language-switcher">
-    <button 
-      v-for="lang in availableLanguages" 
-      :key="lang.code"
-      @click="switchLanguage(lang.code)"
-      :class="[currentLanguage === lang.code ? 'active' : '', 'lang-button']"
-      :title="lang.name"
-    >
-      <span class="flag">{{ lang.flag }}</span>
-    </button>
-  </div>
+  <!-- Language switcher flags hidden since we only support English now -->
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-const { locale } = useI18n()
+const { locale } = useI18n();
 
 const availableLanguages = [
-  { code: 'zh-CN', name: '中文', flag: '🇨🇳' },
   { code: 'en-US', name: 'English', flag: '🇺🇸' }
-]
+];
 
-const currentLanguage = computed(() => locale.value)
+const currentLanguage = computed(() => locale.value);
 
 function switchLanguage(lang: string) {
-  locale.value = lang
-  localStorage.setItem('language', lang)
+  locale.value = lang;
+  localStorage.setItem('language', lang);
 }
 </script>
 

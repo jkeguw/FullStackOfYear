@@ -3,14 +3,16 @@
     <el-card class="mb-4">
       <template #header>
         <div class="card-header">
-          <h1 class="text-2xl font-bold">{{ $t('common.language') }} {{ $t('common.settings') }}</h1>
-          <language-switcher />
+          <h1 class="text-2xl font-bold">
+            {{ $t('common.language') }} {{ $t('common.settings') }}
+          </h1>
+          <LanguageSwitcher />
         </div>
       </template>
-      
+
       <div class="translation-examples">
         <h2 class="text-xl font-semibold mb-4">{{ $t('common.app_name') }}</h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- 通用翻译 -->
           <el-card class="mb-4">
@@ -27,7 +29,7 @@
               <p><strong>Register:</strong> {{ $t('common.register') }}</p>
             </div>
           </el-card>
-          
+
           <!-- 鼠标相关翻译 -->
           <el-card class="mb-4">
             <template #header>
@@ -43,7 +45,7 @@
               <p><strong>Weight:</strong> {{ $t('mouse.weight') }}</p>
             </div>
           </el-card>
-          
+
           <!-- 形状翻译 -->
           <el-card class="mb-4">
             <template #header>
@@ -58,7 +60,7 @@
               <p><strong>Asymmetric:</strong> {{ $t('shapes.asymmetric') }}</p>
             </div>
           </el-card>
-          
+
           <!-- 手型尺寸翻译 -->
           <el-card class="mb-4">
             <template #header>
@@ -74,7 +76,7 @@
             </div>
           </el-card>
         </div>
-        
+
         <div class="mt-6">
           <h3 class="text-lg font-semibold mb-2">{{ $t('common.language') }}:</h3>
           <el-radio-group v-model="currentLang" @change="handleLanguageChange">
@@ -83,16 +85,20 @@
             </el-radio>
           </el-radio-group>
         </div>
-        
+
         <div class="mt-6">
           <h3 class="text-lg font-semibold mb-2">{{ $t('tools.tools') }}:</h3>
           <el-button type="primary" @click="showDateExample = !showDateExample">
             {{ showDateExample ? $t('common.hide') : $t('common.show') }} {{ $t('common.dates') }}
           </el-button>
-          
+
           <div v-if="showDateExample" class="mt-4 p-4 bg-gray-50 rounded">
-            <p><strong>{{ $t('common.today') }}:</strong> {{ $d(new Date(), 'long') }}</p>
-            <p><strong>{{ $t('common.time') }}:</strong> {{ $d(new Date(), 'time') }}</p>
+            <p>
+              <strong>{{ $t('common.today') }}:</strong> {{ $d(new Date(), 'long') }}
+            </p>
+            <p>
+              <strong>{{ $t('common.time') }}:</strong> {{ $d(new Date(), 'time') }}
+            </p>
           </div>
         </div>
       </div>
@@ -101,19 +107,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { SUPPORTED_LOCALES, setLocale } from '@/i18n'
-import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { SUPPORTED_LOCALES, setLocale } from '@/i18n';
+import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue';
 
-const { locale } = useI18n()
-const currentLang = ref(locale.value)
-const showDateExample = ref(false)
+const { locale } = useI18n();
+const currentLang = ref(locale.value);
+const showDateExample = ref(false);
 
 const handleLanguageChange = (value: string) => {
-  setLocale(value)
-  currentLang.value = value
-}
+  setLocale(value);
+  currentLang.value = value;
+};
 </script>
 
 <style scoped>

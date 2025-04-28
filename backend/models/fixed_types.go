@@ -12,10 +12,3 @@ const (
 	RoleReviewer  Role = "reviewer"
 	RoleModerator Role = "moderator"
 )
-
-// 额外的集合名常量，以避免重复定义
-const (
-	// 其他集合名已在各自的文件中定义
-	// 这里我们确保 ReviewsCollection 只定义一次
-	// ReviewsCollection = "reviews" // 已在 constants.go 中定义
-)

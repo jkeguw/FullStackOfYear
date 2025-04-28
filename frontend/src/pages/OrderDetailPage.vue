@@ -7,11 +7,11 @@
           <el-breadcrumb-item>订单详情</el-breadcrumb-item>
         </el-breadcrumb>
       </div>
-      
+
       <div v-if="loading" class="loading-container">
         <el-skeleton :rows="15" animated />
       </div>
-      
+
       <template v-else-if="orderDetail">
         <div class="order-detail-card">
           <div class="order-status-bar">
@@ -22,28 +22,28 @@
               </el-tag>
             </div>
           </div>
-          
-          <el-steps 
-            :active="getStatusStep(orderDetail.status)" 
+
+          <el-steps
+            :active="getStatusStep(orderDetail.status)"
             finish-status="success"
             class="order-steps"
             align-center
           >
             <el-step title="提交订单" :description="formatDate(orderDetail.createdAt)" />
-            <el-step 
-              title="付款成功" 
-              :description="orderDetail.paidAt ? formatDate(orderDetail.paidAt) : ''" 
+            <el-step
+              title="付款成功"
+              :description="orderDetail.paidAt ? formatDate(orderDetail.paidAt) : ''"
             />
-            <el-step 
-              title="商品发货" 
-              :description="orderDetail.shippedAt ? formatDate(orderDetail.shippedAt) : ''" 
+            <el-step
+              title="商品发货"
+              :description="orderDetail.shippedAt ? formatDate(orderDetail.shippedAt) : ''"
             />
-            <el-step 
-              title="交易完成" 
-              :description="orderDetail.deliveredAt ? formatDate(orderDetail.deliveredAt) : ''" 
+            <el-step
+              title="交易完成"
+              :description="orderDetail.deliveredAt ? formatDate(orderDetail.deliveredAt) : ''"
             />
           </el-steps>
-          
+
           <div class="detail-section product-section">
             <h3 class="section-title">商品信息</h3>
             <div class="product-list">
@@ -53,16 +53,12 @@
                 <div class="product-cell quantity">数量</div>
                 <div class="product-cell subtotal">小计</div>
               </div>
-              
-              <div 
-                v-for="item in orderDetail.items" 
-                :key="item.productId" 
-                class="product-row"
-              >
+
+              <div v-for="item in orderDetail.items" :key="item.productId" class="product-row">
                 <div class="product-cell product-info">
                   <div class="product-image">
-                    <el-image 
-                      :src="item.imageUrl || '/placeholder.png'" 
+                    <el-image
+                      :src="item.imageUrl || '/placeholder.png'"
                       :alt="item.name"
                       fit="cover"
                     />
@@ -75,7 +71,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="order-sections">
             <div class="detail-section">
               <h3 class="section-title">订单信息</h3>
@@ -114,7 +110,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="detail-section">
               <h3 class="section-title">收货信息</h3>
               <div class="info-list">
@@ -140,7 +136,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="detail-section">
               <h3 class="section-title">支付信息</h3>
               <div class="info-list">
@@ -153,7 +149,10 @@
                 <div class="info-item">
                   <span class="info-label">支付状态：</span>
                   <span class="info-value">
-                    <el-tag size="small" :type="getPaymentStatusTagType(orderDetail.paymentInfo.paymentStatus)">
+                    <el-tag
+                      size="small"
+                      :type="getPaymentStatusTagType(orderDetail.paymentInfo.paymentStatus)"
+                    >
                       {{ getPaymentStatusText(orderDetail.paymentInfo.paymentStatus) }}
                     </el-tag>
                   </span>
@@ -165,7 +164,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="order-summary">
             <div class="summary-item">
               <span>商品小计：</span>
@@ -188,34 +187,34 @@
               <span>¥{{ orderDetail.total.toFixed(2) }}</span>
             </div>
           </div>
-          
+
           <div v-if="orderDetail.notes" class="order-notes">
             <h3 class="section-title">订单备注</h3>
             <p>{{ orderDetail.notes }}</p>
           </div>
-          
+
           <div class="order-actions">
             <el-button @click="goBack">返回列表</el-button>
-            
-            <el-button 
-              v-if="orderDetail.status === 'pending'" 
-              type="primary" 
+
+            <el-button
+              v-if="orderDetail.status === 'pending'"
+              type="primary"
               @click="handlePayment(orderDetail.id)"
             >
               立即支付
             </el-button>
-            
-            <el-button 
-              v-if="['pending', 'paid'].includes(orderDetail.status)" 
-              type="danger" 
+
+            <el-button
+              v-if="['pending', 'paid'].includes(orderDetail.status)"
+              type="danger"
               @click="handleCancelOrder(orderDetail.id)"
             >
               取消订单
             </el-button>
-            
-            <el-button 
-              v-if="orderDetail.status === 'shipped'" 
-              type="success" 
+
+            <el-button
+              v-if="orderDetail.status === 'shipped'"
+              type="success"
               @click="handleConfirmReceipt(orderDetail.id)"
             >
               确认收货
@@ -223,7 +222,7 @@
           </div>
         </div>
       </template>
-      
+
       <div v-else class="error-container">
         <el-empty description="订单不存在或已被删除" />
         <el-button type="primary" @click="goToOrderList">返回订单列表</el-button>
@@ -243,13 +242,7 @@ import { formatDateTime } from '@/utils/date';
 
 const route = useRoute();
 const router = useRouter();
-const { 
-  loading, 
-  orderDetail, 
-  fetchOrderDetail, 
-  cancelOrder,
-  changeOrderStatus
-} = useOrder();
+const { loading, orderDetail, fetchOrderDetail, cancelOrder, changeOrderStatus } = useOrder();
 
 // 从路由参数获取订单ID
 const orderId = route.params.id as string;
@@ -321,8 +314,8 @@ const getPaymentMethodText = (method: string) => {
 // 获取配送方式文本
 const getShippingMethodText = (method: string) => {
   const methodMap: Record<string, string> = {
-    'standard': '标准配送 (3-5个工作日)',
-    'express': '快速配送 (1-2个工作日)',
+    standard: '标准配送 (3-5个工作日)',
+    express: '快速配送 (1-2个工作日)'
   };
   return methodMap[method] || method;
 };
@@ -330,10 +323,10 @@ const getShippingMethodText = (method: string) => {
 // 获取支付状态文本
 const getPaymentStatusText = (status: string) => {
   const statusMap: Record<string, string> = {
-    'pending': '待支付',
-    'success': '支付成功',
-    'failed': '支付失败',
-    'refunded': '已退款',
+    pending: '待支付',
+    success: '支付成功',
+    failed: '支付失败',
+    refunded: '已退款'
   };
   return statusMap[status] || status;
 };
@@ -362,22 +355,17 @@ const handlePayment = (orderId: string) => {
 // 处理取消订单
 const handleCancelOrder = async (orderId: string) => {
   try {
-    await ElMessageBox.confirm(
-      '确定要取消此订单吗？取消后无法恢复。',
-      '取消订单',
-      {
-        confirmButtonText: '确定取消',
-        cancelButtonText: '继续保留',
-        type: 'warning'
-      }
-    );
-    
+    await ElMessageBox.confirm('确定要取消此订单吗？取消后无法恢复。', '取消订单', {
+      confirmButtonText: '确定取消',
+      cancelButtonText: '继续保留',
+      type: 'warning'
+    });
+
     await cancelOrder(orderId, '用户主动取消');
     ElMessage.success('订单已取消');
-    
+
     // 刷新订单详情
     await fetchOrderDetail(orderId);
-    
   } catch (error) {
     // 用户取消操作或发生错误
     if (error instanceof Error) {
@@ -389,22 +377,17 @@ const handleCancelOrder = async (orderId: string) => {
 // 处理确认收货
 const handleConfirmReceipt = async (orderId: string) => {
   try {
-    await ElMessageBox.confirm(
-      '确认已收到商品吗？',
-      '确认收货',
-      {
-        confirmButtonText: '确认收货',
-        cancelButtonText: '取消',
-        type: 'info'
-      }
-    );
-    
+    await ElMessageBox.confirm('确认已收到商品吗？', '确认收货', {
+      confirmButtonText: '确认收货',
+      cancelButtonText: '取消',
+      type: 'info'
+    });
+
     await changeOrderStatus(orderId, { status: OrderStatus.DELIVERED });
     ElMessage.success('确认收货成功');
-    
+
     // 刷新订单详情
     await fetchOrderDetail(orderId);
-    
   } catch (error) {
     // 用户取消操作或发生错误
     if (error instanceof Error) {
@@ -544,7 +527,8 @@ const goToOrderList = () => {
   text-align: center;
 }
 
-.price, .subtotal {
+.price,
+.subtotal {
   text-align: right;
 }
 

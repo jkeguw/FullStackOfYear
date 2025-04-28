@@ -1,11 +1,6 @@
 package middleware
 
 import (
-	"project/backend/config"
-	"project/backend/internal/database"
-	"project/backend/internal/errors"
-	"project/backend/services/jwt"
-	"project/backend/types/auth"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -16,6 +11,11 @@ import (
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
+	"project/backend/config"
+	"project/backend/internal/database"
+	"project/backend/internal/errors"
+	"project/backend/services/jwt"
+	"project/backend/types/auth"
 	"testing"
 	"time"
 )
@@ -116,7 +116,7 @@ func (s *AuthMiddlewareSuite) generateValidToken(userID, role, deviceID string) 
 		Type:     "access",
 	}
 
-	token, expiresAt, err := jwt.GenerateToken(claims, time.Hour)
+	token, expiresAt, err := jwt.GenerateToken(jwt.Claims(claims), time.Hour)
 	if err != nil {
 		s.T().Fatalf("Failed to generate token: %v", err)
 	}
@@ -138,7 +138,7 @@ func (s *AuthMiddlewareSuite) TestPublicRoute() {
 	s.router.ServeHTTP(w, req)
 
 	assert.Equal(s.T(), http.StatusOK, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(s.T(), err)
@@ -162,7 +162,7 @@ func (s *AuthMiddlewareSuite) TestAuthenticatedRouteWithValidToken() {
 
 	// 验证响应
 	assert.Equal(s.T(), http.StatusOK, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(s.T(), err)
@@ -178,7 +178,7 @@ func (s *AuthMiddlewareSuite) TestAuthenticatedRouteWithoutToken() {
 	s.router.ServeHTTP(w, req)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(s.T(), err)
@@ -194,7 +194,7 @@ func (s *AuthMiddlewareSuite) TestAuthenticatedRouteWithInvalidTokenFormat() {
 	s.router.ServeHTTP(w, req)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(s.T(), err)
@@ -222,7 +222,7 @@ func (s *AuthMiddlewareSuite) TestAuthenticatedRouteWithRevokedToken() {
 		Type:     "access",
 	}
 
-	token, _, err := jwt.GenerateToken(claims, time.Hour)
+	token, _, err := jwt.GenerateToken(jwt.Claims(claims), time.Hour)
 	assert.NoError(s.T(), err)
 
 	req, _ := http.NewRequest("GET", "/auth/user", nil)
@@ -231,7 +231,7 @@ func (s *AuthMiddlewareSuite) TestAuthenticatedRouteWithRevokedToken() {
 	s.router.ServeHTTP(w, req)
 
 	assert.Equal(s.T(), http.StatusUnauthorized, w.Code)
-	
+
 	var response map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(s.T(), err)
@@ -253,7 +253,7 @@ func (s *AuthMiddlewareSuite) TestRoleBasedAuthWithCorrectRole() {
 	s.router.ServeHTTP(w, req)
 
 	assert.Equal(s.T(), http.StatusOK, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(s.T(), err)
@@ -275,7 +275,7 @@ func (s *AuthMiddlewareSuite) TestRoleBasedAuthWithIncorrectRole() {
 	s.router.ServeHTTP(w, req)
 
 	assert.Equal(s.T(), http.StatusForbidden, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(s.T(), err)

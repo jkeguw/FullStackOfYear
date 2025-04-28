@@ -1,162 +1,159 @@
 <template>
   <div class="filter-panel bg-[#1A1A1A] border border-[#333333] rounded-lg p-4">
-    <h3 class="text-lg font-medium text-white mb-4">筛选条件</h3>
-    
+    <h3 class="text-lg font-medium text-white mb-4">Filter Criteria</h3>
+
     <div class="space-y-6">
-      <!-- 搜索框 -->
+      <!-- Search box -->
       <div>
-        <label class="block text-gray-400 text-sm font-medium mb-2">搜索名称</label>
-        <el-input 
-          v-model="searchQuery" 
-          placeholder="输入鼠标名称..." 
+        <label class="block text-gray-400 text-sm font-medium mb-2">Search Name</label>
+        <el-input
+          v-model="searchQuery"
+          placeholder="Enter mouse name..."
           :prefix-icon="Search"
           class="search-input"
         />
       </div>
-      
-      <!-- 品牌筛选 -->
+
+      <!-- Brand filter (dropdown) -->
       <div>
-        <label class="block text-gray-400 text-sm font-medium mb-2">品牌</label>
-        <el-checkbox-group v-model="selectedBrands" class="filter-checkbox-group">
-          <el-checkbox 
-            v-for="brand in brands" 
-            :key="brand" 
+        <label class="block text-gray-400 text-sm font-medium mb-2">Brand</label>
+        <el-select 
+          v-model="selectedBrands" 
+          multiple 
+          clearable 
+          collapse-tags
+          class="w-full filter-select" 
+          placeholder="Select brands">
+          <el-option
+            v-for="brand in brands"
+            :key="brand"
             :label="brand"
-            class="filter-checkbox text-gray-300"
-          >
-            {{ brand }}
-          </el-checkbox>
-        </el-checkbox-group>
+            :value="brand"
+          />
+        </el-select>
       </div>
-      
-      <!-- 形状筛选 -->
+
+      <!-- Shape filter (dropdown) -->
       <div>
-        <label class="block text-gray-400 text-sm font-medium mb-2">形状</label>
-        <el-checkbox-group v-model="selectedShapes" class="filter-checkbox-group">
-          <el-checkbox 
-            v-for="shape in shapes" 
-            :key="shape" 
-            :label="shape"
-            class="filter-checkbox text-gray-300"
-          >
-            {{ shapeLabels[shape] || shape }}
-          </el-checkbox>
-        </el-checkbox-group>
+        <label class="block text-gray-400 text-sm font-medium mb-2">Shape</label>
+        <el-select 
+          v-model="selectedShapes" 
+          multiple 
+          clearable 
+          collapse-tags
+          class="w-full filter-select" 
+          placeholder="Select shapes">
+          <el-option
+            v-for="shape in shapes"
+            :key="shape"
+            :label="shapeLabels[shape] || shape"
+            :value="shape"
+          />
+        </el-select>
       </div>
-      
-      <!-- 重量范围 -->
-      <div>
-        <label class="block text-gray-400 text-sm font-medium mb-2">
-          重量范围: {{ weightRange[0] }}g - {{ weightRange[1] }}g
-        </label>
-        <el-slider
-          v-model="weightRange"
-          range
-          :min="40"
-          :max="150"
-          class="filter-slider"
-        />
-      </div>
-      
-      <!-- 连接方式 -->
-      <div>
-        <label class="block text-gray-400 text-sm font-medium mb-2">连接方式</label>
-        <el-checkbox-group v-model="selectedConnections" class="filter-checkbox-group">
-          <el-checkbox 
-            v-for="conn in connections" 
-            :key="conn" 
-            :label="conn"
-            class="filter-checkbox text-gray-300"
-          >
-            {{ connectionLabels[conn] || conn }}
-          </el-checkbox>
-        </el-checkbox-group>
-      </div>
-      
-      <!-- 按钮数量范围 -->
+
+      <!-- Weight range -->
       <div>
         <label class="block text-gray-400 text-sm font-medium mb-2">
-          按钮数量: {{ buttonRange[0] }} - {{ buttonRange[1] }}
+          Weight Range: {{ weightRange[0] }}g - {{ weightRange[1] }}g
         </label>
-        <el-slider
-          v-model="buttonRange"
-          range
-          :min="2"
-          :max="20"
-          :step="1"
-          class="filter-slider"
-        />
+        <el-slider v-model="weightRange" range :min="40" :max="150" class="filter-slider" />
       </div>
-      
-      <!-- 操作按钮 -->
+
+      <!-- Connection type (dropdown) -->
+      <div>
+        <label class="block text-gray-400 text-sm font-medium mb-2">Connection Type</label>
+        <el-select 
+          v-model="selectedConnections" 
+          multiple 
+          clearable 
+          collapse-tags
+          class="w-full filter-select" 
+          placeholder="Select connection types">
+          <el-option
+            v-for="conn in connections"
+            :key="conn"
+            :label="connectionLabels[conn] || conn"
+            :value="conn"
+          />
+        </el-select>
+      </div>
+
+      <!-- Button count range -->
+      <div>
+        <label class="block text-gray-400 text-sm font-medium mb-2">
+          Button Count: {{ buttonRange[0] }} - {{ buttonRange[1] }}
+        </label>
+        <el-slider v-model="buttonRange" range :min="2" :max="20" :step="1" class="filter-slider" />
+      </div>
+
+      <!-- Action buttons -->
       <div class="flex justify-between mt-6">
-        <el-button 
-          @click="resetFilters" 
-          :icon="RefreshRight"
-          class="dark-button"
-        >
-          重置筛选
+        <el-button @click="resetFilters" :icon="RefreshRight" class="dark-button">
+          Reset Filters
         </el-button>
-        <el-button 
-          type="primary" 
-          @click="applyFilters"
-          :icon="Filter"
-        >
-          应用筛选
-        </el-button>
+        <el-button type="primary" @click="applyFilters" :icon="Filter"> Apply Filters </el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import { Search, RefreshRight, Filter } from '@element-plus/icons-vue'
+import { ref, reactive, watch } from 'vue';
+import { Search, RefreshRight, Filter } from '@element-plus/icons-vue';
 
 // 品牌列表
 const brands = [
-  'Logitech', 'Razer', 'SteelSeries', 'Zowie', 'Glorious', 
-  'Vaxee', 'Pulsar', 'Cooler Master', 'HyperX', 'Endgame Gear'
-]
+  'Logitech',
+  'Razer',
+  'SteelSeries',
+  'Zowie',
+  'Glorious',
+  'Vaxee',
+  'Pulsar',
+  'Cooler Master',
+  'HyperX',
+  'Endgame Gear'
+];
 
 // 鼠标形状
-const shapes = ['ergo', 'ambi', 'symmetrical']
+const shapes = ['ergo', 'ambi', 'symmetrical'];
 const shapeLabels = {
-  'ergo': '人体工学',
-  'ambi': '双手通用',
-  'symmetrical': '对称'
-}
+  ergo: 'Ergonomic',
+  ambi: 'Ambidextrous',
+  symmetrical: 'Symmetrical'
+};
 
-// 连接方式
-const connections = ['wired', 'wireless', 'hybrid']
+// Connection types
+const connections = ['wired', 'wireless', 'hybrid'];
 const connectionLabels = {
-  'wired': '有线',
-  'wireless': '无线',
-  'hybrid': '双模'
-}
+  wired: 'Wired',
+  wireless: 'Wireless',
+  hybrid: 'Hybrid'
+};
 
 // 筛选状态
-const searchQuery = ref('')
-const selectedBrands = ref([])
-const selectedShapes = ref([])
-const weightRange = ref([40, 150])
-const defaultWeightRange = [40, 150]
-const selectedConnections = ref([])
-const buttonRange = ref([2, 20])
-const defaultButtonRange = [2, 20]
+const searchQuery = ref('');
+const selectedBrands = ref([]);
+const selectedShapes = ref([]);
+const weightRange = ref([40, 150]);
+const defaultWeightRange = [40, 150];
+const selectedConnections = ref([]);
+const buttonRange = ref([2, 20]);
+const defaultButtonRange = [2, 20];
 
 // 重置筛选
 const resetFilters = () => {
-  searchQuery.value = ''
-  selectedBrands.value = []
-  selectedShapes.value = []
-  weightRange.value = [...defaultWeightRange]
-  selectedConnections.value = []
-  buttonRange.value = [...defaultButtonRange]
-  
+  searchQuery.value = '';
+  selectedBrands.value = [];
+  selectedShapes.value = [];
+  weightRange.value = [...defaultWeightRange];
+  selectedConnections.value = [];
+  buttonRange.value = [...defaultButtonRange];
+
   // 发出事件通知父组件筛选已重置
-  emits('reset-filters')
-}
+  emits('reset-filters');
+};
 
 // 应用筛选
 const applyFilters = () => {
@@ -167,20 +164,23 @@ const applyFilters = () => {
     weight: weightRange.value,
     connections: selectedConnections.value,
     buttons: buttonRange.value
-  }
-  
+  };
+
   // 发出筛选事件
-  emits('apply-filters', filters)
-}
+  emits('apply-filters', filters);
+};
 
 // 定义组件事件
-const emits = defineEmits(['apply-filters', 'reset-filters'])
+const emits = defineEmits(['apply-filters', 'reset-filters']);
 
 // 监听筛选条件变化，实时更新
-watch([searchQuery, selectedBrands, selectedShapes, weightRange, selectedConnections, buttonRange], () => {
-  // 自动应用筛选，可以根据需要取消注释
-  // applyFilters()
-})
+watch(
+  [searchQuery, selectedBrands, selectedShapes, weightRange, selectedConnections, buttonRange],
+  () => {
+    // 自动应用筛选，可以根据需要取消注释
+    // applyFilters()
+  }
+);
 </script>
 
 <style scoped>
@@ -194,19 +194,24 @@ watch([searchQuery, selectedBrands, selectedShapes, weightRange, selectedConnect
   color: var(--claude-text-light);
 }
 
-.filter-checkbox-group {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+.filter-select {
+  width: 100%;
 }
 
-.filter-checkbox :deep(.el-checkbox__label) {
+.filter-select :deep(.el-input__inner) {
+  background-color: var(--claude-bg-light);
+  border-color: var(--claude-border-light);
   color: var(--claude-text-light);
 }
 
-.filter-checkbox :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+.filter-select :deep(.el-select__tags) {
+  background-color: var(--claude-bg-light);
+}
+
+.filter-select :deep(.el-tag) {
   background-color: var(--claude-primary-purple);
   border-color: var(--claude-primary-purple);
+  color: white;
 }
 
 .filter-slider :deep(.el-slider__runway) {

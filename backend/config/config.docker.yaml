@@ -4,16 +4,16 @@ server:
   writeTimeout: 60s
 
 mongodb:
-  uri: ${MONGODB_URI}
+  uri: mongodb://root:example@mongodb:27017/?authSource=admin
   database: cpc
 
 redis:
-  addr: ${REDIS_ADDR}
-  password: ${REDIS_PASSWORD}
-  db: ${REDIS_DB}
+  addr: redis:6379
+  password: ""
+  db: 0
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: your-secret-key
   accessExpireTime: 2h
   refreshExpireTime: 720h
   issuer: "peripheral-review-platform"

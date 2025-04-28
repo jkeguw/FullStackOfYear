@@ -1,35 +1,32 @@
 <template>
   <div class="ruler-tool-page">
     <h2 class="text-2xl font-bold mb-6">在线厘米尺</h2>
-    
+
     <div class="instructions bg-gray-700 rounded-lg p-4 mb-6">
-      <h3 class="text-xl font-bold mb-2">使用说明</h3>
-      <ul class="list-disc pl-5 space-y-2">
-        <li>提供精确的厘米和毫米标记</li>
-        <li>水平和垂直两种尺子方向</li>
-        <li>所有刻度都标准显示，厘米显示数字，毫米使用短线标记</li>
-      </ul>
+      <h3 class="text-xl font-bold mb-2 text-red-500">功能已废弃</h3>
+      <p class="text-gray-300 mb-4">此工具已被废弃并移除，请使用其他测量工具代替。</p>
+      <el-alert
+        title="此功能已不再维护"
+        type="warning"
+        description="厘米尺功能已被完全移除，请使用其他测量工具。"
+        show-icon
+      />
     </div>
-    
-    <div class="ruler-workspace relative bg-gray-800 rounded-lg border border-gray-600 p-4 min-h-[400px] mb-6">
-      <div class="text-center text-gray-400 mb-4">水平测量尺</div>
-      <StaticRuler mode="horizontal" :rulerLength="30" />
-    </div>
-    
-    <div class="ruler-workspace relative bg-gray-800 rounded-lg border border-gray-600 p-4 min-h-[400px]">
-      <div class="text-center text-gray-400 mb-4">垂直测量尺</div>
-      <StaticRuler mode="vertical" :rulerLength="20" />
+
+    <div class="flex justify-center mt-8">
+      <router-link to="/tools" class="el-button el-button--primary">
+        返回工具集
+      </router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import StaticRuler from '@/components/tools/StaticRuler.vue';
+// 尺子组件已被移除
 </script>
 
 <style scoped>
-.ruler-workspace {
-  position: relative;
-  overflow: hidden;
+.ruler-tool-page {
+  min-height: 400px;
 }
 </style>

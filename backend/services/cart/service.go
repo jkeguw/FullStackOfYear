@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"project/backend/models"
 	"project/backend/internal/errors"
 )
 
@@ -29,6 +28,10 @@ type MongoService struct {
 
 // NewService 创建新的购物车服务
 func NewService(db *mongo.Database) Service {
+	if db == nil {
+		// 安全检查，如果数据库为nil，返回Mock服务
+		return &MockService{}
+	}
 	return &MongoService{
 		collection: db.Collection("carts"),
 	}
@@ -134,10 +137,10 @@ func (s *MongoService) UpdateQuantity(ctx context.Context, userID string, produc
 	update := bson.M{
 		"$set": bson.M{
 			"items.$[elem].quantity": quantity,
-			"updated_at":            time.Now(),
+			"updated_at":             time.Now(),
 		},
 	}
-	
+
 	opts := options.Update().SetArrayFilters(options.ArrayFilters{
 		Filters: []interface{}{bson.M{"elem.product_id": productObjID}},
 	})

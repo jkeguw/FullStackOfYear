@@ -2,24 +2,34 @@
   <div class="device-list-page">
     <div class="container mx-auto p-4">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">外设数据库</h1>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div class="flex items-center">
+            <h1 class="text-2xl font-bold">外设数据库</h1>
+            <el-tag type="warning" class="ml-2">已废弃</el-tag>
+          </div>
+          <router-link to="/database" class="text-blue-500 text-sm hover:underline">
+            前往新版鼠标数据库
+          </router-link>
+        </div>
         <div>
-          <el-button 
-            type="primary" 
-            @click="handleCreateDevice" 
-            v-if="hasAdminPermission"
-          >
+          <el-button v-if="hasAdminPermission" type="primary" @click="handleCreateDevice">
             添加设备
           </el-button>
         </div>
       </div>
-      
+
       <!-- 筛选器 -->
       <el-card class="mb-6">
         <div class="filters">
           <el-form :model="filters" :inline="!isMobile" class="flex flex-wrap gap-4">
             <el-form-item label="设备类型" class="w-full sm:w-auto">
-              <el-select v-model="filters.type" clearable placeholder="全部类型" @change="fetchData" class="w-full sm:w-auto">
+              <el-select
+                v-model="filters.type"
+                clearable
+                placeholder="全部类型"
+                class="w-full sm:w-auto"
+                @change="fetchData"
+              >
                 <el-option label="鼠标" value="mouse"></el-option>
                 <el-option label="键盘" value="keyboard"></el-option>
                 <el-option label="显示器" value="monitor"></el-option>
@@ -28,19 +38,29 @@
               </el-select>
             </el-form-item>
             <el-form-item label="品牌" class="w-full sm:w-auto">
-              <el-select v-model="filters.brand" clearable placeholder="全部品牌" @change="fetchData" class="w-full sm:w-auto">
-                <el-option v-for="brand in brands" :key="brand" :label="brand" :value="brand"></el-option>
+              <el-select
+                v-model="filters.brand"
+                clearable
+                placeholder="全部品牌"
+                class="w-full sm:w-auto"
+                @change="fetchData"
+              >
+                <el-option
+                  v-for="brand in brands"
+                  :key="brand"
+                  :label="brand"
+                  :value="brand"
+                ></el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="排序" class="w-full xs:w-1/2 sm:w-auto">
-              <el-select v-model="filters.sortBy" @change="fetchData" class="w-full">
-                <el-option label="最新上架" value="createdAt"></el-option>
+              <el-select v-model="filters.sortBy" class="w-full" @change="fetchData">
                 <el-option label="名称" value="name"></el-option>
                 <el-option label="品牌" value="brand"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="顺序" class="w-full xs:w-1/2 sm:w-auto">
-              <el-select v-model="filters.sortOrder" @change="fetchData" class="w-full">
+              <el-select v-model="filters.sortOrder" class="w-full" @change="fetchData">
                 <el-option label="降序" value="desc"></el-option>
                 <el-option label="升序" value="asc"></el-option>
               </el-select>
@@ -54,25 +74,25 @@
           </el-form>
         </div>
       </el-card>
-      
+
       <!-- 设备列表 -->
       <div v-loading="loading">
         <div v-if="devices.length === 0 && !loading" class="empty-state text-center py-16">
           <el-empty description="暂无设备数据"></el-empty>
         </div>
-        
+
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <el-card 
-            v-for="device in devices" 
-            :key="device.id" 
+          <el-card
+            v-for="device in devices"
+            :key="device.id"
             class="device-card hover:shadow-lg transition-shadow"
             @click="viewDeviceDetails(device.id)"
           >
             <div class="device-card-content">
               <div class="device-image h-40 flex items-center justify-center mb-4">
-                <el-image 
-                  v-if="device.imageUrl" 
-                  :src="device.imageUrl" 
+                <el-image
+                  v-if="device.imageUrl"
+                  :src="device.imageUrl"
                   fit="contain"
                   class="max-h-full"
                   :preview-src-list="[device.imageUrl]"
@@ -82,7 +102,7 @@
                   <div>无图片</div>
                 </div>
               </div>
-              
+
               <div class="device-info">
                 <div class="flex justify-between items-start">
                   <div>
@@ -91,11 +111,11 @@
                   </div>
                   <el-tag size="small">{{ getDeviceTypeName(device.type) }}</el-tag>
                 </div>
-                
+
                 <div v-if="device.description" class="mt-2 text-sm text-gray-600 line-clamp-2">
                   {{ device.description }}
                 </div>
-                
+
                 <div class="mt-4 flex justify-between items-center">
                   <div class="text-xs text-gray-400">
                     添加时间: {{ formatDate(device.createdAt) }}
@@ -108,7 +128,7 @@
             </div>
           </el-card>
         </div>
-        
+
         <!-- 分页 -->
         <div class="pagination mt-6 flex justify-center overflow-x-auto py-2">
           <el-pagination
@@ -124,17 +144,17 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 创建设备对话框 -->
-    <el-dialog 
-      v-model="deviceDialogVisible" 
+    <el-dialog
+      v-model="deviceDialogVisible"
       :title="isEditMode ? '编辑设备' : '添加设备'"
       width="80%"
       :before-close="closeDeviceDialog"
     >
-      <device-form 
-        :device-id="currentDeviceId" 
-        @saved="handleDeviceSaved" 
+      <DeviceForm
+        :device-id="currentDeviceId"
+        @saved="handleDeviceSaved"
         @deleted="handleDeviceDeleted"
       />
     </el-dialog>
@@ -142,31 +162,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { format } from 'date-fns'
-import { useWindowSize } from '@vueuse/core'
-import DeviceForm from '@/components/form/DeviceForm.vue'
-import { useDevice } from '@/composables/useDevice'
-import type { Device } from '@/api/device'
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import { format } from 'date-fns';
+import { useWindowSize } from '@vueuse/core';
+import DeviceForm from '@/components/form/DeviceForm.vue';
+import { useDevice } from '@/composables/useDevice';
+import type { Device } from '@/api/device';
 
 // 路由
-const router = useRouter()
+const router = useRouter();
 
 // 响应式设计
-const { width } = useWindowSize()
-const isMobile = computed(() => width.value < 640)
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 640);
 
 // 设备钩子
-const { 
-  devices, 
-  deviceLoading: loading, 
+const {
+  devices,
+  deviceLoading: loading,
   devicePagination: pagination,
   getDeviceTypeName,
   fetchDevices,
   removeDevice
-} = useDevice()
+} = useDevice();
 
 // 筛选条件
 const filters = reactive({
@@ -174,23 +194,34 @@ const filters = reactive({
   brand: '',
   sortBy: 'createdAt',
   sortOrder: 'desc'
-})
+});
 
 // 品牌列表（实际应该从API获取）
-const brands = ref<string[]>(['Logitech', 'Razer', 'HyperX', 'Corsair', 'SteelSeries', 'Zowie', 'Glorious', 'Pulsar', 'Vaxee', 'Endgame Gear'])
+const brands = ref<string[]>([
+  'Logitech',
+  'Razer',
+  'HyperX',
+  'Corsair',
+  'SteelSeries',
+  'Zowie',
+  'Glorious',
+  'Pulsar',
+  'Vaxee',
+  'Endgame Gear'
+]);
 
 // 对话框控制
-const deviceDialogVisible = ref(false)
-const currentDeviceId = ref<string | undefined>(undefined)
-const isEditMode = computed(() => !!currentDeviceId.value)
+const deviceDialogVisible = ref(false);
+const currentDeviceId = ref<string | undefined>(undefined);
+const isEditMode = computed(() => !!currentDeviceId.value);
 
 // 权限检查（实际应该从用户状态获取）
-const hasAdminPermission = ref(true)
+const hasAdminPermission = ref(true);
 
 // 生命周期钩子
 onMounted(() => {
-  fetchData()
-})
+  fetchData();
+});
 
 // 获取设备数据
 const fetchData = async () => {
@@ -201,70 +232,70 @@ const fetchData = async () => {
     brand: filters.brand || undefined,
     sortBy: filters.sortBy,
     sortOrder: filters.sortOrder
-  })
-}
+  });
+};
 
 // 重置筛选器
 const resetFilters = () => {
-  filters.type = ''
-  filters.brand = ''
-  filters.sortBy = 'createdAt'
-  filters.sortOrder = 'desc'
-  fetchData()
-}
+  filters.type = '';
+  filters.brand = '';
+  filters.sortBy = 'createdAt';
+  filters.sortOrder = 'desc';
+  fetchData();
+};
 
 // 分页处理
 const handleSizeChange = (size: number) => {
-  pagination.pageSize = size
-  fetchData()
-}
+  pagination.pageSize = size;
+  fetchData();
+};
 
 const handleCurrentChange = (page: number) => {
-  pagination.page = page
-  fetchData()
-}
+  pagination.page = page;
+  fetchData();
+};
 
 // 查看设备详情
 const viewDeviceDetails = (id: string) => {
-  router.push(`/devices/${id}`)
-}
+  router.push(`/devices/${id}`);
+};
 
 // 创建设备
 const handleCreateDevice = () => {
-  currentDeviceId.value = undefined
-  deviceDialogVisible.value = true
-}
+  currentDeviceId.value = undefined;
+  deviceDialogVisible.value = true;
+};
 
 // 编辑设备
 const handleEditDevice = (id: string) => {
-  currentDeviceId.value = id
-  deviceDialogVisible.value = true
-}
+  currentDeviceId.value = id;
+  deviceDialogVisible.value = true;
+};
 
 // 关闭设备对话框
 const closeDeviceDialog = () => {
-  deviceDialogVisible.value = false
-  currentDeviceId.value = undefined
-}
+  deviceDialogVisible.value = false;
+  currentDeviceId.value = undefined;
+};
 
 // 设备保存成功处理
 const handleDeviceSaved = (device: Device) => {
-  deviceDialogVisible.value = false
-  ElMessage.success(`设备 ${device.name} 已${isEditMode.value ? '更新' : '创建'}`)
-  fetchData() // 刷新列表
-}
+  deviceDialogVisible.value = false;
+  ElMessage.success(`设备 ${device.name} 已${isEditMode.value ? '更新' : '创建'}`);
+  fetchData(); // 刷新列表
+};
 
 // 设备删除成功处理
 const handleDeviceDeleted = () => {
-  deviceDialogVisible.value = false
-  ElMessage.success('设备已删除')
-  fetchData() // 刷新列表
-}
+  deviceDialogVisible.value = false;
+  ElMessage.success('设备已删除');
+  fetchData(); // 刷新列表
+};
 
 // 格式化日期
 const formatDate = (date: string | Date) => {
-  return format(new Date(date), 'yyyy-MM-dd')
-}
+  return format(new Date(date), 'yyyy-MM-dd');
+};
 </script>
 
 <style scoped>

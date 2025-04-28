@@ -2,42 +2,44 @@
   <div class="checkout-page">
     <div class="checkout-content">
       <h2 class="page-title">结算</h2>
-      
+
       <div v-if="loading" class="loading-section">
         <el-skeleton :rows="15" animated />
       </div>
-      
+
       <div v-else>
         <!-- 订单确认步骤 -->
         <div v-if="currentStep === 'confirmation' && orderDetail" class="confirmation-section">
-          <OrderConfirmation 
-            :order="orderDetail" 
+          <OrderConfirmation
+            :order="orderDetail"
             @pay="handlePayment"
             @cancel="handleCancelOrder"
           />
         </div>
-        
+
         <!-- 模拟支付页面 -->
         <div v-else-if="currentStep === 'payment'" class="payment-section">
           <div class="payment-container">
             <h3>支付订单</h3>
             <div class="payment-header">
               <div class="logo-container">
-                <img 
-                  :src="getPaymentLogo(paymentMethod)" 
-                  :alt="paymentMethod" 
+                <img
+                  :src="getPaymentLogo(paymentMethod)"
+                  :alt="paymentMethod"
                   class="payment-logo"
                 />
               </div>
               <div class="payment-info">
                 <div class="order-number">订单编号: {{ orderDetail?.orderNumber }}</div>
-                <div class="payment-amount">支付金额: <span>¥{{ orderDetail?.total.toFixed(2) }}</span></div>
+                <div class="payment-amount">
+                  支付金额: <span>¥{{ orderDetail?.total.toFixed(2) }}</span>
+                </div>
               </div>
             </div>
-            
+
             <div class="payment-options">
               <div class="payment-form">
-                <el-form 
+                <el-form
                   v-if="paymentMethod === 'credit_card'"
                   ref="creditCardFormRef"
                   :model="creditCardForm"
@@ -53,10 +55,7 @@
                     />
                   </el-form-item>
                   <el-form-item label="持卡人姓名" prop="cardName">
-                    <el-input
-                      v-model="creditCardForm.cardName"
-                      placeholder="持卡人姓名"
-                    />
+                    <el-input v-model="creditCardForm.cardName" placeholder="持卡人姓名" />
                   </el-form-item>
                   <el-row :gutter="20">
                     <el-col :span="12">
@@ -81,21 +80,21 @@
                     </el-col>
                   </el-row>
                 </el-form>
-                
+
                 <div v-else-if="paymentMethod === 'alipay'" class="qrcode-container">
                   <div class="qrcode">
-                    <el-image 
-                      src="https://t.alipayobjects.com/images/rmsweb/T1BbJfXndiXXXXXXXX.png" 
+                    <el-image
+                      src="https://t.alipayobjects.com/images/rmsweb/T1BbJfXndiXXXXXXXX.png"
                       fit="cover"
                     />
                   </div>
                   <div class="scan-text">请使用支付宝扫码支付</div>
                 </div>
-                
+
                 <div v-else-if="paymentMethod === 'wechat'" class="qrcode-container">
                   <div class="qrcode">
-                    <el-image 
-                      src="https://res.wx.qq.com/wxdoc/dist/assets/img/demo.ef5c5bef.jpg" 
+                    <el-image
+                      src="https://res.wx.qq.com/wxdoc/dist/assets/img/demo.ef5c5bef.jpg"
                       fit="cover"
                     />
                   </div>
@@ -103,20 +102,16 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="payment-actions">
               <el-button @click="goBackToConfirmation">返回</el-button>
-              <el-button 
-                type="primary"
-                @click="completePayment"
-                :loading="processingPayment"
-              >
+              <el-button type="primary" :loading="processingPayment" @click="completePayment">
                 确认支付
               </el-button>
             </div>
           </div>
         </div>
-        
+
         <!-- 结账表单步骤 -->
         <div v-else class="form-section">
           <el-steps :active="stepIndex" finish-status="success" class="checkout-steps">
@@ -124,16 +119,16 @@
             <el-step title="填写信息" />
             <el-step title="提交订单" />
           </el-steps>
-          
+
           <!-- 购物车商品确认步骤 -->
           <div v-if="currentStep === 'cart'" class="cart-review">
             <h3>确认订单商品</h3>
-            
+
             <div v-if="cartItems.length === 0" class="empty-cart">
               <el-empty description="您的购物车为空" />
               <el-button type="primary" @click="goToShop">去选购商品</el-button>
             </div>
-            
+
             <template v-else>
               <div class="cart-items">
                 <div class="cart-header">
@@ -142,11 +137,11 @@
                   <span class="item-quantity">数量</span>
                   <span class="item-subtotal">小计</span>
                 </div>
-                
-                <div v-for="item in cartItems" :key="item.product_id" class="cart-item">
+
+                <div v-for="item in cartItems" :key="item.productId" class="cart-item">
                   <div class="item-info">
-                    <el-image 
-                      :src="item.image_url || '/placeholder.png'" 
+                    <el-image
+                      :src="item.imageUrl || '/placeholder.png'"
                       :alt="item.name"
                       class="item-image"
                     />
@@ -157,7 +152,7 @@
                   <div class="item-subtotal">¥{{ (item.price * item.quantity).toFixed(2) }}</div>
                 </div>
               </div>
-              
+
               <div class="cart-summary">
                 <div class="summary-item">
                   <span>商品数量:</span>
@@ -168,17 +163,17 @@
                   <span>¥{{ cartTotal.toFixed(2) }}</span>
                 </div>
               </div>
-              
+
               <div class="cart-actions">
                 <el-button @click="goToCart">返回购物车</el-button>
                 <el-button type="primary" @click="nextStep">下一步</el-button>
               </div>
             </template>
           </div>
-          
+
           <!-- 结账表单步骤 -->
           <div v-else-if="currentStep === 'form'" class="checkout-form-container">
-            <CheckoutForm 
+            <CheckoutForm
               :cart-items="cartItems"
               :loading="submitting"
               @submit="submitOrder"
@@ -204,7 +199,13 @@ import type { CreateOrderRequest, OrderResponse, PaymentCompleteRequest } from '
 
 const router = useRouter();
 const { cart, cartItems, total: cartTotal, clearCart } = useCart();
-const { loading: orderLoading, orderDetail, submitOrder: createOrder, payOrder, cancelOrder } = useOrder();
+const {
+  loading: orderLoading,
+  orderDetail,
+  submitOrder: createOrder,
+  payOrder,
+  cancelOrder
+} = useOrder();
 
 // 步骤控制
 type CheckoutStep = 'cart' | 'form' | 'confirmation' | 'payment';
@@ -228,9 +229,7 @@ const creditCardRules = reactive<FormRules>({
     { required: true, message: '请输入卡号', trigger: 'blur' },
     { min: 16, message: '请输入正确的信用卡号', trigger: 'blur' }
   ],
-  cardName: [
-    { required: true, message: '请输入持卡人姓名', trigger: 'blur' }
-  ],
+  cardName: [{ required: true, message: '请输入持卡人姓名', trigger: 'blur' }],
   cardExpiry: [
     { required: true, message: '请输入有效期', trigger: 'blur' },
     { pattern: /^\d{2}\/\d{2}$/, message: '请输入正确的有效期格式 (MM/YY)', trigger: 'blur' }
@@ -254,11 +253,16 @@ const totalItems = computed(() => {
 // 当前步骤索引
 const stepIndex = computed(() => {
   switch (currentStep.value) {
-    case 'cart': return 0;
-    case 'form': return 1;
-    case 'confirmation': return 2;
-    case 'payment': return 2;
-    default: return 0;
+    case 'cart':
+      return 0;
+    case 'form':
+      return 1;
+    case 'confirmation':
+      return 2;
+    case 'payment':
+      return 2;
+    default:
+      return 0;
   }
 });
 
@@ -298,13 +302,12 @@ const submitOrder = async (orderData: CreateOrderRequest) => {
   try {
     submitting.value = true;
     const order = await createOrder(orderData);
-    
+
     orderDetail.value = order;
     currentStep.value = 'confirmation';
-    
+
     // 清空购物车
     await clearCart();
-    
   } catch (error) {
     console.error('创建订单失败:', error);
     ElMessage.error('创建订单失败，请重试');
@@ -369,34 +372,33 @@ const completePayment = async () => {
       return;
     }
   }
-  
+
   if (!orderDetail.value) {
     ElMessage.error('订单信息不存在');
     return;
   }
-  
+
   try {
     processingPayment.value = true;
-    
+
     // 模拟支付过程
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     // 生成一个模拟的交易ID
     const transactionId = `TX${Date.now().toString().substring(5)}`;
-    
+
     // 更新订单支付状态
     const paymentData: PaymentCompleteRequest = {
       orderId: orderDetail.value.id,
       transactionId,
       paymentStatus: 'success'
     };
-    
+
     const updatedOrder = await payOrder(orderDetail.value.id, paymentData);
     orderDetail.value = updatedOrder;
     currentStep.value = 'confirmation';
-    
+
     ElMessage.success('支付成功');
-    
   } catch (error) {
     console.error('支付失败:', error);
     ElMessage.error('支付处理失败，请重试');
@@ -463,7 +465,8 @@ const goToShop = () => {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
-.cart-review, .checkout-form-container {
+.cart-review,
+.checkout-form-container {
   background-color: #fff;
   border-radius: 8px;
   padding: 20px;

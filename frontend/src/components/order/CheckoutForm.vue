@@ -1,6 +1,6 @@
 <template>
   <div class="checkout-form">
-    <el-form 
+    <el-form
       ref="formRef"
       :model="formData"
       :rules="rules"
@@ -89,8 +89,8 @@
         <el-row :gutter="20">
           <el-col :span="24">
             <el-form-item label="卡号" prop="cardNumber">
-              <el-input 
-                v-model="formData.cardNumber" 
+              <el-input
+                v-model="formData.cardNumber"
                 placeholder="请输入信用卡卡号"
                 maxlength="19"
                 @input="formatCreditCard"
@@ -98,12 +98,12 @@
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="有效期" prop="cardExpiry">
-              <el-input 
-                v-model="formData.cardExpiry" 
+              <el-input
+                v-model="formData.cardExpiry"
                 placeholder="MM/YY"
                 maxlength="5"
                 @input="formatExpiry"
@@ -112,12 +112,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="CVV码" prop="cardCvv">
-              <el-input 
-                v-model="formData.cardCvv" 
-                placeholder="CVV"
-                maxlength="4"
-                show-password
-              />
+              <el-input v-model="formData.cardCvv" placeholder="CVV" maxlength="4" show-password />
             </el-form-item>
           </el-col>
         </el-row>
@@ -125,9 +120,9 @@
 
       <!-- 订单备注 -->
       <el-form-item label="订单备注">
-        <el-input 
-          v-model="formData.notes" 
-          type="textarea" 
+        <el-input
+          v-model="formData.notes"
+          type="textarea"
           :rows="3"
           placeholder="如有特殊要求，请在此说明（选填）"
         />
@@ -136,13 +131,7 @@
       <!-- 提交按钮 -->
       <div class="form-actions">
         <el-button @click="$emit('cancel')">返回购物车</el-button>
-        <el-button 
-          type="primary" 
-          :loading="loading"
-          @click="submitForm"
-        >
-          提交订单
-        </el-button>
+        <el-button type="primary" :loading="loading" @click="submitForm"> 提交订单 </el-button>
       </div>
     </el-form>
   </div>
@@ -198,32 +187,20 @@ const rules = reactive<FormRules>({
     { required: true, message: '请输入联系电话', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
   ],
-  'shippingInfo.email': [
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
-  ],
+  'shippingInfo.email': [{ type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }],
   'shippingInfo.address': [
     { required: true, message: '请输入详细地址', trigger: 'blur' },
     { min: 5, max: 100, message: '地址长度应在5到100个字符之间', trigger: 'blur' }
   ],
-  'shippingInfo.city': [
-    { required: true, message: '请输入城市', trigger: 'blur' }
-  ],
-  'shippingInfo.state': [
-    { required: true, message: '请输入省/州', trigger: 'blur' }
-  ],
+  'shippingInfo.city': [{ required: true, message: '请输入城市', trigger: 'blur' }],
+  'shippingInfo.state': [{ required: true, message: '请输入省/州', trigger: 'blur' }],
   'shippingInfo.zipCode': [
     { required: true, message: '请输入邮政编码', trigger: 'blur' },
     { pattern: /^\d{6}$/, message: '请输入正确的邮政编码', trigger: 'blur' }
   ],
-  'shippingInfo.country': [
-    { required: true, message: '请选择国家/地区', trigger: 'change' }
-  ],
-  'shippingInfo.shippingMethod': [
-    { required: true, message: '请选择配送方式', trigger: 'change' }
-  ],
-  'paymentMethod': [
-    { required: true, message: '请选择支付方式', trigger: 'change' }
-  ],
+  'shippingInfo.country': [{ required: true, message: '请选择国家/地区', trigger: 'change' }],
+  'shippingInfo.shippingMethod': [{ required: true, message: '请选择配送方式', trigger: 'change' }],
+  paymentMethod: [{ required: true, message: '请选择支付方式', trigger: 'change' }],
   // 信用卡表单验证（仅在选择信用卡支付时验证）
   cardNumber: [
     { required: true, message: '请输入卡号', trigger: 'blur' },
@@ -263,9 +240,9 @@ const formatExpiry = (value: string) => {
 // 构建订单数据
 const buildOrderData = (): CreateOrderRequest => {
   // 把购物车商品转换为订单商品
-  const orderItems: OrderItemRequest[] = props.cartItems.map(item => ({
-    productId: item.product_id,
-    productType: item.product_type,
+  const orderItems: OrderItemRequest[] = props.cartItems.map((item) => ({
+    productId: item.productId,
+    productType: item.productType,
     quantity: item.quantity
   }));
 
@@ -280,17 +257,17 @@ const buildOrderData = (): CreateOrderRequest => {
 // 提交表单
 const submitForm = async () => {
   if (!formRef.value) return;
-  
+
   await formRef.value.validate(async (valid): Promise<void> => {
     if (valid) {
       if (props.cartItems.length === 0) {
         ElMessage.warning('购物车为空，无法提交订单');
         return;
       }
-      
+
       // 构建订单数据
       const orderData = buildOrderData();
-      
+
       // 触发提交事件
       emit('submit', orderData);
     } else {

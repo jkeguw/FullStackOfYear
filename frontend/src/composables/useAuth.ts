@@ -54,7 +54,8 @@ export function useAuth() {
       const loginRequest: LoginRequest = {
         email,
         password,
-        ...deviceInfo
+        ...deviceInfo,
+        loginType: 'email' // 显式设置登录类型，与后端期望一致
       };
 
       const response = await apiLogin(loginRequest);

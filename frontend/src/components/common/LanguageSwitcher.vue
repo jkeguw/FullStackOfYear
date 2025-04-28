@@ -1,33 +1,22 @@
 <template>
-  <div class="language-switcher">
-    <div class="claude-lang-selector">
-      <button 
-        v-for="locale in SUPPORTED_LOCALES" 
-        :key="locale.code"
-        :class="['claude-lang-btn', { active: getCurrentLanguage() === locale.code }]"
-        @click="handleLanguageChange(locale.code)"
-      >
-        {{ locale.name }}
-      </button>
-    </div>
-  </div>
+  <!-- Language switcher hidden since we only support English now -->
 </template>
 
 <script setup lang="ts">
-import { SUPPORTED_LOCALES, setLocale } from '@/i18n'
-import { useI18n } from 'vue-i18n'
+import { SUPPORTED_LOCALES, setLocale } from '@/i18n';
+import { useI18n } from 'vue-i18n';
 
-const { locale } = useI18n()
+const { locale } = useI18n();
 
-// 获取当前语言
+// Get current language
 const getCurrentLanguage = () => {
-  return locale.value
-}
+  return locale.value;
+};
 
-// 处理语言切换
+// Handle language change (function retained for compatibility)
 const handleLanguageChange = (langCode: string) => {
-  setLocale(langCode)
-}
+  setLocale(langCode);
+};
 </script>
 
 <style scoped>

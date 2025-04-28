@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"project/backend/config"
 	"github.com/gin-gonic/gin"
+	"project/backend/config"
 	"time"
 )
 

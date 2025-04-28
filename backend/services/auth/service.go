@@ -1,9 +1,6 @@
 package auth
 
 import (
-	"project/backend/internal/errors"
-	"project/backend/models"
-	"project/backend/types/auth"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
@@ -15,6 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 	"log"
+	"project/backend/internal/errors"
+	"project/backend/models"
+	"project/backend/types/auth"
 	"strconv"
 	"time"
 )
@@ -41,7 +41,7 @@ func (s *service) GetTwoFactorStatus(ctx context.Context, userID string) (*auth.
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &auth.TwoFactorStatusResponse{
 		Enabled: user.TwoFactor != nil && user.TwoFactor.Enabled,
 	}, nil
@@ -59,6 +59,84 @@ func NewService(
 		emailSender:   emailSender,
 		oauthProvider: oauthProvider,
 	}
+}
+
+// Register handles user registration
+func (s *service) Register(ctx context.Context, req *auth.RegisterRequest) (*models.User, error) {
+	// Check if email already exists
+	_, err := s.GetUserByEmail(ctx, req.Email)
+	if err == nil {
+		// User with this email already exists
+		return nil, errors.NewAppError(errors.Conflict, "Email already registered")
+	} else if errors.GetErrorCode(err) != errors.NotFound {
+		// An unexpected error occurred
+		return nil, err
+	}
+
+	// Hash the password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcryptCost)
+	if err != nil {
+		return nil, errors.NewAppError(errors.InternalError, "Failed to hash password")
+	}
+
+	// Create a new user
+	now := time.Now()
+	user := &models.User{
+		ID:       primitive.NewObjectID(),
+		Username: req.Username,
+		Email:    req.Email,
+		Password: string(hashedPassword),
+		Status: models.Status{
+			EmailVerified: false,
+		},
+		Role: models.UserRole{
+			Type: string(models.RoleUser),
+		},
+		Stats: models.UserStats{
+			CreatedAt:   now,
+			LastLoginAt: time.Time{}, // Will be set on first login
+		},
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	// Add device info if provided
+	if req.DeviceID != "" {
+		deviceInfo := &models.Device{
+			ID:         req.DeviceID,
+			Name:       req.DeviceName,
+			Type:       req.DeviceType,
+			OS:         req.DeviceOS,
+			Browser:    req.DeviceBrowser,
+			IP:         req.IP,
+			LastUsedAt: now,
+			CreatedAt:  now,
+			Trusted:    false,
+		}
+		user.ActiveDevices = append(user.ActiveDevices, *deviceInfo)
+	}
+
+	// Insert the user into the database
+	_, err = s.users.InsertOne(ctx, user)
+	if err != nil {
+		return nil, errors.NewAppError(errors.InternalError, "Failed to create user")
+	}
+
+	// Generate and set email verification token
+	verifyToken, err := s.GenerateEmailVerificationToken(ctx, user.ID.Hex())
+	if err != nil {
+		// Non-critical error, just log it
+		log.Printf("Failed to generate email verification token: %v", err)
+	} else {
+		// Send verification email
+		err = s.emailSender.SendVerificationEmail(user.Email, user.Username, verifyToken)
+		if err != nil {
+			// Non-critical error, just log it
+			log.Printf("Failed to send verification email: %v", err)
+		}
+	}
+
+	return user, nil
 }
 
 func (s *service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.LoginResponse, error) {
@@ -172,10 +250,10 @@ func (s *service) ValidateEmailPassword(ctx context.Context, email, password str
 	// 验证密码
 	if !CheckPasswordHash(password, user.Password) {
 		log.Printf("Password verification failed for user: %s", email)
-		
+
 		// 密码错误，但不再跟踪失败次数和锁定账户
 		// 简化实现，只返回认证错误
-		
+
 		return nil, errors.NewAppError(errors.Unauthorized, "邮箱或密码错误")
 	}
 
@@ -571,7 +649,7 @@ func (s *service) generateTwoFactorToken(userID string, deviceID string) string 
 		"deviceID": deviceID,
 		"exp":      fmt.Sprintf("%d", time.Now().Add(5*time.Minute).Unix()),
 	}
-	
+
 	jsonData, _ := json.Marshal(data)
 	return base64.StdEncoding.EncodeToString(jsonData)
 }
@@ -586,23 +664,23 @@ func (s *service) decodeTwoFactorToken(token string) (*struct {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var claims struct {
 		UserID   string `json:"userID"`
 		DeviceID string `json:"deviceID"`
 		Exp      string `json:"exp"`
 	}
-	
+
 	if err := json.Unmarshal(data, &claims); err != nil {
 		return nil, err
 	}
-	
+
 	// 验证token是否过期
 	exp, _ := strconv.ParseInt(claims.Exp, 10, 64)
 	if time.Now().Unix() > exp {
 		return nil, errors.NewAppError(errors.Unauthorized, "Two-factor token expired")
 	}
-	
+
 	return &claims, nil
 }
 
@@ -630,10 +708,10 @@ func (s *service) recordLoginActivity(ctx context.Context, user *models.User, de
 		UserAgent: deviceInfo.Browser,
 		Success:   true,
 	}
-	
+
 	// 只记录登录历史，不再关联设备
 	user.AddLoginRecord(loginRecord)
-	
+
 	// 更新用户信息
 	_, err := s.users.ReplaceOne(ctx, bson.M{"_id": user.ID}, user)
 	if err != nil {
@@ -659,12 +737,12 @@ func (s *service) UpdateUserTwoFactorPending(ctx context.Context, userID string,
 	user.UpdateUserTwoFactorPending(secret)
 
 	_, err = s.users.UpdateOne(
-		ctx, 
-		bson.M{"_id": id}, 
+		ctx,
+		bson.M{"_id": id},
 		bson.M{
 			"$set": bson.M{
 				"twoFactor.secret": secret,
-				"updatedAt": time.Now(),
+				"updatedAt":        time.Now(),
 			},
 		},
 	)
@@ -693,13 +771,13 @@ func (s *service) ActivateUserTwoFactor(ctx context.Context, userID string) erro
 
 	now := time.Now()
 	_, err = s.users.UpdateOne(
-		ctx, 
-		bson.M{"_id": id}, 
+		ctx,
+		bson.M{"_id": id},
 		bson.M{
 			"$set": bson.M{
-				"twoFactor.enabled": true,
+				"twoFactor.enabled":    true,
 				"twoFactor.verifiedAt": now,
-				"updatedAt": now,
+				"updatedAt":            now,
 			},
 		},
 	)
@@ -734,14 +812,14 @@ func (s *service) DisableUserTwoFactor(ctx context.Context, userID string) error
 
 	now := time.Now()
 	_, err = s.users.UpdateOne(
-		ctx, 
-		bson.M{"_id": id}, 
+		ctx,
+		bson.M{"_id": id},
 		bson.M{
 			"$set": bson.M{
-				"twoFactor.enabled": false,
-				"twoFactor.secret": "",
+				"twoFactor.enabled":     false,
+				"twoFactor.secret":      "",
 				"twoFactor.backupCodes": []string{},
-				"updatedAt": now,
+				"updatedAt":             now,
 			},
 		},
 	)
@@ -778,12 +856,12 @@ func (s *service) UpdateUserRecoveryCodes(ctx context.Context, userID string, re
 	// 我们接收usedStatus参数以符合接口定义，但在当前简化的实现中不使用它
 
 	_, err = s.users.UpdateOne(
-		ctx, 
-		bson.M{"_id": id}, 
+		ctx,
+		bson.M{"_id": id},
 		bson.M{
 			"$set": bson.M{
 				"twoFactor.backupCodes": recoveryCodes,
-				"updatedAt": time.Now(),
+				"updatedAt":             time.Now(),
 			},
 		},
 	)
@@ -820,11 +898,11 @@ func (s *service) UpdateUserPassword(ctx context.Context, userID string, newPass
 
 	now := time.Now()
 	_, err = s.users.UpdateOne(
-		ctx, 
-		bson.M{"_id": id}, 
+		ctx,
+		bson.M{"_id": id},
 		bson.M{
 			"$set": bson.M{
-				"password": string(hashedPassword),
+				"password":  string(hashedPassword),
 				"updatedAt": now,
 			},
 		},
@@ -861,7 +939,7 @@ func (s *service) ValidatePasswordResetToken(ctx context.Context, email string, 
 	// 简化实现：假设令牌验证逻辑在另一个地方处理
 	// 这里只是为了保持函数接口的兼容性
 	log.Printf("密码重置令牌验证功能已简化")
-	
+
 	// 不再检查不存在的 Security 字段
 	// 直接返回用户
 

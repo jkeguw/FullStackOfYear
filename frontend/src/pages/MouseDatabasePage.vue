@@ -10,49 +10,41 @@
           clearable
           class="search-input"
         />
-        <ViewToggle 
-          :initial-view-mode="viewMode" 
-          @view-change="handleViewModeChange" 
-        />
+        <ViewToggle :initial-view-mode="viewMode" @view-change="handleViewModeChange" />
       </div>
     </div>
-    
+
     <div class="database-content">
       <div class="filter-panel-container">
-        <FilterPanel 
+        <FilterPanel
           :filters="filters"
           :applied-filters="appliedFilters"
           @filter-change="handleFilterChange"
         />
       </div>
-      
+
       <div class="results-container">
         <div class="results-header">
           <div class="results-count">
             找到 <span class="font-bold">{{ filteredMice.length }}</span> 个鼠标
           </div>
-          <SortControls 
+          <SortControls
             :sort-options="sortOptions"
             :initial-sort-by="sortBy"
             :initial-sort-direction="sortDirection"
             @sort-change="handleSortChange"
           />
         </div>
-        
-        <div v-if="loading" class="loading-container" v-loading="true">
-        </div>
-        
+
+        <div v-if="loading" v-loading="true" class="loading-container"></div>
+
         <div v-else-if="!filteredMice.length" class="empty-state">
           <el-empty description="没有找到符合条件的鼠标" />
         </div>
-        
+
         <!-- 网格视图 -->
         <div v-else-if="viewMode === 'grid'" class="grid-view">
-          <el-card
-            v-for="mouse in displayedMice"
-            :key="mouse.id"
-            class="mouse-card"
-          >
+          <el-card v-for="mouse in displayedMice" :key="mouse.id" class="mouse-card">
             <div class="mouse-card-content">
               <div class="mouse-image" @click="navigateToMouseDetail(mouse.id)">
                 <img v-if="mouse.imageUrl" :src="mouse.imageUrl" alt="鼠标图片" class="img-fluid" />
@@ -61,11 +53,17 @@
                 </div>
               </div>
               <div class="mouse-info">
-                <h3 class="mouse-name" @click="navigateToMouseDetail(mouse.id)">{{ mouse.brand }} {{ mouse.name }}</h3>
+                <h3 class="mouse-name" @click="navigateToMouseDetail(mouse.id)">
+                  {{ mouse.brand }} {{ mouse.name }}
+                </h3>
                 <div class="mouse-specs">
                   <div class="spec-item">
                     <span class="spec-label">尺寸:</span>
-                    <span class="spec-value">{{ mouse.dimensions.length }}x{{ mouse.dimensions.width }}x{{ mouse.dimensions.height }}mm</span>
+                    <span class="spec-value"
+                      >{{ mouse.dimensions.length }}x{{ mouse.dimensions.width }}x{{
+                        mouse.dimensions.height
+                      }}mm</span
+                    >
                   </div>
                   <div class="spec-item">
                     <span class="spec-label">重量:</span>
@@ -79,26 +77,26 @@
                 <div class="mouse-card-actions">
                   <div class="price-tag">¥{{ mouse.price || '699' }}</div>
                   <div class="action-buttons">
-                    <el-button 
-                      type="primary" 
-                      size="small" 
-                      @click.stop="addToComparison(mouse)"
+                    <el-button
+                      type="primary"
+                      size="small"
                       :disabled="isInComparison(mouse.id)"
                       icon="el-icon-sort"
                       circle
                       title="添加到比较"
+                      @click.stop="addToComparison(mouse)"
                     ></el-button>
-                    <AddToCartButton 
-                      :product="{ 
-                        id: mouse.id, 
-                        name: `${mouse.brand} ${mouse.name}`, 
+                    <AddToCartButton
+                      :product="{
+                        id: mouse.id,
+                        name: `${mouse.brand} ${mouse.name}`,
                         price: mouse.price || 699,
-                        image_url: mouse.imageUrl
-                      }" 
-                      productType="mouse"
+                        imageUrl: mouse.imageUrl
+                      }"
+                      product-type="mouse"
                       type="primary"
                       size="small"
-                      iconOnly
+                      icon-only
                     />
                   </div>
                 </div>
@@ -106,19 +104,14 @@
             </div>
           </el-card>
         </div>
-        
+
         <!-- 列表视图 -->
         <div v-else class="list-view">
-          <el-table
-            :data="displayedMice"
-            stripe
-            border
-            class="mouse-table"
-          >
+          <el-table :data="displayedMice" stripe border class="mouse-table">
             <el-table-column label="品牌" prop="brand" min-width="80" />
             <el-table-column label="型号" prop="name" min-width="120">
               <template #default="{ row }">
-                <a @click="navigateToMouseDetail(row.id)" class="mouse-link">{{ row.name }}</a>
+                <a class="mouse-link" @click="navigateToMouseDetail(row.id)">{{ row.name }}</a>
               </template>
             </el-table-column>
             <el-table-column label="尺寸 (mm)" min-width="150">
@@ -134,40 +127,38 @@
             </el-table-column>
             <el-table-column label="连接方式" prop="connectivity" min-width="100" />
             <el-table-column label="价格" prop="price" min-width="80">
-              <template #default="{ row }">
-                ¥{{ row.price || '699' }}
-              </template>
+              <template #default="{ row }"> ¥{{ row.price || '699' }} </template>
             </el-table-column>
             <el-table-column label="操作" fixed="right" width="160">
               <template #default="{ row }">
                 <div class="table-actions">
-                  <el-button 
+                  <el-button
                     type="primary"
                     size="small"
                     icon="el-icon-sort"
                     circle
-                    @click.stop="addToComparison(row)"
                     :disabled="isInComparison(row.id)"
                     title="添加到比较"
+                    @click.stop="addToComparison(row)"
                   ></el-button>
-                  <AddToCartButton 
-                    :product="{ 
-                      id: row.id, 
-                      name: `${row.brand} ${row.name}`, 
+                  <AddToCartButton
+                    :product="{
+                      id: row.id,
+                      name: `${row.brand} ${row.name}`,
                       price: row.price || 699,
-                      image_url: row.imageUrl
-                    }" 
-                    productType="mouse"
+                      imageUrl: row.imageUrl
+                    }"
+                    product-type="mouse"
                     type="primary"
                     size="small"
-                    iconOnly
+                    icon-only
                   />
                 </div>
               </template>
             </el-table-column>
           </el-table>
         </div>
-        
+
         <!-- 分页控件 -->
         <div class="pagination-container">
           <el-pagination
@@ -186,11 +177,13 @@
 </template>
 
 <script setup lang="ts">
+import { DeviceListResponse } from '@/api/device';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useComparisonStore } from '@/stores';
 import type { MouseDevice } from '@/models/MouseModel';
 import { getDevices } from '@/api/device';
+import { ElMessage } from 'element-plus';
 import FilterPanel from '@/components/database/FilterPanel.vue';
 import SortControls from '@/components/database/SortControls.vue';
 import ViewToggle from '@/components/database/ViewToggle.vue';
@@ -276,25 +269,25 @@ const appliedFilters = ref<Record<string, any>>({});
 
 // 计算属性: 过滤后的鼠标列表
 const filteredMice = computed(() => {
-  return allMice.value.filter(mouse => {
+  return allMice.value.filter((mouse) => {
     // 搜索过滤
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase();
       const nameMatch = `${mouse.brand} ${mouse.name}`.toLowerCase().includes(query);
       const shapeMatch = mouse.shape.type.toLowerCase().includes(query);
-      
+
       if (!nameMatch && !shapeMatch) {
         return false;
       }
     }
-    
+
     // 应用过滤器
     for (const [filterId, filterValue] of Object.entries(appliedFilters.value)) {
       // 跳过空过滤器
       if (!filterValue || (Array.isArray(filterValue) && filterValue.length === 0)) {
         continue;
       }
-      
+
       // 范围过滤器
       if (filterId === 'weight' && typeof filterValue === 'object') {
         const { min, max } = filterValue;
@@ -303,25 +296,25 @@ const filteredMice = computed(() => {
         }
         continue;
       }
-      
+
       // 复选框过滤器
       if (Array.isArray(filterValue) && filterValue.length > 0) {
         const parts = filterId.split('.');
         let value;
-        
+
         if (parts.length === 1) {
           value = mouse[filterId as keyof typeof mouse];
         } else if (parts.length === 2) {
           const [obj, prop] = parts;
           value = mouse[obj as keyof typeof mouse]?.[prop];
         }
-        
+
         if (!filterValue.includes(value)) {
           return false;
         }
       }
     }
-    
+
     return true;
   });
 });
@@ -331,7 +324,7 @@ const sortedMice = computed(() => {
   return [...filteredMice.value].sort((a, b) => {
     const parts = sortBy.value.split('.');
     let valueA, valueB;
-    
+
     if (parts.length === 1) {
       valueA = a[sortBy.value as keyof typeof a];
       valueB = b[sortBy.value as keyof typeof b];
@@ -340,16 +333,16 @@ const sortedMice = computed(() => {
       valueA = a[obj as keyof typeof a]?.[prop];
       valueB = b[obj as keyof typeof b]?.[prop];
     }
-    
+
     if (typeof valueA === 'string' && typeof valueB === 'string') {
-      return sortDirection.value === 'asc' 
-        ? valueA.localeCompare(valueB) 
+      return sortDirection.value === 'asc'
+        ? valueA.localeCompare(valueB)
         : valueB.localeCompare(valueA);
     }
-    
+
     // 数字比较
-    return sortDirection.value === 'asc' 
-      ? Number(valueA) - Number(valueB) 
+    return sortDirection.value === 'asc'
+      ? Number(valueA) - Number(valueB)
       : Number(valueB) - Number(valueA);
   });
 });
@@ -392,16 +385,16 @@ function navigateToMouseDetail(mouseId: string) {
 function addToComparison(mouse: MouseDevice) {
   if (comparisonStore.selectedMice.length >= 3) {
     // 已达到最大比较数量
-    window.ElMessage.warning('最多只能选择3个鼠标进行比较');
+    ElMessage.warning('最多只能选择3个鼠标进行比较');
     return;
   }
-  
+
   comparisonStore.addMouse(mouse);
-  window.ElMessage.success(`已添加 ${mouse.brand} ${mouse.name} 到比较列表`);
+  ElMessage.success(`已添加 ${mouse.brand} ${mouse.name} 到比较列表`);
 }
 
 function isInComparison(mouseId: string) {
-  return comparisonStore.selectedMice.some(m => m.id === mouseId);
+  return comparisonStore.selectedMice.some((m) => m.id === mouseId);
 }
 
 // 获取鼠标数据
@@ -587,7 +580,8 @@ onMounted(() => {
   text-decoration: underline;
 }
 
-.empty-state, .loading-container {
+.empty-state,
+.loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -604,12 +598,12 @@ onMounted(() => {
   .database-content {
     grid-template-columns: 1fr;
   }
-  
+
   .filter-panel-container {
     position: static;
     margin-bottom: 1rem;
   }
-  
+
   .search-input {
     width: 100%;
   }

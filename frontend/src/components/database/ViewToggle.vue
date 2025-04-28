@@ -1,7 +1,9 @@
 <template>
-  <div class="view-toggle bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 flex items-center justify-between">
+  <div
+    class="view-toggle bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 flex items-center justify-between"
+  >
     <span class="text-sm text-white font-medium">显示方式:</span>
-    
+
     <div class="flex gap-2">
       <el-button
         :type="viewMode === 'grid' ? 'primary' : 'default'"
@@ -12,7 +14,7 @@
       >
         网格视图
       </el-button>
-      
+
       <el-button
         :type="viewMode === 'list' ? 'primary' : 'default'"
         :icon="List"
@@ -27,20 +29,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Grid, List } from '@element-plus/icons-vue'
+import { ref } from 'vue';
+import { Grid, List } from '@element-plus/icons-vue';
 
 // 视图模式
-const viewMode = ref('grid')
+const viewMode = ref('grid');
 
 // 定义事件
-const emit = defineEmits(['change-view'])
+const emit = defineEmits(['change-view']);
 
 // 改变视图模式
 const changeViewMode = (mode: string) => {
-  viewMode.value = mode
-  emit('change-view', mode)
-}
+  viewMode.value = mode;
+  emit('change-view', mode);
+};
 </script>
 
 <style scoped>
