@@ -113,7 +113,7 @@ func main() {
 	defer cancel()
 
 	// 获取MongoDB连接URI，默认值供本地测试
-	uri := "mongodb://admin:admin@mongodb:27017/?authSource=admin"
+	uri := "mongodb://root:example@localhost:27017"
 	if os.Getenv("MONGODB_URI") != "" {
 		uri = os.Getenv("MONGODB_URI")
 	}
@@ -130,6 +130,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to ping MongoDB: %v", err)
 	}
+	
+	log.Println("成功连接到MongoDB")
 
 	// 获取数据库和集合
 	dbName := "cpc"
@@ -159,14 +161,14 @@ func main() {
 		if !file.IsDir() && strings.HasSuffix(strings.ToLower(file.Name()), ".svg") {
 			brand, name, viewType := parseMouseInfo(file.Name())
 			if viewType == "unknown" {
-				log.Printf("Skipping file with unknown view type: %s", file.Name())
+				log.Printf("跳过未知视图类型的文件: %s", file.Name())
 				continue
 			}
 
 			// 读取SVG内容
 			content, err := ioutil.ReadFile(filepath.Join(svgDir, file.Name()))
 			if err != nil {
-				log.Printf("Failed to read SVG file %s: %v", file.Name(), err)
+				log.Printf("读取SVG文件失败 %s: %v", file.Name(), err)
 				continue
 			}
 
@@ -190,8 +192,7 @@ func main() {
 		brand := mouseData["brand"]
 		name := mouseData["name"]
 
-		// 检查是否已有这个鼠标
-		var existingMouse MouseDevice
+		// 设置过滤条件
 		filter := map[string]interface{}{
 			"name":  name,
 			"brand": brand,
@@ -200,75 +201,39 @@ func main() {
 
 		now := time.Now()
 
-		// 创建MouseDevice对象
-		mouse := MouseDevice{
-			ID:        primitive.NewObjectID(),
-			Name:      name,
-			Brand:     brand,
-			Type:      "mouse",
-			CreatedAt: now,
-			UpdatedAt: now,
-			// 设置一些默认值
-			Dimensions: MouseDimensions{
-				Length: 120,
-				Width:  65,
-				Height: 40,
-				Weight: 70,
-			},
-			Shape: MouseShape{
-				Type:              "ergonomic",
-				HumpPlacement:     "center",
-				FrontFlare:        "medium",
-				SideCurvature:     "medium",
-				HandCompatibility: "right",
-			},
-			Technical: MouseTechnical{
-				Connectivity: []string{"wired"},
-				Sensor:       "optical",
-				MaxDPI:       16000,
-				PollingRate:  1000,
-				SideButtons:  2,
-				Weight:       70,
-			},
-			Recommended: MouseRecommended{
-				GameTypes:    []string{"FPS", "MOBA"},
-				GripStyles:   []string{"claw", "palm"},
-				HandSizes:    []string{"medium", "large"},
-				DailyUse:     true,
-				Professional: true,
-			},
-			SVGData: &MouseSVGData{},
-		}
-
 		// 添加SVG数据
+		svgData := &MouseSVGData{}
 		if topView, ok := mouseData["topView"]; ok {
-			mouse.SVGData.TopView = topView
+			svgData.TopView = topView
 		}
 
 		if sideView, ok := mouseData["sideView"]; ok {
-			mouse.SVGData.SideView = sideView
+			svgData.SideView = sideView
 		}
 
 		// 使用upsert操作插入或更新
 		opts := options.Update().SetUpsert(true)
 		update := map[string]interface{}{
-			"$set": mouse,
+			"$set": map[string]interface{}{
+				"svgData":   svgData,
+				"updatedAt": now,
+			},
 		}
 
 		result, err := collection.UpdateOne(ctx, filter, update, opts)
 		if err != nil {
-			log.Printf("Failed to upsert mouse %s %s: %v", brand, name, err)
+			log.Printf("更新鼠标失败 %s %s: %v", brand, name, err)
 			continue
 		}
 
 		if result.UpsertedCount > 0 {
-			log.Printf("Inserted new mouse: %s %s", brand, name)
+			log.Printf("插入新鼠标: %s %s", brand, name)
 		} else if result.ModifiedCount > 0 {
-			log.Printf("Updated existing mouse: %s %s", brand, name)
+			log.Printf("成功保存鼠标: %s %s", brand, name)
 		} else {
-			log.Printf("No changes for mouse: %s %s", brand, name)
+			log.Printf("鼠标无变化: %s %s", brand, name)
 		}
 	}
 
-	fmt.Println("SVG data import completed successfully!")
+	fmt.Println("SVG数据导入完成!")
 }

@@ -2,12 +2,11 @@ package measurement
 
 import (
 	"context"
-	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"project/backend/internal/errors"
+	apperrors "project/backend/internal/errors"
 	"project/backend/models"
 	"project/backend/types/measurement"
 	"time"
@@ -181,7 +180,6 @@ func (s *Service) ListMeasurements(ctx context.Context, userID string, req measu
 			Palm:      m.Palm,
 			Length:    m.Length,
 			Unit:      m.Unit,
-			Device:    m.Device,
 			Quality:   m.Quality,
 			CreatedAt: m.CreatedAt,
 			UpdatedAt: m.UpdatedAt,
@@ -229,11 +227,13 @@ func (s *Service) UpdateMeasurement(ctx context.Context, userID string, measurem
 	if req.Palm != nil {
 		// 单位转换
 		palmMm := *req.Palm
-		switch req.Unit {
-		case "cm":
-			palmMm *= 10
-		case "inch":
-			palmMm *= 25.4
+		if req.Unit != nil {
+			switch *req.Unit {
+			case "cm":
+				palmMm *= 10
+			case "inch":
+				palmMm *= 25.4
+			}
 		}
 		updateFields["palm"] = palmMm
 	}
@@ -242,19 +242,19 @@ func (s *Service) UpdateMeasurement(ctx context.Context, userID string, measurem
 	if req.Length != nil {
 		// 单位转换
 		lengthMm := *req.Length
-		switch req.Unit {
-		case "cm":
-			lengthMm *= 10
-		case "inch":
-			lengthMm *= 25.4
+		if req.Unit != nil {
+			switch *req.Unit {
+			case "cm":
+				lengthMm *= 10
+			case "inch":
+				lengthMm *= 25.4
+			}
 		}
 		updateFields["length"] = lengthMm
 	}
 
-	// 更新设备字段（如果提供）
-	if req.Device != nil {
-		updateFields["device"] = *req.Device
-	}
+	// Device field is not in the UpdateMeasurementRequest structure
+	// Removed references to req.Device
 
 	// 更新校准字段（如果提供）
 	if req.Calibrated != nil {
@@ -367,7 +367,7 @@ func (s *Service) GetUserStats(ctx context.Context, userID string) (*models.Meas
 }
 
 // GetRecommendations 获取设备推荐
-func (s *Service) GetRecommendations(ctx context.Context, userID string) (*measurement.RecommendationResponse, error) {
+func (s *Service) GetRecommendations(ctx context.Context, userID string) (*measurement.MeasurementRecommendationResponse, error) {
 	// 获取用户统计信息
 	stats, err := s.GetUserStats(ctx, userID)
 	if err != nil {
@@ -390,9 +390,7 @@ func (s *Service) GetRecommendations(ctx context.Context, userID string) (*measu
 	}
 
 	// 构建推荐响应
-	response := &measurement.RecommendationResponse{
-		Palm:      stats.AveragePalm,
-		Length:    stats.AverageLength,
+	response := &measurement.MeasurementRecommendationResponse{
 		HandSize:  string(stats.HandSize),
 		GripType:  string(gripType),
 		Devices:   []measurement.DeviceRecommendation{},

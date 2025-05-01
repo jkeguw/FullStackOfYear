@@ -88,15 +88,35 @@ func (h *Handler) GetMouseSVG(c *gin.Context) {
 		return
 	}
 
-	// 由于无法找到SVG文件，返回一个空SVG模板
-	svgData := []byte(`<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+	// 检查鼠标SVG数据是否存在
+	var svgData []byte
+	if mouse.SVGData != nil {
+		// 根据请求视图返回对应的SVG数据
+		var svgContent string
+		if req.View == "top" && mouse.SVGData.TopView != "" {
+			svgContent = mouse.SVGData.TopView
+			fmt.Printf("使用数据库中的顶视图SVG: %s\n", mouse.Name)
+		} else if req.View == "side" && mouse.SVGData.SideView != "" {
+			svgContent = mouse.SVGData.SideView
+			fmt.Printf("使用数据库中的侧视图SVG: %s\n", mouse.Name)
+		}
+
+		// 如果找到了对应视图的SVG
+		if svgContent != "" {
+			svgData = []byte(svgContent)
+		}
+	}
+
+	// 如果没有找到SVG数据，返回占位图
+	if svgData == nil || len(svgData) == 0 {
+		svgData = []byte(`<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="150" fill="#eee"/>
   <text x="150" y="75" text-anchor="middle" fill="#999">SVG暂不可用</text>
   <text x="150" y="95" text-anchor="middle" fill="#999" font-size="12">` + mouse.Name + `</text>
 </svg>`)
-
-	// 前端调试用日志
-	fmt.Printf("已生成替代SVG: %s\n", mouse.Name)
+		// 前端调试用日志
+		fmt.Printf("已生成替代SVG: %s\n", mouse.Name)
+	}
 
 	// 构建响应
 	response := device.SVGResponse{
@@ -150,15 +170,35 @@ func (h *Handler) CompareSVGs(c *gin.Context) {
 			return
 		}
 
-		// 由于无法找到SVG文件，返回一个空SVG模板
-		svgData := []byte(`<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+		// 检查鼠标是否有SVG数据
+		var svgData []byte
+		if mouse.SVGData != nil {
+			// 根据请求视图返回对应的SVG数据
+			var svgContent string
+			if req.View == "top" && mouse.SVGData.TopView != "" {
+				svgContent = mouse.SVGData.TopView
+				fmt.Printf("比较: 使用数据库中的顶视图SVG: %s\n", mouse.Name)
+			} else if req.View == "side" && mouse.SVGData.SideView != "" {
+				svgContent = mouse.SVGData.SideView
+				fmt.Printf("比较: 使用数据库中的侧视图SVG: %s\n", mouse.Name)
+			}
+
+			// 如果找到了对应视图的SVG
+			if svgContent != "" {
+				svgData = []byte(svgContent)
+			}
+		}
+
+		// 如果没有找到SVG数据，返回占位图
+		if svgData == nil || len(svgData) == 0 {
+			svgData = []byte(`<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
   <rect width="300" height="150" fill="#eee"/>
   <text x="150" y="75" text-anchor="middle" fill="#999">SVG暂不可用</text>
   <text x="150" y="95" text-anchor="middle" fill="#999" font-size="12">` + mouse.Name + `</text>
 </svg>`)
-
-		// 前端调试用日志
-		fmt.Printf("已生成替代SVG用于比较: %s\n", mouse.Name)
+			// 前端调试用日志
+			fmt.Printf("已生成替代SVG用于比较: %s\n", mouse.Name)
+		}
 
 		// 添加到响应
 		svgResponses = append(svgResponses, device.SVGResponse{

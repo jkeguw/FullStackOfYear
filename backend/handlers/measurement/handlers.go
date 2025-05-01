@@ -42,10 +42,10 @@ func (h *Handler) CreateMeasurement(c *gin.Context) {
 	// 转换为响应格式
 	response := measurementTypes.MeasurementResponse{
 		ID:        result.ID.Hex(),
-		Palm:      result.Measurements.Palm,
-		Length:    result.Measurements.Length,
-		Unit:      result.Measurements.Unit,
-		Quality:   &result.Quality,
+		Palm:      result.Palm,
+		Length:    result.Length,
+		Unit:      result.Unit,
+		Quality:   result.Quality,
 		CreatedAt: result.CreatedAt,
 		UpdatedAt: result.UpdatedAt,
 	}
@@ -72,10 +72,10 @@ func (h *Handler) GetMeasurement(c *gin.Context) {
 	// 转换为响应格式
 	response := measurementTypes.MeasurementResponse{
 		ID:        result.ID.Hex(),
-		Palm:      result.Measurements.Palm,
-		Length:    result.Measurements.Length,
-		Unit:      result.Measurements.Unit,
-		Quality:   &result.Quality,
+		Palm:      result.Palm,
+		Length:    result.Length,
+		Unit:      result.Unit,
+		Quality:   result.Quality,
 		CreatedAt: result.CreatedAt,
 		UpdatedAt: result.UpdatedAt,
 	}
@@ -141,10 +141,10 @@ func (h *Handler) UpdateMeasurement(c *gin.Context) {
 	// 转换为响应格式
 	response := measurementTypes.MeasurementResponse{
 		ID:        result.ID.Hex(),
-		Palm:      result.Measurements.Palm,
-		Length:    result.Measurements.Length,
-		Unit:      result.Measurements.Unit,
-		Quality:   &result.Quality,
+		Palm:      result.Palm,
+		Length:    result.Length,
+		Unit:      result.Unit,
+		Quality:   result.Quality,
 		CreatedAt: result.CreatedAt,
 		UpdatedAt: result.UpdatedAt,
 	}
@@ -186,9 +186,9 @@ func (h *Handler) GetUserStats(c *gin.Context) {
 	}
 
 	response := measurementTypes.MeasurementStatsResponse{
-		AveragePalm:      result.Averages.Palm,
-		AverageLength:    result.Averages.Length,
-		HandSize:         result.HandSize,
+		AveragePalm:      result.AveragePalm,
+		AverageLength:    result.AverageLength,
+		HandSize:         string(result.HandSize),
 		MeasurementCount: result.MeasurementCount,
 		LastMeasuredAt:   result.LastMeasuredAt,
 	}

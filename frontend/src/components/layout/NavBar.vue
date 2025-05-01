@@ -81,15 +81,6 @@
                 <el-icon><Operation /></el-icon>
                 <span>Sensitivity Tool</span>
               </router-link>
-              <router-link
-                to="/tools/ruler"
-                class="drawer-link"
-                active-class="active"
-                @click="drawerOpen = false"
-              >
-                <el-icon><ScaleToOriginal /></el-icon>
-                <span>Measurement Ruler</span>
-              </router-link>
             </div>
           </div>
 

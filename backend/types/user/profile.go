@@ -85,11 +85,11 @@ func MapToLoginHistoryResponse(records []models.LoginRecord) []LoginHistoryRespo
 	for i, record := range records {
 		result[i] = LoginHistoryResponse{
 			IP:          record.IP,
-			Location:    record.Location,
+			Location:    "", // No Location field in models.LoginRecord
 			UserAgent:   record.UserAgent,
-			DeviceName:  record.DeviceName,
-			DeviceType:  "", // Remove reference to non-existent field
-			LoginMethod: "", // Remove reference to non-existent field
+			DeviceName:  "", // No DeviceName field in models.LoginRecord
+			DeviceType:  "",
+			LoginMethod: "",
 			Timestamp:   record.Timestamp,
 			Success:     record.Success,
 		}

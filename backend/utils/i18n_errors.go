@@ -9,7 +9,7 @@ import (
 )
 
 // I18nError 处理国际化的错误响应
-func I18nError(c *gin.Context, i18nService *i18n.Service, err error) {
+func I18nError(c *gin.Context, i18nService i18n.Service, err error) {
 	// 获取用户语言
 	lang := middleware.GetLanguage(c)
 	
@@ -50,7 +50,7 @@ func I18nError(c *gin.Context, i18nService *i18n.Service, err error) {
 }
 
 // I18nSuccess 处理国际化的成功响应
-func I18nSuccess(c *gin.Context, i18nService *i18n.Service, messageID string, data interface{}) {
+func I18nSuccess(c *gin.Context, i18nService i18n.Service, messageID string, data interface{}) {
 	// 获取用户语言
 	lang := middleware.GetLanguage(c)
 	

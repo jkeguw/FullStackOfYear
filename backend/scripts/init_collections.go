@@ -1,4 +1,4 @@
-package main
+package scripts
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main() {
+func InitCollections() {
 	// 加载环境变量
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Printf("Warning: Could not load .env file: %v", err)

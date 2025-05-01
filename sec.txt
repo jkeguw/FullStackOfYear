@@ -1,0 +1,689 @@
+API响应数据: Object
+MouseSelector.vue:134 Requesting SVG mouse list with views: top,side
+request.ts:302 API响应数据: {code: 0, data: {…}, message: '获取SVG鼠标列表成功'}
+MouseSelector.vue:138 API response: {devices: Array(20), total: 1002}
+MouseSelector.vue:194 API response format error, using hardcoded data as fallback
+(anonymous) @ MouseSelector.vue:194
+await in (anonymous)
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+openMouseSelectorMode @ ComparePage.vue:265
+_createVNode.onClick._cache.<computed>._cache.<computed> @ ComparePage.vue:20
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+MouseSelector.vue:195 Response details: {devices: Array(20), total: 1002}
+(anonymous) @ MouseSelector.vue:195
+await in (anonymous)
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+openMouseSelectorMode @ ComparePage.vue:265
+_createVNode.onClick._cache.<computed>._cache.<computed> @ ComparePage.vue:20
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+MouseSelector.vue:134 Requesting SVG mouse list with views: top,side
+request.ts:302 API响应数据: {code: 0, data: {…}, message: '获取SVG鼠标列表成功'}
+MouseSelector.vue:138 API response: {devices: Array(20), total: 1002}
+MouseSelector.vue:194 API response format error, using hardcoded data as fallback
+(anonymous) @ MouseSelector.vue:194
+await in (anonymous)
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+openMouseSelectorMode @ ComparePage.vue:265
+$setup.selectedMice.length.$setup.selectedMice.length._createBlock.onClick._cache.<computed>._cache.<computed> @ ComparePage.vue:92
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+MouseSelector.vue:195 Response details: {devices: Array(20), total: 1002}
+(anonymous) @ MouseSelector.vue:195
+await in (anonymous)
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+openMouseSelectorMode @ ComparePage.vue:265
+$setup.selectedMice.length.$setup.selectedMice.length._createBlock.onClick._cache.<computed>._cache.<computed> @ ComparePage.vue:92
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+2index.ts:49 ElementPlusError: [el-radio] [API] label act as value is about to be deprecated in version 3.0.0, please use value instead.
+For more detail, please visit: https://element-plus.org/en-US/component/radio.html
+
+    at debugWarn (element-plus.js?v=db9069f9:9000:37)
+    at watch.immediate (element-plus.js?v=db9069f9:14721:7)
+    at callWithErrorHandling (chunk-UQWBJQZ5.js?v=db9069f9:2263:19)
+    at callWithAsyncErrorHandling (chunk-UQWBJQZ5.js?v=db9069f9:2270:17)
+    at baseWatchOptions.call (chunk-UQWBJQZ5.js?v=db9069f9:8275:47)
+    at job (chunk-UQWBJQZ5.js?v=db9069f9:1992:18)
+    at watch (chunk-UQWBJQZ5.js?v=db9069f9:2028:7)
+    at doWatch (chunk-UQWBJQZ5.js?v=db9069f9:8303:23)
+    at watch2 (chunk-UQWBJQZ5.js?v=db9069f9:8236:10)
+    at useDeprecated (element-plus.js?v=db9069f9:14719:3)
+debugWarn @ element-plus.js?v=db9069f9:9001
+watch.immediate @ element-plus.js?v=db9069f9:14721
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+baseWatchOptions.call @ chunk-UQWBJQZ5.js?v=db9069f9:8275
+job @ chunk-UQWBJQZ5.js?v=db9069f9:1992
+watch @ chunk-UQWBJQZ5.js?v=db9069f9:2028
+doWatch @ chunk-UQWBJQZ5.js?v=db9069f9:8303
+watch2 @ chunk-UQWBJQZ5.js?v=db9069f9:8236
+useDeprecated @ element-plus.js?v=db9069f9:14719
+useRadio @ element-plus.js?v=db9069f9:18032
+setup @ element-plus.js?v=db9069f9:18138
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+setupStatefulComponent @ chunk-UQWBJQZ5.js?v=db9069f9:9983
+setupComponent @ chunk-UQWBJQZ5.js?v=db9069f9:9944
+mountComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7300
+processComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7266
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6782
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+processFragment @ chunk-UQWBJQZ5.js?v=db9069f9:7196
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6756
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+mountElement @ chunk-UQWBJQZ5.js?v=db9069f9:6937
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6902
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+componentUpdateFn @ chunk-UQWBJQZ5.js?v=db9069f9:7410
+run @ chunk-UQWBJQZ5.js?v=db9069f9:481
+setupRenderEffect @ chunk-UQWBJQZ5.js?v=db9069f9:7538
+mountComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7313
+processComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7266
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6782
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+mountElement @ chunk-UQWBJQZ5.js?v=db9069f9:6937
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6902
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+mountElement @ chunk-UQWBJQZ5.js?v=db9069f9:6937
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6902
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+mountElement @ chunk-UQWBJQZ5.js?v=db9069f9:6937
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6902
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+componentUpdateFn @ chunk-UQWBJQZ5.js?v=db9069f9:7410
+run @ chunk-UQWBJQZ5.js?v=db9069f9:481
+setupRenderEffect @ chunk-UQWBJQZ5.js?v=db9069f9:7538
+mountComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7313
+processComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7266
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6782
+patchBlockChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7136
+patchElement @ chunk-UQWBJQZ5.js?v=db9069f9:7054
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6913
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+componentUpdateFn @ chunk-UQWBJQZ5.js?v=db9069f9:7490
+run @ chunk-UQWBJQZ5.js?v=db9069f9:481
+runIfDirty @ chunk-UQWBJQZ5.js?v=db9069f9:519
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2471
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+noTracking @ chunk-UQWBJQZ5.js?v=db9069f9:1131
+push @ chunk-UQWBJQZ5.js?v=db9069f9:1028
+addMouse @ index.ts:49
+wrappedAction @ pinia.js?v=db9069f9:1093
+store.<computed> @ pinia.js?v=db9069f9:771
+toggleMouse @ MouseSelector.vue:268
+onClick @ MouseSelector.vue:26
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+MouseComparisonView.vue:181 Starting updateComparisonSvg method {selectedMice: 2, viewType: 'topView', comparisonMode: 'overlay'}
+MouseComparisonView.vue:200 Device IDs for comparison: (2) ['logitech-gpro-x-superlight-2', 'wlmouse-beast-miao']
+MouseComparisonView.vue:211 Using view for comparison: top
+MouseComparisonView.vue:215 Found hardcoded SVG data in mouse objects: false
+MouseComparisonView.vue:223 Overlay mode with opacities: (2) [1, 0.5] and colors: (2) ['#000000', '#FF0000']
+MouseComparisonView.vue:236 Using API for overlay SVG comparison
+svgService.ts:151 SVG比较请求参数: {deviceIds: Array(2), deviceCount: 2, view: 'top', opacityValues: Array(2), hasColors: true}
+svgService.ts:240 正在请求API比较 2 个设备的SVG (top视图)
+svgService.ts:250 SVG比较请求体格式: {
+  "deviceIds": [
+    "logitech-gpro-x-superlight-2",
+    "wlmouse-beast-miao"
+  ],
+  "view": "top"
+}
+device.ts:357 SVG比较请求数据: {deviceIds: Array(2), view: 'top'}
+device.ts:358 
+            
+            
+           POST http://localhost:5173/api/devices/mice/svg/compare 400 (Bad Request)
+dispatchXhrRequest @ axios.js?v=db9069f9:1653
+xhr @ axios.js?v=db9069f9:1533
+dispatchRequest @ axios.js?v=db9069f9:2008
+Promise.then
+_request @ axios.js?v=db9069f9:2205
+request @ axios.js?v=db9069f9:2120
+httpMethod @ axios.js?v=db9069f9:2252
+wrap @ axios.js?v=db9069f9:8
+compareSVGs @ device.ts:358
+createOverlaySvg @ svgService.ts:252
+updateComparisonSvg @ MouseComparisonView.vue:237
+(anonymous) @ MouseComparisonView.vue:536
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+noTracking @ chunk-UQWBJQZ5.js?v=db9069f9:1131
+push @ chunk-UQWBJQZ5.js?v=db9069f9:1028
+addMouse @ index.ts:49
+wrappedAction @ pinia.js?v=db9069f9:1093
+store.<computed> @ pinia.js?v=db9069f9:771
+toggleMouse @ MouseSelector.vue:268
+onClick @ MouseSelector.vue:26
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this error
+device.ts:364 SVG比较请求失败: AxiosError {message: 'Request failed with status code 400', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
+(anonymous) @ device.ts:364
+Promise.catch
+compareSVGs @ device.ts:363
+createOverlaySvg @ svgService.ts:252
+updateComparisonSvg @ MouseComparisonView.vue:237
+(anonymous) @ MouseComparisonView.vue:536
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+noTracking @ chunk-UQWBJQZ5.js?v=db9069f9:1131
+push @ chunk-UQWBJQZ5.js?v=db9069f9:1028
+addMouse @ index.ts:49
+wrappedAction @ pinia.js?v=db9069f9:1093
+store.<computed> @ pinia.js?v=db9069f9:771
+toggleMouse @ MouseSelector.vue:268
+onClick @ MouseSelector.vue:26
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this error
+svgService.ts:256 SVG比较API请求失败: AxiosError {message: 'Request failed with status code 400', name: 'AxiosError', code: 'ERR_BAD_REQUEST', config: {…}, request: XMLHttpRequest, …}
+createOverlaySvg @ svgService.ts:256
+await in createOverlaySvg
+updateComparisonSvg @ MouseComparisonView.vue:237
+(anonymous) @ MouseComparisonView.vue:536
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+noTracking @ chunk-UQWBJQZ5.js?v=db9069f9:1131
+push @ chunk-UQWBJQZ5.js?v=db9069f9:1028
+addMouse @ index.ts:49
+wrappedAction @ pinia.js?v=db9069f9:1093
+store.<computed> @ pinia.js?v=db9069f9:771
+toggleMouse @ MouseSelector.vue:268
+onClick @ MouseSelector.vue:26
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this error
+svgService.ts:390 Failed to create overlay SVG: Error: API请求失败: Request failed with status code 400
+    at Object.createOverlaySvg (svgService.ts:258:13)
+    at async updateComparisonSvg (MouseComparisonView.vue:237:26)
+createOverlaySvg @ svgService.ts:390
+await in createOverlaySvg
+updateComparisonSvg @ MouseComparisonView.vue:237
+(anonymous) @ MouseComparisonView.vue:536
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+noTracking @ chunk-UQWBJQZ5.js?v=db9069f9:1131
+push @ chunk-UQWBJQZ5.js?v=db9069f9:1028
+addMouse @ index.ts:49
+wrappedAction @ pinia.js?v=db9069f9:1093
+store.<computed> @ pinia.js?v=db9069f9:771
+toggleMouse @ MouseSelector.vue:268
+onClick @ MouseSelector.vue:26
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this error
+svgService.ts:395 尝试使用本地SVG数据作为回退...
+request.ts:302 API响应数据: {code: 0, data: {…}, message: '成功获取设备列表'}
+MouseComparisonView.vue:473 Error fetching mice: Error: Failed to fetch mouse data: No data returned
+    at fetchAvailableMice (MouseComparisonView.vue:469:13)
+fetchAvailableMice @ MouseComparisonView.vue:473
+await in fetchAvailableMice
+(anonymous) @ MouseComparisonView.vue:534
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+noTracking @ chunk-UQWBJQZ5.js?v=db9069f9:1131
+push @ chunk-UQWBJQZ5.js?v=db9069f9:1028
+addMouse @ index.ts:49
+wrappedAction @ pinia.js?v=db9069f9:1093
+store.<computed> @ pinia.js?v=db9069f9:771
+toggleMouse @ MouseSelector.vue:268
+onClick @ MouseSelector.vue:26
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this error
+MouseComparisonView.vue:243 Successfully received overlay SVG from API
+MouseComparisonView.vue:423 Completed updateComparisonSvg method
+request.ts:302 API响应数据: {code: 0, data: {…}, message: '成功获取设备列表'}
+MouseDatabasePage.vue:405 API Response: {devices: Array(20), page: 1, pageSize: 20, total: 1002}
+MouseDatabasePage.vue:424 Loaded mice: 20
+MouseDatabasePage.vue:423 [Vue warn]: Unhandled error during execution of render function 
+  at <ElCard key="6812dc93ecd5cc0fa137527e" class="mouse-card" > 
+  at <MouseDatabasePage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) {__v_skip: true} > > 
+  at <RouterView> 
+  at <ElConfigProvider locale= {name: 'en', el: {…}} > 
+  at <App>
+warn$1 @ chunk-UQWBJQZ5.js?v=db9069f9:2116
+logError @ chunk-UQWBJQZ5.js?v=db9069f9:2327
+handleError @ chunk-UQWBJQZ5.js?v=db9069f9:2319
+renderComponentRoot @ chunk-UQWBJQZ5.js?v=db9069f9:8617
+componentUpdateFn @ chunk-UQWBJQZ5.js?v=db9069f9:7403
+run @ chunk-UQWBJQZ5.js?v=db9069f9:481
+setupRenderEffect @ chunk-UQWBJQZ5.js?v=db9069f9:7538
+mountComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7313
+processComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7266
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6782
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+processFragment @ chunk-UQWBJQZ5.js?v=db9069f9:7196
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6756
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+mountElement @ chunk-UQWBJQZ5.js?v=db9069f9:6937
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6902
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+processFragment @ chunk-UQWBJQZ5.js?v=db9069f9:7196
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6756
+patchBlockChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7136
+patchElement @ chunk-UQWBJQZ5.js?v=db9069f9:7054
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6913
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+componentUpdateFn @ chunk-UQWBJQZ5.js?v=db9069f9:7490
+run @ chunk-UQWBJQZ5.js?v=db9069f9:481
+runIfDirty @ chunk-UQWBJQZ5.js?v=db9069f9:519
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2471
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+fetchMice @ MouseDatabasePage.vue:423
+await in fetchMice
+(anonymous) @ MouseDatabasePage.vue:439
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queuePostFlushCb @ chunk-UQWBJQZ5.js?v=db9069f9:2399
+queueEffectWithSuspense @ chunk-UQWBJQZ5.js?v=db9069f9:9399
+baseWatchOptions.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:8279
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:2009
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+finalizeNavigation @ vue-router.js?v=db9069f9:2517
+(anonymous) @ vue-router.js?v=db9069f9:2427
+Promise.then
+pushWithRedirect @ vue-router.js?v=db9069f9:2395
+push @ vue-router.js?v=db9069f9:2321
+navigate @ vue-router.js?v=db9069f9:1550
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:11231
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2281
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+MouseDatabasePage.vue:423 [Vue warn]: Unhandled error during execution of component update 
+  at <MouseDatabasePage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< Proxy(Object) {__v_skip: true} > > 
+  at <RouterView> 
+  at <ElConfigProvider locale= {name: 'en', el: {…}} > 
+  at <App>
+warn$1 @ chunk-UQWBJQZ5.js?v=db9069f9:2116
+logError @ chunk-UQWBJQZ5.js?v=db9069f9:2327
+handleError @ chunk-UQWBJQZ5.js?v=db9069f9:2319
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2265
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2471
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+fetchMice @ MouseDatabasePage.vue:423
+await in fetchMice
+(anonymous) @ MouseDatabasePage.vue:439
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queuePostFlushCb @ chunk-UQWBJQZ5.js?v=db9069f9:2399
+queueEffectWithSuspense @ chunk-UQWBJQZ5.js?v=db9069f9:9399
+baseWatchOptions.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:8279
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:2009
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+finalizeNavigation @ vue-router.js?v=db9069f9:2517
+(anonymous) @ vue-router.js?v=db9069f9:2427
+Promise.then
+pushWithRedirect @ vue-router.js?v=db9069f9:2395
+push @ vue-router.js?v=db9069f9:2321
+navigate @ vue-router.js?v=db9069f9:1550
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:11231
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2281
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+MouseDatabasePage.vue:63 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'length')
+    at MouseDatabasePage.vue:63:44
+    at renderFnWithContext (chunk-UQWBJQZ5.js?v=db9069f9:2763:13)
+    at renderSlot (chunk-UQWBJQZ5.js?v=db9069f9:5063:53)
+    at Proxy.<anonymous> (element-plus.js?v=db9069f9:16525:11)
+    at renderComponentRoot (chunk-UQWBJQZ5.js?v=db9069f9:8581:17)
+    at ReactiveEffect.componentUpdateFn [as fn] (chunk-UQWBJQZ5.js?v=db9069f9:7403:46)
+    at ReactiveEffect.run (chunk-UQWBJQZ5.js?v=db9069f9:481:19)
+    at setupRenderEffect (chunk-UQWBJQZ5.js?v=db9069f9:7538:5)
+    at mountComponent (chunk-UQWBJQZ5.js?v=db9069f9:7313:7)
+    at processComponent (chunk-UQWBJQZ5.js?v=db9069f9:7266:9)
+(anonymous) @ MouseDatabasePage.vue:63
+renderFnWithContext @ chunk-UQWBJQZ5.js?v=db9069f9:2763
+renderSlot @ chunk-UQWBJQZ5.js?v=db9069f9:5063
+(anonymous) @ element-plus.js?v=db9069f9:16525
+renderComponentRoot @ chunk-UQWBJQZ5.js?v=db9069f9:8581
+componentUpdateFn @ chunk-UQWBJQZ5.js?v=db9069f9:7403
+run @ chunk-UQWBJQZ5.js?v=db9069f9:481
+setupRenderEffect @ chunk-UQWBJQZ5.js?v=db9069f9:7538
+mountComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7313
+processComponent @ chunk-UQWBJQZ5.js?v=db9069f9:7266
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6782
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+processFragment @ chunk-UQWBJQZ5.js?v=db9069f9:7196
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6756
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+mountElement @ chunk-UQWBJQZ5.js?v=db9069f9:6937
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6902
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+mountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7014
+processFragment @ chunk-UQWBJQZ5.js?v=db9069f9:7196
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6756
+patchBlockChildren @ chunk-UQWBJQZ5.js?v=db9069f9:7136
+patchElement @ chunk-UQWBJQZ5.js?v=db9069f9:7054
+processElement @ chunk-UQWBJQZ5.js?v=db9069f9:6913
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6770
+componentUpdateFn @ chunk-UQWBJQZ5.js?v=db9069f9:7490
+run @ chunk-UQWBJQZ5.js?v=db9069f9:481
+runIfDirty @ chunk-UQWBJQZ5.js?v=db9069f9:519
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2471
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queueJob @ chunk-UQWBJQZ5.js?v=db9069f9:2380
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:7532
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+fetchMice @ MouseDatabasePage.vue:423
+await in fetchMice
+(anonymous) @ MouseDatabasePage.vue:439
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:4901
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+hook.__weh.hook.__weh @ chunk-UQWBJQZ5.js?v=db9069f9:4881
+flushPostFlushCbs @ chunk-UQWBJQZ5.js?v=db9069f9:2448
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2490
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queuePostFlushCb @ chunk-UQWBJQZ5.js?v=db9069f9:2399
+queueEffectWithSuspense @ chunk-UQWBJQZ5.js?v=db9069f9:9399
+baseWatchOptions.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:8279
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:2009
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+finalizeNavigation @ vue-router.js?v=db9069f9:2517
+(anonymous) @ vue-router.js?v=db9069f9:2427
+Promise.then
+pushWithRedirect @ vue-router.js?v=db9069f9:2395
+push @ vue-router.js?v=db9069f9:2321
+navigate @ vue-router.js?v=db9069f9:1550
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:11231
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2281
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this error
+chunk-UQWBJQZ5.js?v=db9069f9:2116 [Vue warn]: Unhandled error during execution of component update 
+  at <RouterView> 
+  at <ElConfigProvider locale= {name: 'en', el: {…}} > 
+  at <App>
+warn$1 @ chunk-UQWBJQZ5.js?v=db9069f9:2116
+logError @ chunk-UQWBJQZ5.js?v=db9069f9:2327
+handleError @ chunk-UQWBJQZ5.js?v=db9069f9:2319
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2265
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2471
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queuePostFlushCb @ chunk-UQWBJQZ5.js?v=db9069f9:2399
+queueEffectWithSuspense @ chunk-UQWBJQZ5.js?v=db9069f9:9399
+baseWatchOptions.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:8279
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:2009
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+finalizeNavigation @ vue-router.js?v=db9069f9:2517
+(anonymous) @ vue-router.js?v=db9069f9:2427
+Promise.then
+pushWithRedirect @ vue-router.js?v=db9069f9:2395
+push @ vue-router.js?v=db9069f9:2321
+navigate @ vue-router.js?v=db9069f9:1550
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:11231
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2281
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+vue-router.js?v=db9069f9:49 [Vue Router warn]: uncaught error during route navigation:
+warn @ vue-router.js?v=db9069f9:49
+triggerError @ vue-router.js?v=db9069f9:2611
+(anonymous) @ vue-router.js?v=db9069f9:2638
+Promise.catch
+handleScroll @ vue-router.js?v=db9069f9:2638
+finalizeNavigation @ vue-router.js?v=db9069f9:2518
+(anonymous) @ vue-router.js?v=db9069f9:2427
+Promise.then
+pushWithRedirect @ vue-router.js?v=db9069f9:2395
+push @ vue-router.js?v=db9069f9:2321
+navigate @ vue-router.js?v=db9069f9:1550
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:11231
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2281
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this warning
+vue-router.js?v=db9069f9:2613 TypeError: Cannot destructure property 'type' of 'vnode' as it is null.
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7887:7)
+    at unmountComponent (chunk-UQWBJQZ5.js?v=db9069f9:8022:7)
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7917:7)
+    at unmountChildren (chunk-UQWBJQZ5.js?v=db9069f9:8042:7)
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7949:9)
+    at unmountChildren (chunk-UQWBJQZ5.js?v=db9069f9:8042:7)
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7941:9)
+    at unmountChildren (chunk-UQWBJQZ5.js?v=db9069f9:8042:7)
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7941:9)
+    at unmountComponent (chunk-UQWBJQZ5.js?v=db9069f9:8022:7)
+triggerError @ vue-router.js?v=db9069f9:2613
+(anonymous) @ vue-router.js?v=db9069f9:2638
+Promise.catch
+handleScroll @ vue-router.js?v=db9069f9:2638
+finalizeNavigation @ vue-router.js?v=db9069f9:2518
+(anonymous) @ vue-router.js?v=db9069f9:2427
+Promise.then
+pushWithRedirect @ vue-router.js?v=db9069f9:2395
+push @ vue-router.js?v=db9069f9:2321
+navigate @ vue-router.js?v=db9069f9:1550
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:11231
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2281
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this error
+21chunk-UQWBJQZ5.js?v=db9069f9:7887 Uncaught (in promise) TypeError: Cannot destructure property 'type' of 'vnode' as it is null.
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7887:7)
+    at unmountComponent (chunk-UQWBJQZ5.js?v=db9069f9:8022:7)
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7917:7)
+    at unmountChildren (chunk-UQWBJQZ5.js?v=db9069f9:8042:7)
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7949:9)
+    at unmountChildren (chunk-UQWBJQZ5.js?v=db9069f9:8042:7)
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7941:9)
+    at unmountChildren (chunk-UQWBJQZ5.js?v=db9069f9:8042:7)
+    at unmount (chunk-UQWBJQZ5.js?v=db9069f9:7941:9)
+    at unmountComponent (chunk-UQWBJQZ5.js?v=db9069f9:8022:7)
+unmount @ chunk-UQWBJQZ5.js?v=db9069f9:7887
+unmountComponent @ chunk-UQWBJQZ5.js?v=db9069f9:8022
+unmount @ chunk-UQWBJQZ5.js?v=db9069f9:7917
+unmountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:8042
+unmount @ chunk-UQWBJQZ5.js?v=db9069f9:7949
+unmountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:8042
+unmount @ chunk-UQWBJQZ5.js?v=db9069f9:7941
+unmountChildren @ chunk-UQWBJQZ5.js?v=db9069f9:8042
+unmount @ chunk-UQWBJQZ5.js?v=db9069f9:7941
+unmountComponent @ chunk-UQWBJQZ5.js?v=db9069f9:8022
+unmount @ chunk-UQWBJQZ5.js?v=db9069f9:7917
+patch @ chunk-UQWBJQZ5.js?v=db9069f9:6733
+componentUpdateFn @ chunk-UQWBJQZ5.js?v=db9069f9:7490
+run @ chunk-UQWBJQZ5.js?v=db9069f9:481
+runIfDirty @ chunk-UQWBJQZ5.js?v=db9069f9:519
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+flushJobs @ chunk-UQWBJQZ5.js?v=db9069f9:2471
+Promise.then
+queueFlush @ chunk-UQWBJQZ5.js?v=db9069f9:2385
+queuePostFlushCb @ chunk-UQWBJQZ5.js?v=db9069f9:2399
+queueEffectWithSuspense @ chunk-UQWBJQZ5.js?v=db9069f9:9399
+baseWatchOptions.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:8279
+effect2.scheduler @ chunk-UQWBJQZ5.js?v=db9069f9:2009
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:509
+endBatch @ chunk-UQWBJQZ5.js?v=db9069f9:567
+notify @ chunk-UQWBJQZ5.js?v=db9069f9:827
+trigger @ chunk-UQWBJQZ5.js?v=db9069f9:801
+set value @ chunk-UQWBJQZ5.js?v=db9069f9:1673
+finalizeNavigation @ vue-router.js?v=db9069f9:2517
+(anonymous) @ vue-router.js?v=db9069f9:2427
+Promise.then
+pushWithRedirect @ vue-router.js?v=db9069f9:2395
+push @ vue-router.js?v=db9069f9:2321
+navigate @ vue-router.js?v=db9069f9:1550
+(anonymous) @ chunk-UQWBJQZ5.js?v=db9069f9:11231
+callWithErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2263
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2270
+callWithAsyncErrorHandling @ chunk-UQWBJQZ5.js?v=db9069f9:2281
+invoker @ chunk-UQWBJQZ5.js?v=db9069f9:11202Understand this error

@@ -1,7 +1,7 @@
 <template>
   <div class="test-mouse-comparison">
-    <h1 class="text-xl font-bold mb-4">鼠标比较测试页面</h1>
-    <p class="mb-4">使用硬编码SVG数据进行鼠标对比测试</p>
+    <h1 class="text-xl font-bold mb-4">Mouse Comparison Test Page</h1>
+    <p class="mb-4">Mouse comparison test using hardcoded SVG data</p>
     
     <div class="mb-6">
       <el-alert
@@ -9,7 +9,7 @@
         :closable="false"
         show-icon
       >
-        <div>选择以下鼠标进行对比：</div>
+        <div>Select the following mice for comparison:</div>
         <div class="mt-2">
           <el-checkbox-group v-model="selectedMiceIds">
             <el-checkbox v-for="mouse in mockMice" :key="mouse.id" :label="mouse.id">
@@ -22,14 +22,14 @@
     
     <div v-if="selectedMiceIds.length > 0" class="mb-6">
       <el-button type="primary" @click="addSelectedMice">
-        添加选中的鼠标到比较视图
+        Add selected mice to comparison view
       </el-button>
       <el-button @click="clearComparison">
-        清空比较视图
+        Clear comparison view
       </el-button>
     </div>
     
-    <!-- 鼠标比较视图组件 -->
+    <!-- Mouse comparison view component -->
     <MouseComparisonView />
   </div>
 </template>
@@ -43,12 +43,12 @@ import { mockMice } from '@/data/mockMice';
 const comparisonStore = useComparisonStore();
 const selectedMiceIds = ref<string[]>([]);
 
-// 添加选择的鼠标到比较视图
+// Add selected mice to comparison view
 function addSelectedMice() {
-  // 先清空当前选择
+  // First clear current selection
   clearComparison();
   
-  // 添加新选择的鼠标
+  // Add newly selected mice
   for (const id of selectedMiceIds.value) {
     const mouse = mockMice.find(m => m.id === id);
     if (mouse) {
@@ -57,12 +57,12 @@ function addSelectedMice() {
   }
 }
 
-// 清空比较视图
+// Clear comparison view
 function clearComparison() {
   comparisonStore.clearMice();
 }
 
-// 初始默认选择第一个鼠标
+// Initially select the first mouse by default
 onMounted(() => {
   if (mockMice.length > 0) {
     selectedMiceIds.value = [mockMice[0].id];

@@ -212,7 +212,7 @@ func (h *Handler) ListDevices(c *gin.Context) {
 	var request deviceTypes.DeviceListRequest
 	if err := c.ShouldBindQuery(&request); err != nil {
 		errors.HandleError(c, errors.NewBadRequestError("无效的请求参数: "+err.Error()))
-		errors.HandleError(c, errors.NewBadRequestError("无效的请求参数: "+err.Error()))
+		return
 	}
 
 	// 创建DeviceListFilter
@@ -251,13 +251,12 @@ func (h *Handler) ListDevices(c *gin.Context) {
 		}
 	}
 
-	// 直接构建完整的响应结构
-	responseData := gin.H{
-		"devices":  result.Devices,
-		"total":    result.Total,
-		"page":     filter.Page,
-		"pageSize": filter.PageSize,
-	}
+	// 返回响应
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"message": "成功",
+		"data":    result,
+	})
 }
 
 // CreateDeviceReview 创建设备评测（仅限评测员和管理员）
@@ -299,6 +298,8 @@ func (h *Handler) CreateDeviceReview(c *gin.Context) {
 	// 转换请求类型为CreateReviewRequest
 	createReviewReq := deviceTypes.CreateReviewRequest(request)
 
+	// 调用服务创建评测
+	result, err := h.deviceService.CreateDeviceReview(c.Request.Context(), userID.(string), createReviewReq)
 	if err != nil {
 		status := errors.HTTPStatusFromError(err)
 		var errObj *errors.AppError
@@ -384,6 +385,8 @@ func (h *Handler) UpdateDeviceReview(c *gin.Context) {
 	// 转换请求类型为UpdateReviewRequest
 	updateReviewReq := deviceTypes.UpdateReviewRequest(request)
 
+	// 调用服务更新评测
+	result, err := h.deviceService.UpdateDeviceReview(c.Request.Context(), userID.(string), reviewID, updateReviewReq)
 	if err != nil {
 		status := errors.HTTPStatusFromError(err)
 		var errObj *errors.AppError
@@ -646,6 +649,8 @@ func (h *Handler) UpdateUserDevice(c *gin.Context) {
 		IsPublic:    request.IsPublic,
 	}
 
+	// 调用服务更新用户设备配置
+	result, err := h.deviceService.UpdateUserDevice(c.Request.Context(), userID.(string), configID, updateRequest)
 	if err != nil {
 		status := errors.HTTPStatusFromError(err)
 		var errObj *errors.AppError

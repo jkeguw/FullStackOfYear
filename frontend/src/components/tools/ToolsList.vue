@@ -40,13 +40,14 @@ const tools = [
     icon: Monitor,
     route: '/tools/dpi'
   },
-  {
-    id: 'ruler',
-    name: '厘米尺',
-    description: '使用可调节长度的厘米尺进行简单测量',
-    icon: ScaleToOriginal,
-    route: '/tools/ruler'
-  }
+  // 移除尺子工具
+  // {
+  //   id: 'ruler',
+  //   name: '厘米尺',
+  //   description: '使用可调节长度的厘米尺进行简单测量',
+  //   icon: ScaleToOriginal,
+  //   route: '/tools/ruler'
+  // }
 ];
 </script>
 

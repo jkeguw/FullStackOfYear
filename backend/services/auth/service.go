@@ -87,7 +87,7 @@ func (s *service) Register(ctx context.Context, req *auth.RegisterRequest) (*mod
 		Email:    req.Email,
 		Password: string(hashedPassword),
 		Status: models.Status{
-			EmailVerified: false,
+			EmailVerified: true, // 默认已验证邮箱，无需验证流程
 		},
 		Role: models.UserRole{
 			Type: string(models.RoleUser),
@@ -122,19 +122,7 @@ func (s *service) Register(ctx context.Context, req *auth.RegisterRequest) (*mod
 		return nil, errors.NewAppError(errors.InternalError, "Failed to create user")
 	}
 
-	// Generate and set email verification token
-	verifyToken, err := s.GenerateEmailVerificationToken(ctx, user.ID.Hex())
-	if err != nil {
-		// Non-critical error, just log it
-		log.Printf("Failed to generate email verification token: %v", err)
-	} else {
-		// Send verification email
-		err = s.emailSender.SendVerificationEmail(user.Email, user.Username, verifyToken)
-		if err != nil {
-			// Non-critical error, just log it
-			log.Printf("Failed to send verification email: %v", err)
-		}
-	}
+	// 邮箱验证流程已移除，不再生成验证令牌和发送验证邮件
 
 	return user, nil
 }
@@ -238,11 +226,7 @@ func (s *service) ValidateEmailPassword(ctx context.Context, email, password str
 		return nil, err
 	}
 
-	// 检查邮箱验证状态
-	if !user.Status.EmailVerified {
-		return nil, errors.NewAppError(errors.Unauthorized, "请先验证邮箱")
-	}
-
+	// 邮箱验证检查被移除，直接登录不再需要验证
 	// 账户锁定状态检查已移除，因为我们简化了该功能
 
 	log.Printf("Attempting password verification for user: %s", email)

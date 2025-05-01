@@ -1,9 +1,9 @@
 <template>
   <div class="comparison-table">
-    <h3 class="text-lg font-medium mb-3">参数对比</h3>
+    <h3 class="text-lg font-medium mb-3">Parameter Comparison</h3>
 
     <div v-if="similarityScore !== undefined" class="similarity-score mb-4">
-      <div class="font-medium text-sm">相似度评分</div>
+      <div class="font-medium text-sm">Similarity Score</div>
       <el-progress
         :percentage="similarityScore"
         :color="getSimilarityColor(similarityScore)"
@@ -13,7 +13,7 @@
     </div>
 
     <el-table :data="tableData" border stripe>
-      <el-table-column prop="property" label="参数" width="150">
+      <el-table-column prop="property" label="Parameter" width="150">
         <template #default="scope">
           <el-tooltip
             v-if="getPropertyDescription(scope.row.property)"
@@ -42,7 +42,7 @@
         </template>
       </el-table-column>
 
-      <!-- 移除了差异列 -->
+      <!-- Removed difference column -->
     </el-table>
   </div>
 </template>
@@ -51,23 +51,23 @@
 import { computed, defineProps } from 'vue';
 import type { MouseComparisonResult } from '@/models/MouseModel';
 
-// 属性说明
+// Property descriptions
 const propertyDescriptions: Record<string, string> = {
-  长度: '鼠标的前后长度(mm)',
-  宽度: '鼠标的左右宽度(mm)',
-  高度: '鼠标的最高点到桌面的高度(mm)',
-  重量: '鼠标的重量(g)',
-  握宽: '鼠标的握持宽度，通常是中部宽度(mm)',
-  最大DPI: '鼠标传感器的最大DPI值',
-  轮询率: '鼠标数据刷新率(Hz)',
-  侧键数量: '鼠标侧面按键的数量',
-  形状类型: '鼠标的整体形状类型',
-  推荐握持方式: '鼠标适合的握持姿势',
-  凸起位置: '鼠标的主要凸起位置',
-  连接方式: '鼠标的连接类型'
+  Length: 'The front-to-back length of the mouse (mm)',
+  Width: 'The side-to-side width of the mouse (mm)',
+  Height: 'The height from the highest point to the desk surface (mm)',
+  Weight: 'The weight of the mouse (g)',
+  Grip_Width: 'The width where you grip the mouse, usually the middle width (mm)',
+  Max_DPI: 'The maximum DPI value of the mouse sensor',
+  Polling_Rate: 'The data refresh rate of the mouse (Hz)',
+  Side_Buttons: 'The number of buttons on the side of the mouse',
+  Shape_Type: 'The overall shape type of the mouse',
+  Recommended_Grip: 'The grip posture suitable for the mouse',
+  Hump_Position: 'The main protrusion position of the mouse',
+  Connection_Type: 'The connection type of the mouse'
 };
 
-// Props定义
+// Props definition
 const props = defineProps<{
   data: Array<{
     property: string;
@@ -79,28 +79,28 @@ const props = defineProps<{
   similarityScore?: number;
 }>();
 
-// 计算属性
+// Computed properties
 const tableData = computed(() => {
   if (!props.data) return [];
 
   const data = [...props.data];
 
-  // 排序
+  // Sort
   if (props.sortBy === 'difference') {
     data.sort((a, b) => b.differencePercent - a.differencePercent);
   } else {
-    // 按属性名称排序
+    // Sort by property name
     const propertyOrder = [
-      '长度',
-      '宽度',
-      '高度',
-      '重量',
-      '握宽',
-      '形状类型',
-      '最大DPI',
-      '轮询率',
-      '侧键数量',
-      '推荐握持方式'
+      'Length',
+      'Width',
+      'Height',
+      'Weight',
+      'Grip_Width',
+      'Shape_Type',
+      'Max_DPI',
+      'Polling_Rate',
+      'Side_Buttons',
+      'Recommended_Grip'
     ];
     data.sort((a, b) => {
       const indexA = propertyOrder.indexOf(a.property);
@@ -115,18 +115,18 @@ const tableData = computed(() => {
   return data;
 });
 
-// 方法
+// Methods
 function formatValue(value: any, property: string): string {
-  if (value === undefined || value === null) return '未知';
+  if (value === undefined || value === null) return 'Unknown';
 
-  // 根据属性类型格式化值
-  if (property === '长度' || property === '宽度' || property === '高度' || property === '握宽') {
+  // Format value based on property type
+  if (property === 'Length' || property === 'Width' || property === 'Height' || property === 'Grip_Width') {
     return `${value}mm`;
-  } else if (property === '重量') {
+  } else if (property === 'Weight') {
     return `${value}g`;
-  } else if (property === '最大DPI') {
+  } else if (property === 'Max_DPI') {
     return value.toLocaleString();
-  } else if (property === '轮询率') {
+  } else if (property === 'Polling_Rate') {
     return `${value}Hz`;
   } else if (Array.isArray(value)) {
     return value.join(', ');
@@ -136,7 +136,7 @@ function formatValue(value: any, property: string): string {
 }
 
 function formatDifference(value: number): string {
-  if (value === 0) return '相同';
+  if (value === 0) return 'Same';
   return `${value.toFixed(1)}%`;
 }
 
@@ -148,10 +148,10 @@ function getDifferenceClass(value: number): string {
 }
 
 function getSimilarityColor(score: number): string {
-  if (score >= 90) return '#67C23A'; // 绿色
-  if (score >= 75) return '#409EFF'; // 蓝色
-  if (score >= 50) return '#E6A23C'; // 橙色
-  return '#F56C6C'; // 红色
+  if (score >= 90) return '#67C23A'; // Green
+  if (score >= 75) return '#409EFF'; // Blue
+  if (score >= 50) return '#E6A23C'; // Orange
+  return '#F56C6C'; // Red
 }
 
 function getPropertyDescription(property: string): string {
@@ -161,23 +161,23 @@ function getPropertyDescription(property: string): string {
 function isHighlight(row: any, index: number): boolean {
   if (row.differencePercent === 0) return false;
 
-  // 找出数值型属性中的最大/最小值
-  if (['长度', '宽度', '高度', '重量', '握宽', '最大DPI', '轮询率'].includes(row.property)) {
+  // Find maximum/minimum values in numeric properties
+  if (['Length', 'Width', 'Height', 'Weight', 'Grip_Width', 'Max_DPI', 'Polling_Rate'].includes(row.property)) {
     const numValues = row.values.map((v: any) => Number(v));
     const maxValue = Math.max(...numValues);
     const minValue = Math.min(...numValues);
 
-    // 对于DPI和轮询率，最大值更好
-    if (['最大DPI', '轮询率'].includes(row.property)) {
+    // For DPI and polling rate, higher is better
+    if (['Max_DPI', 'Polling_Rate'].includes(row.property)) {
       return numValues[index] === maxValue;
     }
 
-    // 对于重量，最小值更好
-    if (row.property === '重量') {
+    // For weight, lower is better
+    if (row.property === 'Weight') {
       return numValues[index] === minValue;
     }
 
-    // 对于尺寸，突出显示极值
+    // For dimensions, highlight extreme values
     return numValues[index] === maxValue || numValues[index] === minValue;
   }
 

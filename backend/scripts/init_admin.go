@@ -1,4 +1,4 @@
-package main
+package scripts
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main() {
+func InitAdmin() {
 	// 加载环境变量
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Printf("Warning: Could not load .env file: %v", err)
@@ -56,7 +56,7 @@ func main() {
 	usersCollection := db.Collection("users")
 
 	// 检查管理员账户是否已存在
-	adminEmail := "2353727288@qq.com"
+	adminEmail := "root@example.com"
 	var existingAdmin bson.M
 	err = usersCollection.FindOne(ctx, bson.M{"email": adminEmail}).Decode(&existingAdmin)
 
@@ -67,12 +67,22 @@ func main() {
 		// 管理员账户不存在，创建它
 		now := time.Now()
 		adminUser := bson.M{
-			"username":     "admin",
-			"email":        adminEmail,
-			"passwordHash": "$2a$10$GjSIOtMDbVN1XmCvpZXfDuH/DfEQD6jKZ1q8.1Y9TQy.ggZEFEX5y", // 密码为 "unnamed03634614"
-			"roles":        []string{"admin"},
-			"createdAt":    now,
-			"updatedAt":    now,
+			"username": "admin",
+			"email":    adminEmail,
+			"password": "$2a$10$ruV4RIXIL5EcScyVhr6Use1zRE7ozPEoaIIicdBjXEHNRYsehfXkO", // 密码为 "admin123"
+			"role": bson.M{
+				"type": "admin",
+			},
+			"status": bson.M{
+				"emailVerified": true,
+			},
+			"stats": bson.M{
+				"createdAt":   now,
+				"lastLoginAt": now,
+			},
+			"createdAt": now,
+			"updatedAt": now,
+			"isVerified": true,
 		}
 
 		// 插入管理员账户

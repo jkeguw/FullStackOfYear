@@ -1,11 +1,11 @@
 <template>
   <div class="sensitivity-calculator p-6 rounded-lg bg-gray-800 text-white">
     <div class="grid md:grid-cols-2 gap-6">
-      <!-- 游戏灵敏度转换 -->
+      <!-- Game Sensitivity Conversion -->
       <div class="card p-5 bg-gray-700 rounded-lg">
-        <h3 class="text-lg font-medium mb-4">游戏灵敏度转换</h3>
+        <h3 class="text-lg font-medium mb-4">Game Sensitivity Conversion</h3>
         <el-form label-position="top">
-          <el-form-item label="鼠标DPI">
+          <el-form-item label="Mouse DPI">
             <el-input-number
               v-model="dpi"
               :min="100"
@@ -16,7 +16,7 @@
           </el-form-item>
 
           <div class="grid grid-cols-2 gap-4">
-            <el-form-item label="源游戏">
+            <el-form-item label="Source Game">
               <el-select v-model="sourceGame" class="w-full">
                 <el-option
                   v-for="game in games"
@@ -27,7 +27,7 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="源游戏灵敏度">
+            <el-form-item label="Source Game Sensitivity">
               <el-input-number
                 v-model="sourceSensitivity"
                 :min="0.001"
@@ -41,7 +41,7 @@
           </div>
 
           <div class="grid grid-cols-2 gap-4">
-            <el-form-item label="目标游戏">
+            <el-form-item label="Target Game">
               <el-select v-model="targetGame" class="w-full">
                 <el-option
                   v-for="game in games"
@@ -52,7 +52,7 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="计算结果">
+            <el-form-item label="Result">
               <div
                 class="result-display py-2 px-3 bg-blue-900 rounded text-white text-lg font-bold text-center"
               >
@@ -67,13 +67,13 @@
         </el-form>
       </div>
 
-      <!-- 三阶校准法 -->
+      <!-- Three-Level Calibration Method -->
       <div class="card p-5 bg-gray-700 rounded-lg">
-        <h3 class="text-lg font-medium mb-4">三阶校准法</h3>
+        <h3 class="text-lg font-medium mb-4">Three-Level Calibration Method</h3>
         <div v-if="currentPhase === 0" class="phase-start">
-          <p class="mb-4 text-gray-300">通过三个渐进阶段帮助您找到最适合的鼠标灵敏度</p>
+          <p class="mb-4 text-gray-300">Find your most suitable mouse sensitivity through three progressive stages</p>
           <el-form label-position="top">
-            <el-form-item label="起始基准值">
+            <el-form-item label="Starting Base Value">
               <el-input-number
                 v-model="baseValue"
                 :min="0.1"
@@ -84,7 +84,7 @@
                 controls-position="right"
               />
             </el-form-item>
-            <el-form-item label="游戏">
+            <el-form-item label="Game">
               <el-select v-model="calibrationGame" class="w-full">
                 <el-option
                   v-for="game in games"
@@ -95,7 +95,7 @@
               </el-select>
             </el-form-item>
             <div class="text-center mt-4">
-              <el-button type="primary" @click="startCalibration">开始校准</el-button>
+              <el-button type="primary" @click="startCalibration">Start Calibration</el-button>
             </div>
           </el-form>
         </div>
@@ -103,48 +103,48 @@
         <div v-else class="calibration-in-progress">
           <div class="phase-indicator mb-4">
             <div class="flex justify-between text-xs text-gray-400 mb-1">
-              <span>阶段 {{ currentPhase }}/3</span>
-              <span>基准值: {{ baseValue.toFixed(3) }}</span>
+              <span>Phase {{ currentPhase }}/3</span>
+              <span>Base Value: {{ baseValue.toFixed(3) }}</span>
             </div>
             <el-progress :percentage="(currentPhase / 3) * 100" />
           </div>
 
           <div class="phase-description mb-6">
             <p v-if="currentPhase === 1" class="text-sm text-gray-300">
-              <b>第一阶段（矫快敏）</b>: 选择哪个值感觉更适合您
+              <b>Phase 1 (Speed Correction)</b>: Choose which value feels more suitable for you
             </p>
             <p v-if="currentPhase === 2" class="text-sm text-gray-300">
-              <b>第二阶段（拔慢敏）</b>: 继续微调您的灵敏度
+              <b>Phase 2 (Slow Refinement)</b>: Continue fine-tuning your sensitivity
             </p>
             <p v-if="currentPhase === 3" class="text-sm text-gray-300">
-              <b>第三阶段（细常敏）</b>: 最终精确调整
+              <b>Phase 3 (Precision Tuning)</b>: Final precise adjustment
             </p>
           </div>
 
           <div class="choice-buttons grid grid-cols-2 gap-4 mb-6">
             <el-button @click="selectValue('left')" type="success" class="h-20">
               {{ leftValue.toFixed(3) }}
-              <div class="text-xs mt-1">更快的灵敏度</div>
+              <div class="text-xs mt-1">Faster Sensitivity</div>
             </el-button>
             <el-button @click="selectValue('right')" type="warning" class="h-20">
               {{ rightValue.toFixed(3) }}
-              <div class="text-xs mt-1">更慢的灵敏度</div>
+              <div class="text-xs mt-1">Slower Sensitivity</div>
             </el-button>
           </div>
 
           <div class="action-buttons flex justify-between">
-            <el-button @click="resetCalibration" size="small">重置</el-button>
+            <el-button @click="resetCalibration" size="small">Reset</el-button>
             <el-button v-if="currentPhase < 3" @click="nextPhase" size="small" type="info"
-              >跳过此阶段</el-button
+              >Skip this Phase</el-button
             >
           </div>
         </div>
 
         <div v-if="currentPhase === 4" class="calibration-result mt-4 p-4 bg-blue-900 rounded-lg">
-          <h4 class="text-center font-bold mb-3">校准完成</h4>
+          <h4 class="text-center font-bold mb-3">Calibration Complete</h4>
           <div class="text-center">
             <p class="mb-2">
-              您的理想灵敏度: <span class="text-xl font-bold">{{ baseValue.toFixed(3) }}</span>
+              Your Ideal Sensitivity: <span class="text-xl font-bold">{{ baseValue.toFixed(3) }}</span>
             </p>
             <p class="text-sm text-gray-300">cm/360°: {{ calculateCmPer360(baseValue) }}</p>
           </div>
@@ -152,16 +152,16 @@
       </div>
     </div>
 
-    <!-- 灵敏快分法和极敏内推法 -->
+    <!-- PSA Method and Fast Bisection Method -->
     <div class="grid md:grid-cols-2 gap-6 mt-6">
       <div class="card p-5 bg-gray-700 rounded-lg">
-        <h3 class="text-lg font-medium mb-4">灵敏快分法</h3>
+        <h3 class="text-lg font-medium mb-4">Fast Bisection Method</h3>
         <div v-if="!fastBisectionStarted">
           <p class="mb-4 text-sm text-gray-300">
-            通过9个步骤快速精确地确定您的理想灵敏度，无需大量测试
+            Quickly and precisely determine your ideal sensitivity through 9 steps, without the need for extensive testing
           </p>
           <el-form label-position="top">
-            <el-form-item label="起始基准值">
+            <el-form-item label="Starting Base Value">
               <el-input-number
                 v-model="bisectionBaseValue"
                 :min="0.1"
@@ -173,7 +173,7 @@
               />
             </el-form-item>
             <div class="text-center mt-4">
-              <el-button type="primary" @click="startFastBisection">开始快分法</el-button>
+              <el-button type="primary" @click="startFastBisection">Start Fast Bisection</el-button>
             </div>
           </el-form>
         </div>
@@ -181,8 +181,8 @@
         <div v-else>
           <div class="phase-indicator mb-4">
             <div class="flex justify-between text-xs text-gray-400 mb-1">
-              <span>步骤 {{ bisectionStep }}/9</span>
-              <span>基准值: {{ bisectionBaseValue.toFixed(3) }}</span>
+              <span>Step {{ bisectionStep }}/9</span>
+              <span>Base Value: {{ bisectionBaseValue.toFixed(3) }}</span>
             </div>
             <el-progress :percentage="(bisectionStep / 9) * 100" />
           </div>
@@ -190,23 +190,23 @@
           <div class="choice-buttons grid grid-cols-2 gap-4 mb-6">
             <el-button @click="selectBisectionValue('low')" type="success" class="h-16">
               {{ bisectionLowValue.toFixed(3) }}
-              <div class="text-xs mt-1">更低的值</div>
+              <div class="text-xs mt-1">Lower Value</div>
             </el-button>
             <el-button @click="selectBisectionValue('high')" type="warning" class="h-16">
               {{ bisectionHighValue.toFixed(3) }}
-              <div class="text-xs mt-1">更高的值</div>
+              <div class="text-xs mt-1">Higher Value</div>
             </el-button>
           </div>
 
           <div class="action-buttons flex justify-between">
-            <el-button @click="resetFastBisection" size="small">重置</el-button>
+            <el-button @click="resetFastBisection" size="small">Reset</el-button>
           </div>
 
           <div v-if="bisectionStep > 9" class="calibration-result mt-4 p-4 bg-blue-900 rounded-lg">
-            <h4 class="text-center font-bold mb-3">快分法完成</h4>
+            <h4 class="text-center font-bold mb-3">Fast Bisection Complete</h4>
             <div class="text-center">
               <p class="mb-2">
-                您的理想灵敏度:
+                Your Ideal Sensitivity:
                 <span class="text-xl font-bold">{{ bisectionBaseValue.toFixed(3) }}</span>
               </p>
             </div>
@@ -215,13 +215,13 @@
       </div>
 
       <div class="card p-5 bg-gray-700 rounded-lg">
-        <h3 class="text-lg font-medium mb-4">极敏内推法</h3>
+        <h3 class="text-lg font-medium mb-4">PSA Method</h3>
         <p class="mb-4 text-sm text-gray-300">
-          基于您的最快和最慢可承受灵敏度，计算出最适合的灵敏度值
+          Calculate the most suitable sensitivity based on your fastest and slowest acceptable sensitivities
         </p>
 
         <el-form label-position="top">
-          <el-form-item label="最快可接受灵敏度 (k)">
+          <el-form-item label="Fastest Acceptable Sensitivity (k)">
             <el-input-number
               v-model="fastestSens"
               :min="0.1"
@@ -232,7 +232,7 @@
             />
           </el-form-item>
 
-          <el-form-item label="最慢可接受灵敏度 (m)">
+          <el-form-item label="Slowest Acceptable Sensitivity (m)">
             <el-input-number
               v-model="slowestSens"
               :min="0.1"
@@ -245,13 +245,13 @@
 
           <div class="grid grid-cols-2 gap-4 mt-6">
             <div class="result-card p-3 bg-blue-800 rounded-lg">
-              <div class="text-sm text-center mb-1">瞄准场景推荐</div>
+              <div class="text-sm text-center mb-1">Aiming Scenario Recommendation</div>
               <div class="text-xl font-bold text-center">{{ aimingScenarioSens.toFixed(3) }}</div>
               <div class="text-xs text-gray-400 text-center mt-1">(k + 3m) / 4</div>
             </div>
 
             <div class="result-card p-3 bg-blue-800 rounded-lg">
-              <div class="text-sm text-center mb-1">游戏场景推荐</div>
+              <div class="text-sm text-center mb-1">Gaming Scenario Recommendation</div>
               <div class="text-xl font-bold text-center">{{ gamingScenarioSens.toFixed(3) }}</div>
               <div class="text-xs text-gray-400 text-center mt-1">(3k + m) / 4</div>
             </div>

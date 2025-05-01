@@ -16,7 +16,7 @@ type I18nResponse struct {
 }
 
 // NewI18nResponse 创建一个新的国际化响应
-func NewI18nResponse(c *gin.Context, i18nService *i18n.Service, messageID string, code int, data interface{}, err interface{}) I18nResponse {
+func NewI18nResponse(c *gin.Context, i18nService i18n.Service, messageID string, code int, data interface{}, err interface{}) I18nResponse {
 	lang := middleware.GetLanguage(c)
 	message := i18nService.T(lang, messageID, nil)
 
@@ -40,11 +40,11 @@ func (r I18nResponse) Send(c *gin.Context) {
 }
 
 // Success 创建一个成功的响应
-func Success(c *gin.Context, i18nService *i18n.Service, messageID string, data interface{}) {
+func Success(c *gin.Context, i18nService i18n.Service, messageID string, data interface{}) {
 	NewI18nResponse(c, i18nService, messageID, 200, data, nil).Send(c)
 }
 
 // Error 创建一个错误响应
-func Error(c *gin.Context, i18nService *i18n.Service, messageID string, code int, err interface{}) {
+func Error(c *gin.Context, i18nService i18n.Service, messageID string, code int, err interface{}) {
 	NewI18nResponse(c, i18nService, messageID, code, nil, err).Send(c)
 }

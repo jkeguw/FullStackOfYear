@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"project/backend/internal/errors"
+	"project/backend/models"
 )
 
 // Service 购物车服务接口

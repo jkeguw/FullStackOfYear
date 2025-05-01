@@ -31,4 +31,5 @@ func InitMongoDB(ctx context.Context) error {
 		return fmt.Errorf("MongoDB Ping失败: %w", err)
 	}
 
+	return nil
 }

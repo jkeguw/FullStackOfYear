@@ -223,7 +223,7 @@ export const getDevices = (params?: DeviceListParams) => {
   return request.get<Response<DeviceListResponse>>('/api/devices', { params })
     .then((res) => {
       if (!res) {
-        console.error('获取设备列表失败: 无响应');
+        console.error('Failed to fetch device list: No response');
         // 返回空数据结构而不是null
         return {
           devices: [],
@@ -235,7 +235,7 @@ export const getDevices = (params?: DeviceListParams) => {
       
       // 确保data存在，否则返回默认值
       if (!res.data) {
-        console.warn('获取设备列表: API返回无data字段');
+        console.warn('Fetch device list: API returned no data field');
         return {
           devices: [],
           total: 0,
@@ -244,7 +244,14 @@ export const getDevices = (params?: DeviceListParams) => {
         };
       }
       
-      return res.data;
+      // 检查响应结构并处理
+      const responseData = res.data;
+      if (responseData.code === 0 && responseData.data) {
+        // 直接返回data字段中的内容
+        return responseData.data;
+      }
+      
+      return responseData;
     });
 };
 
@@ -253,17 +260,24 @@ export const getMouseDevice = (id: string) => {
   return request.get<Response<MouseDevice>>(`/api/devices/${id}`)
     .then((res) => {
       if (!res) {
-        console.error('获取鼠标设备失败: 无响应');
-        throw new Error('获取鼠标设备失败: 无响应');
+        console.error('Failed to fetch mouse device: No response');
+        throw new Error('Failed to fetch mouse device: No response');
       }
       
       // 如果res.data为null，返回一个空对象
       if (res.data === null) {
-        console.warn(`获取鼠标设备(ID: ${id})返回null，已转换为空对象`);
+        console.warn(`Mouse device fetch (ID: ${id}) returned null, converted to empty object`);
         return {} as any;
       }
       
-      return res.data;
+      // 检查响应结构并处理
+      const responseData = res.data;
+      if (responseData.code === 0 && responseData.data) {
+        // 直接返回data字段中的内容
+        return responseData.data;
+      }
+      
+      return responseData;
     });
 };
 
@@ -286,12 +300,12 @@ export const compareMice = (ids: string[]) => {
     .get<Response<ComparisonResult>>(`/api/devices/mice/compare?ids=${ids.join(',')}`)
     .then((res) => {
       if (!res) {
-        throw new Error('比较鼠标失败: 没有返回结果');
+        throw new Error('Mouse comparison failed: No results returned');
       }
       
       // 确保res.data存在，如果不存在则提供默认值
       if (!res.data) {
-        console.warn('compareMice: API返回结果缺少data字段，已使用默认空数据');
+        console.warn('compareMice: API response missing data field, using default empty data');
         return {
           mice: [],
           differences: {},
@@ -299,7 +313,14 @@ export const compareMice = (ids: string[]) => {
         };
       }
       
-      return res.data;
+      // 检查响应结构并处理
+      const responseData = res.data;
+      if (responseData.code === 0 && responseData.data) {
+        // 直接返回data字段中的内容
+        return responseData.data;
+      }
+      
+      return responseData;
     });
 };
 
@@ -332,7 +353,18 @@ export const getMouseSVG = (id: string, view: 'top' | 'side' = 'top') => {
 
 // 比较多个鼠标的SVG
 export const compareSVGs = (data: SVGCompareRequest) => {
-  return request.post<Response<SVGCompareResponse>>('/api/devices/mice/svg/compare', data).then((res) => res.data);
+  // 对请求进行额外的日志记录，方便调试
+  console.log('SVG比较请求数据:', data);
+  return request.post<Response<SVGCompareResponse>>('/api/devices/mice/svg/compare', data)
+    .then((res) => {
+      console.log('SVG比较响应:', res);
+      return res.data;
+    })
+    .catch(error => {
+      console.error('SVG比较请求失败:', error);
+      // 重新抛出错误以便上层处理
+      throw error;
+    });
 };
 
 // 获取有SVG数据的鼠标列表
