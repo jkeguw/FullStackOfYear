@@ -78,6 +78,21 @@ func T(c *gin.Context, key string, params map[string]interface{}) string {
 	return i18nService.(i18n.Service).T(localeStr, key, params)
 }
 
+// GetLanguage returns the current language from the context
+func GetLanguage(c *gin.Context) string {
+	locale, exists := c.Get(I18nKey)
+	if !exists {
+		return "en-US" // Default to English
+	}
+	
+	localeStr, ok := locale.(string)
+	if !ok {
+		return "en-US"
+	}
+	
+	return localeStr
+}
+
 // ErrorWithTranslation sends a translated error response
 func ErrorWithTranslation(c *gin.Context, httpStatus int, errorKey string, params map[string]interface{}) {
 	message := T(c, errorKey, params)

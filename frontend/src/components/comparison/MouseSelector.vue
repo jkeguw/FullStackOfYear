@@ -1,12 +1,12 @@
 <template>
   <div class="mouse-selector">
     <div class="grid grid-cols-1 gap-4">
-      <!-- 搜索栏 -->
+      <!-- Search bar -->
       <div class="search-container mb-4">
-        <el-input v-model="searchQuery" placeholder="搜索鼠标..." :prefix-icon="Search" clearable />
+        <el-input v-model="searchQuery" placeholder="Search mice..." :prefix-icon="Search" clearable />
       </div>
 
-      <!-- 鼠标列表 -->
+      <!-- Mouse list -->
       <div
         class="mouse-list bg-[#1A1A1A] border border-[#333333] rounded-lg p-4 max-h-96 overflow-y-auto"
       >
@@ -15,7 +15,7 @@
         </div>
 
         <div v-else-if="filteredMice.length === 0" class="text-center py-8 text-gray-400">
-          没有找到匹配的鼠标
+          No matching mice found
         </div>
 
         <div v-else class="space-y-3">
@@ -48,12 +48,12 @@
         </div>
       </div>
 
-      <!-- 最近查看的鼠标 -->
+      <!-- Recently viewed mice -->
       <div
         v-if="recentlyViewedMice.length > 0"
         class="recently-viewed bg-[#1A1A1A] border border-[#333333] rounded-lg p-4"
       >
-        <h3 class="text-lg font-medium text-white mb-4">最近查看</h3>
+        <h3 class="text-lg font-medium text-white mb-4">Recently Viewed</h3>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div
@@ -87,9 +87,9 @@ import { ref, computed, onMounted, defineProps, defineEmits } from 'vue';
 import { Search, Plus, Minus, Mouse } from '@element-plus/icons-vue';
 import { useComparisonStore, type MouseDevice } from '@/stores';
 import { getSVGMouseList } from '@/api/device';
-import { hardcodedMice } from '@/data/hardcodedMice'; // 导入硬编码的鼠标数据
+import { hardcodedMice } from '@/data/hardcodedMice'; // Import hardcoded mouse data
 
-// 定义props
+// Define props
 const props = defineProps({
   initialSelectedMice: {
     type: Array as () => MouseDevice[],
@@ -101,24 +101,24 @@ const props = defineProps({
   }
 });
 
-// 定义事件
+// Define events
 const emit = defineEmits(['select', 'cancel']);
 
-// 使用store
+// Use store
 const comparisonStore = useComparisonStore();
 
-// 搜索查询
+// Search query
 const searchQuery = ref('');
 const loading = ref(true);
 
-// 从API获取鼠标数据
+// Get mouse data from API
 const mice = ref([]);
 
-// 加载数据
+// Load data
 onMounted(async () => {
-  // 初始化已选择的鼠标
+  // Initialize selected mice
   if (props.initialSelectedMice && props.initialSelectedMice.length > 0) {
-    // 如果有初始选择的鼠标，确保在store中也标记为已选择
+    // If there are initially selected mice, make sure they are marked as selected in the store
     props.initialSelectedMice.forEach((mouse) => {
       if (!comparisonStore.isMouseSelected(mouse.id)) {
         comparisonStore.addMouse(mouse);
@@ -130,27 +130,85 @@ onMounted(async () => {
     loading.value = true;
     
     try {
-      // 尝试从API获取数据
+      // Try to get data from API
+      console.log('Requesting SVG mouse list with views: top,side');
       const response = await getSVGMouseList({ views: ['top', 'side'] });
-      if (response && response.code === 0 && response.data && response.data.devices && response.data.devices.length > 0) {
-        // API返回了有效数据，使用API数据
-        mice.value = response.data.devices.map(device => ({
+      
+      // Print response for debugging
+      console.log('API response:', response);
+      
+      // Check if the response format is correct (even if it returns an empty list)
+      if (response && response.code === 0 && response.data) {
+        // Ensure devices exists, even if it's not an array or is an empty array
+        const devices = response.data.devices || [];
+        
+        // Check if it's an array and log
+        if (!Array.isArray(devices)) {
+          console.warn('API returned devices is not an array:', devices);
+        }
+        
+        // API returned valid format data
+        if (Array.isArray(devices) && devices.length > 0) {
+          // Has mouse data, use API data
+          console.log('Mapping API data to mouse objects, device count:', devices.length);
+          
+          mice.value = devices.map(device => {
+            // 处理SVG数据供预览使用（如果有）
+            const svgData = {
+              top: device.svgData?.topView || '',
+              side: device.svgData?.sideView || ''
+            };
+            
+            return {
+              id: device.id,
+              name: device.name,
+              brand: device.brand,
+              weight: device.dimensions?.weight || 0,
+              connection_type: device.technical?.connectivity?.join(', ') || '',
+              sensor: device.technical?.sensor || '',
+              imageUrl: device.imageUrl || '',
+              svgData: svgData
+            };
+          });
+          console.log('Loaded mouse list using API data, retrieved', mice.value.length, 'mice');
+        } else {
+          // Data format is correct but the list is empty, also use hardcoded data as a supplement
+          console.warn('API returned device list is empty or incorrectly formatted, using hardcoded data as a fallback');
+          
+          // 使用硬编码数据并添加一个标志来区分
+          mice.value = hardcodedMice.map(device => ({
+            id: device.id,
+            name: device.name,
+            brand: device.brand,
+            weight: device.dimensions?.weight || 0,
+            connection_type: device.technical?.connectivity?.join(', ') || '',
+            sensor: device.technical?.sensor || '',
+            imageUrl: device.imageUrl || '',
+            isHardcoded: true // 添加标志
+          }));
+          
+          console.log('Loaded mouse list from hardcoded data, count:', mice.value.length);
+        }
+      } else {
+        // API response format is incorrect, fallback to hardcoded data
+        console.warn('API response format error, using hardcoded data as fallback');
+        console.warn('Response details:', response);
+        
+        mice.value = hardcodedMice.map(device => ({
           id: device.id,
           name: device.name,
           brand: device.brand,
           weight: device.dimensions?.weight || 0,
           connection_type: device.technical?.connectivity?.join(', ') || '',
           sensor: device.technical?.sensor || '',
-          imageUrl: device.imageUrl || ''
+          imageUrl: device.imageUrl || '',
+          isHardcoded: true // 添加标志
         }));
-        console.log('使用API数据加载鼠标列表，获取到', mice.value.length, '个鼠标');
-      } else {
-        // API没有返回有效数据，回退到硬编码数据
-        throw new Error('API返回的数据无效或为空');
       }
     } catch (error) {
-      console.warn('无法从API获取鼠标数据，使用硬编码备用数据', error);
-      // 使用硬编码数据
+      console.warn('Network error: Unable to connect to API, using hardcoded data as fallback', error);
+      
+      // Use hardcoded data
       mice.value = hardcodedMice.map(device => ({
         id: device.id,
         name: device.name,
@@ -158,19 +216,21 @@ onMounted(async () => {
         weight: device.dimensions?.weight || 0,
         connection_type: device.technical?.connectivity?.join(', ') || '',
         sensor: device.technical?.sensor || '',
-        imageUrl: device.imageUrl || ''
+        imageUrl: device.imageUrl || '',
+        isHardcoded: true // 添加标志
       }));
-      console.log('使用硬编码数据加载鼠标列表，获取到', mice.value.length, '个鼠标');
+      
+      console.log('Loaded mouse list using hardcoded data, retrieved', mice.value.length, 'mice');
     }
   } catch (error) {
-    console.error('加载鼠标数据失败:', error);
-    mice.value = []; // 设置为空数组，避免引用null
+    console.error('Failed to load mouse data:', error);
+    mice.value = []; // Set to empty array to avoid referencing null
   } finally {
     loading.value = false;
   }
 });
 
-// 过滤鼠标数据
+// Filter mouse data
 const filteredMice = computed(() => {
   if (!searchQuery.value) return mice.value;
 
@@ -180,41 +240,41 @@ const filteredMice = computed(() => {
   );
 });
 
-// 最近查看的鼠标
+// Recently viewed mice
 const recentlyViewedMice = computed(() => {
-  // 从store中获取最近查看的鼠标，而不是固定返回前3个
+  // Get recently viewed mice from store, instead of returning the first 3
   return comparisonStore.recentlyViewedMice;
 });
 
-// 选择鼠标
+// Select mouse
 const selectMouse = (mouse) => {
-  // 只选择鼠标，但不自动添加到比较列表，避免点击看详情就添加的问题
-  // 将鼠标添加到最近查看列表
+  // Only select the mouse, but don't automatically add it to the comparison list to avoid adding it when clicking for details
+  // Add mouse to recently viewed list
   comparisonStore.addToRecentlyViewed(mouse);
-  // 通知父组件选择变化
+  // Notify parent component of selection change
   emit('select', mouse);
 };
 
-// 切换鼠标选择状态
+// Toggle mouse selection state
 const toggleMouse = (mouse) => {
   if (isSelected(mouse)) {
-    // 如果鼠标已经被选中，但我们不想移除它
-    // 而是显示它不可选中的状态并保持选中
-    // 所以这里不做移除，只是将它添加到最近查看列表
+    // If the mouse is already selected, but we don't want to remove it
+    // Instead, display its unselectable state and keep it selected
+    // So we don't remove it here, just add it to the recently viewed list
     comparisonStore.addToRecentlyViewed(mouse);
   } else {
-    // 检查是否已达到最大选择数量
+    // Check if maximum selection count has been reached
     if (comparisonStore.selectedMice.length < props.maxSelection) {
       comparisonStore.addMouse(mouse);
-      // 将鼠标添加到最近查看列表
+      // Add mouse to recently viewed list
       comparisonStore.addToRecentlyViewed(mouse);
     }
   }
-  // 通知父组件选择变化
+  // Notify parent component of selection change
   emit('select', comparisonStore.selectedMice);
 };
 
-// 检查鼠标是否已被选择
+// Check if the mouse is already selected
 const isSelected = (mouse) => {
   return comparisonStore.isMouseSelected(mouse.id);
 };
@@ -235,7 +295,7 @@ const isSelected = (mouse) => {
   background: var(--claude-bg-light);
 }
 
-/* 美化滚动条 */
+/* Beautify scrollbar */
 .mouse-list {
   scrollbar-width: thin;
   scrollbar-color: var(--claude-border-light) var(--claude-bg-dark);

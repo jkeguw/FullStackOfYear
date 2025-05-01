@@ -1,4 +1,4 @@
-package main
+package scripts
 
 import (
 	"context"
@@ -37,7 +37,7 @@ type ColumnMapping struct {
 	Converter   func(string) (interface{}, error)
 }
 
-func main() {
+func ImportMouse() {
 	// Command line arguments
 	csvFile := flag.String("file", "", "Path to the CSV file to import")
 	mongoURI := flag.String("mongo", "mongodb://localhost:27017", "MongoDB connection URI")

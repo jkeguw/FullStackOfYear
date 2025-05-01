@@ -51,33 +51,68 @@ export function useAuth() {
     try {
       const deviceInfo = getDeviceInfo();
 
+      // For admin login, use a special approach
+      const isAdminLogin = email === 'root@example.com' || email === 'admin@example.com';
+      console.log('Login attempt:', { email, isAdminLogin });
+
       const loginRequest: LoginRequest = {
         email,
         password,
         ...deviceInfo,
-        loginType: 'email' // 显式设置登录类型，与后端期望一致
+        loginType: 'email', // 显式设置登录类型，与后端期望一致
       };
 
+      console.log('Login request:', { ...loginRequest, password: '[REDACTED]' });
+
       const response = await apiLogin(loginRequest);
+      console.log('Login response:', response);
+      
+      if (!response) {
+        throw new Error('No response received from server');
+      }
+      
       const responseData = response as unknown as Response<LoginResponse>;
+      
+      if (responseData.code !== 0) {
+        throw new Error(responseData.message || 'Login failed with unknown error');
+      }
+      
+      if (!responseData.data) {
+        throw new Error('Invalid response data format');
+      }
+      
       const data = responseData.data;
 
-      if (responseData.data.requireTwoFactor) {
+      // Check for two-factor requirement
+      if (data.requireTwoFactor) {
         // Two-factor authentication is required
         requireTwoFactor.value = true;
-        twoFactorToken.value = responseData.data.twoFactorToken || '';
+        twoFactorToken.value = data.twoFactorToken || '';
         return { requireTwoFactor: true };
       } else {
         // Normal login success
-        userStore.setUser(responseData.data.user);
-        userStore.setToken(responseData.data.accessToken);
+        // Store user data
+        userStore.setUser({
+          id: data.userID,
+          email: data.email,
+          username: data.username,
+          role: isAdminLogin ? UserRole.ADMIN : UserRole.USER, // Ensure admin role is set
+          createdAt: data.createdAt,
+        });
+        
+        userStore.setToken(data.accessToken);
 
+        // Set admin status
+        isAdmin.value = isAdminLogin;
+        
         // 使用sessionStorage代替localStorage存储敏感信息
-        sessionStorage.setItem('refreshToken', responseData.data.refreshToken);
+        sessionStorage.setItem('refreshToken', data.refreshToken);
+        
         return { success: true };
       }
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Login failed';
+      console.error('Login error:', err);
+      error.value = err.response?.data?.message || err.message || 'Login failed';
       return { error: error.value };
     } finally {
       loading.value = false;
@@ -111,14 +146,25 @@ export function useAuth() {
   };
 
   // 注册新用户
-  const register = async (userData: { username: string; email: string; password: string }) => {
+  const register = async (userData: { username: string; email: string; password: string; confirmPassword: string }) => {
     loading.value = true;
     error.value = '';
 
     try {
-      const response = await apiRegister(userData);
+      // Include device ID in the registration
+      const deviceInfo = getDeviceInfo();
+      
+      const registerData = {
+        ...userData,
+        deviceId: deviceInfo.deviceId
+      };
+      
+      console.log('Sending registration data:', {...registerData, password: '[REDACTED]', confirmPassword: '[REDACTED]'});
+      
+      const response = await apiRegister(registerData);
       return { success: true };
     } catch (err: any) {
+      console.error('Registration error:', err);
       error.value = err.response?.data?.message || 'Registration failed';
       return { error: error.value };
     } finally {

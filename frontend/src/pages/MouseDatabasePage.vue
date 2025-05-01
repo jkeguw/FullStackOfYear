@@ -1,11 +1,11 @@
 <template>
   <div class="mouse-database-container">
     <div class="database-header">
-      <h1 class="text-2xl font-bold">鼠标数据库</h1>
+      <h1 class="text-2xl font-bold">Mouse Database</h1>
       <div class="header-controls">
         <el-input
           v-model="searchQuery"
-          placeholder="搜索鼠标名称、品牌或形状"
+          placeholder="Search mouse name, brand, or shape"
           prefix-icon="el-icon-search"
           clearable
           class="search-input"
@@ -26,7 +26,7 @@
       <div class="results-container">
         <div class="results-header">
           <div class="results-count">
-            找到 <span class="font-bold">{{ filteredMice.length }}</span> 个鼠标
+            Found <span class="font-bold">{{ filteredMice.length }}</span> mice
           </div>
           <SortControls
             :sort-options="sortOptions"
@@ -39,7 +39,7 @@
         <div v-if="loading" v-loading="true" class="loading-container"></div>
 
         <div v-else-if="!filteredMice.length" class="empty-state">
-          <el-empty description="没有找到符合条件的鼠标" />
+          <el-empty description="No mice found matching your criteria" />
         </div>
 
         <!-- 网格视图 -->
@@ -47,7 +47,7 @@
           <el-card v-for="mouse in displayedMice" :key="mouse.id" class="mouse-card">
             <div class="mouse-card-content">
               <div class="mouse-image" @click="navigateToMouseDetail(mouse.id)">
-                <img v-if="mouse.imageUrl" :src="mouse.imageUrl" alt="鼠标图片" class="img-fluid" />
+                <img v-if="mouse.imageUrl" :src="mouse.imageUrl" alt="Mouse image" class="img-fluid" />
                 <div v-else class="placeholder-image">
                   <i class="el-icon-mouse"></i>
                 </div>
@@ -58,20 +58,21 @@
                 </h3>
                 <div class="mouse-specs">
                   <div class="spec-item">
-                    <span class="spec-label">尺寸:</span>
-                    <span class="spec-value"
-                      >{{ mouse.dimensions.length }}x{{ mouse.dimensions.width }}x{{
-                        mouse.dimensions.height
-                      }}mm</span
-                    >
+                    <span class="spec-label">Size:</span>
+                    <span class="spec-value" v-if="mouse.dimensions">
+                      {{ mouse.dimensions.length }}x{{ mouse.dimensions.width }}x{{ mouse.dimensions.height }}mm
+                    </span>
+                    <span class="spec-value" v-else>N/A</span>
                   </div>
                   <div class="spec-item">
-                    <span class="spec-label">重量:</span>
-                    <span class="spec-value">{{ mouse.weight }}g</span>
+                    <span class="spec-label">Weight:</span>
+                    <span class="spec-value" v-if="mouse.weight">{{ mouse.weight }}g</span>
+                    <span class="spec-value" v-else>N/A</span>
                   </div>
                   <div class="spec-item">
-                    <span class="spec-label">形状:</span>
-                    <span class="spec-value">{{ mouse.shape.type }}</span>
+                    <span class="spec-label">Shape:</span>
+                    <span class="spec-value" v-if="mouse.shape">{{ mouse.shape.type }}</span>
+                    <span class="spec-value" v-else>N/A</span>
                   </div>
                 </div>
                 <div class="mouse-card-actions">
@@ -83,7 +84,7 @@
                       :disabled="isInComparison(mouse.id)"
                       icon="el-icon-sort"
                       circle
-                      title="添加到比较"
+                      title="Add to comparison"
                       @click.stop="addToComparison(mouse)"
                     ></el-button>
                     <AddToCartButton
@@ -108,28 +109,36 @@
         <!-- 列表视图 -->
         <div v-else class="list-view">
           <el-table :data="displayedMice" stripe border class="mouse-table">
-            <el-table-column label="品牌" prop="brand" min-width="80" />
-            <el-table-column label="型号" prop="name" min-width="120">
+            <el-table-column label="Brand" prop="brand" min-width="80" />
+            <el-table-column label="Model" prop="name" min-width="120">
               <template #default="{ row }">
                 <a class="mouse-link" @click="navigateToMouseDetail(row.id)">{{ row.name }}</a>
               </template>
             </el-table-column>
-            <el-table-column label="尺寸 (mm)" min-width="150">
+            <el-table-column label="Size (mm)" min-width="150">
               <template #default="{ row }">
-                {{ row.dimensions.length }}x{{ row.dimensions.width }}x{{ row.dimensions.height }}
+                <template v-if="row.dimensions">
+                  {{ row.dimensions.length }}x{{ row.dimensions.width }}x{{ row.dimensions.height }}
+                </template>
+                <template v-else>N/A</template>
               </template>
             </el-table-column>
-            <el-table-column label="重量 (g)" prop="weight" min-width="80" />
-            <el-table-column label="形状" min-width="100">
+            <el-table-column label="Weight (g)" min-width="80">
               <template #default="{ row }">
-                {{ row.shape.type }}
+                {{ row.weight || 'N/A' }}
               </template>
             </el-table-column>
-            <el-table-column label="连接方式" prop="connectivity" min-width="100" />
-            <el-table-column label="价格" prop="price" min-width="80">
+            <el-table-column label="Shape" min-width="100">
+              <template #default="{ row }">
+                <template v-if="row.shape">{{ row.shape.type }}</template>
+                <template v-else>N/A</template>
+              </template>
+            </el-table-column>
+            <el-table-column label="Connectivity" prop="connectivity" min-width="100" />
+            <el-table-column label="Price" prop="price" min-width="80">
               <template #default="{ row }"> ¥{{ row.price || '699' }} </template>
             </el-table-column>
-            <el-table-column label="操作" fixed="right" width="160">
+            <el-table-column label="Actions" fixed="right" width="160">
               <template #default="{ row }">
                 <div class="table-actions">
                   <el-button
@@ -138,7 +147,7 @@
                     icon="el-icon-sort"
                     circle
                     :disabled="isInComparison(row.id)"
-                    title="添加到比较"
+                    title="Add to comparison"
                     @click.stop="addToComparison(row)"
                   ></el-button>
                   <AddToCartButton
@@ -209,7 +218,7 @@ const pageSize = ref(20);
 const filters = [
   {
     id: 'brand',
-    label: '品牌',
+    label: 'Brand',
     type: 'checkbox',
     options: [
       { label: 'Logitech', value: 'Logitech' },
@@ -221,30 +230,30 @@ const filters = [
   },
   {
     id: 'shape.type',
-    label: '形状',
+    label: 'Shape',
     type: 'checkbox',
     options: [
-      { label: '对称', value: 'Symmetrical' },
-      { label: '右手人体工学', value: 'Ergonomic' },
-      { label: '低矮', value: 'Low Profile' },
-      { label: '大型', value: 'Large' },
-      { label: '中型', value: 'Medium' },
-      { label: '小型', value: 'Small' }
+      { label: 'Symmetrical', value: 'Symmetrical' },
+      { label: 'Ergonomic', value: 'Ergonomic' },
+      { label: 'Low Profile', value: 'Low Profile' },
+      { label: 'Large', value: 'Large' },
+      { label: 'Medium', value: 'Medium' },
+      { label: 'Small', value: 'Small' }
     ]
   },
   {
     id: 'connectivity',
-    label: '连接方式',
+    label: 'Connectivity',
     type: 'checkbox',
     options: [
-      { label: '有线', value: 'Wired' },
-      { label: '无线', value: 'Wireless' },
-      { label: '双模', value: 'Dual-mode' }
+      { label: 'Wired', value: 'Wired' },
+      { label: 'Wireless', value: 'Wireless' },
+      { label: 'Dual-mode', value: 'Dual-mode' }
     ]
   },
   {
     id: 'weight',
-    label: '重量范围',
+    label: 'Weight Range',
     type: 'range',
     min: 40,
     max: 150,
@@ -254,13 +263,13 @@ const filters = [
 
 // 排序选项
 const sortOptions = [
-  { label: '重量', value: 'weight' },
-  { label: '长度', value: 'dimensions.length' },
-  { label: '宽度', value: 'dimensions.width' },
-  { label: '高度', value: 'dimensions.height' },
-  { label: '品牌', value: 'brand' },
-  { label: '型号', value: 'name' },
-  { label: '价格', value: 'price' }
+  { label: 'Weight', value: 'weight' },
+  { label: 'Length', value: 'dimensions.length' },
+  { label: 'Width', value: 'dimensions.width' },
+  { label: 'Height', value: 'dimensions.height' },
+  { label: 'Brand', value: 'brand' },
+  { label: 'Model', value: 'name' },
+  { label: 'Price', value: 'price' }
   // 已移除'最新上架'选项
 ];
 
@@ -385,12 +394,12 @@ function navigateToMouseDetail(mouseId: string) {
 function addToComparison(mouse: MouseDevice) {
   if (comparisonStore.selectedMice.length >= 3) {
     // 已达到最大比较数量
-    ElMessage.warning('最多只能选择3个鼠标进行比较');
+    ElMessage.warning('You can only select up to 3 mice for comparison');
     return;
   }
 
   comparisonStore.addMouse(mouse);
-  ElMessage.success(`已添加 ${mouse.brand} ${mouse.name} 到比较列表`);
+  ElMessage.success(`Added ${mouse.brand} ${mouse.name} to comparison list`);
 }
 
 function isInComparison(mouseId: string) {
@@ -402,11 +411,33 @@ async function fetchMice() {
   loading.value = true;
   try {
     const response = await getDevices({ type: 'mouse' });
-    const deviceListResponse = response as unknown as DeviceListResponse;
-    allMice.value = deviceListResponse.devices as MouseDevice[];
+    console.log('API Response:', response); // 添加调试日志
+    
+    let deviceListResponse: DeviceListResponse;
+    
+    // 处理各种可能的响应格式
+    if (response && 'devices' in response) {
+      deviceListResponse = response as DeviceListResponse;
+    } else if (response && response.data && 'devices' in response.data) {
+      deviceListResponse = response.data as DeviceListResponse;
+    } else {
+      console.error('Unexpected API response format:', response);
+      ElMessage.error('Invalid API response format');
+      allMice.value = [];
+      loading.value = false;
+      return;
+    }
+    
+    if (Array.isArray(deviceListResponse.devices)) {
+      allMice.value = deviceListResponse.devices as MouseDevice[];
+      console.log('Loaded mice:', allMice.value.length);
+    } else {
+      console.error('No devices array in response:', deviceListResponse);
+      allMice.value = [];
+    }
   } catch (error) {
     console.error('Error fetching mice:', error);
-    ElMessage.error('获取鼠标数据失败');
+    ElMessage.error('Failed to fetch mouse data');
   } finally {
     loading.value = false;
   }

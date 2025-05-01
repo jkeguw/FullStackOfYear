@@ -3,8 +3,8 @@
     <div class="login-container">
       <div class="login-card">
         <div class="text-center mb-6">
-          <h2 class="text-2xl font-bold">账户登录</h2>
-          <p class="text-gray-500">欢迎回来！请登录您的账户</p>
+          <h2 class="text-2xl font-bold">Sign In</h2>
+          <p class="text-gray-500">Welcome back! Please sign in to your account</p>
         </div>
 
         <!-- 登录表单 -->
@@ -16,19 +16,19 @@
             label-position="top"
             @submit.prevent="handleLogin"
           >
-            <el-form-item label="邮箱" prop="email">
-              <el-input v-model="loginForm.email" placeholder="请输入邮箱">
+            <el-form-item label="Email" prop="email">
+              <el-input v-model="loginForm.email" placeholder="Enter your email">
                 <template #prefix>
                   <el-icon><Message /></el-icon>
                 </template>
               </el-input>
             </el-form-item>
 
-            <el-form-item label="密码" prop="password">
+            <el-form-item label="Password" prop="password">
               <el-input
                 v-model="loginForm.password"
                 type="password"
-                placeholder="请输入密码"
+                placeholder="Enter your password"
                 show-password
                 @keyup.enter="handleLogin"
               >
@@ -39,55 +39,42 @@
             </el-form-item>
 
             <div class="flex justify-between items-center mb-4">
-              <el-checkbox v-model="rememberMe">记住我</el-checkbox>
-              <el-button text>忘记密码？</el-button>
+              <el-checkbox v-model="rememberMe">Remember me</el-checkbox>
+              <el-button text>Forgot password?</el-button>
             </div>
 
             <el-form-item>
               <el-button type="primary" native-type="submit" class="w-full" :loading="loading">
-                登录
+                Sign In
               </el-button>
             </el-form-item>
           </el-form>
 
-          <div class="divider my-6 text-center">
-            <span class="px-2 bg-[#1E1E1E] text-gray-500">或</span>
-          </div>
-
-          <div class="social-login">
-            <el-button class="w-full mb-3" @click="oauthLogin('google')">
-              <template #icon>
-                <img src="/google-icon.svg" class="w-5 h-5 mr-2" alt="Google" />
-              </template>
-              使用Google账号登录
-            </el-button>
-
-            <div class="text-center mt-6">
-              <p class="text-gray-600">
-                还没有账户？
-                <router-link to="/register" class="text-blue-500 hover:text-blue-700"
-                  >立即注册</router-link
-                >
-              </p>
-            </div>
+          <div class="text-center mt-6">
+            <p class="text-gray-600">
+              Don't have an account?
+              <router-link to="/register" class="text-blue-500 hover:text-blue-700"
+                >Register now</router-link
+              >
+            </p>
           </div>
         </div>
 
         <!-- 两因素认证验证 -->
         <div v-if="requireTwoFactor">
           <div class="text-center">
-            <h3 class="text-xl font-medium mb-4">两步验证</h3>
-            <p class="mb-6">请输入验证码以继续登录</p>
+            <h3 class="text-xl font-medium mb-4">Two-Factor Authentication</h3>
+            <p class="mb-6">Please enter the verification code to continue</p>
             <el-input
               v-model="twoFactorCode"
-              placeholder="请输入6位验证码"
+              placeholder="Enter 6-digit code"
               class="mb-4 max-w-xs mx-auto"
               maxlength="6"
             ></el-input>
             <div class="flex justify-center gap-4">
-              <el-button @click="cancelTwoFactor">取消</el-button>
+              <el-button @click="cancelTwoFactor">Cancel</el-button>
               <el-button type="primary" @click="handleTwoFactorVerify(twoFactorCode)"
-                >验证</el-button
+                >Verify</el-button
               >
             </div>
           </div>
@@ -118,12 +105,12 @@ const loginForm = reactive({
 // 规则
 const rules = {
   email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
+    { required: true, message: 'Please enter your email', trigger: 'blur' },
+    { type: 'email', message: 'Please enter a valid email address', trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能小于6个字符', trigger: 'blur' }
+    { required: true, message: 'Please enter your password', trigger: 'blur' },
+    { min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }
   ]
 };
 
@@ -148,7 +135,7 @@ onMounted(() => {
   // 处理来自其他页面的重定向
   const redirect = route.query.redirect as string;
   if (redirect) {
-    ElMessage.info('请先登录以继续');
+    ElMessage.info('Please sign in to continue');
   }
 });
 
@@ -174,7 +161,7 @@ const handleLogin = async () => {
             localStorage.removeItem('rememberedEmail');
           }
 
-          ElMessage.success('登录成功');
+          ElMessage.success('Signed in successfully');
 
           // 重定向到首页或来源页面
           const redirect = (route.query.redirect as string) || '/';
@@ -183,8 +170,8 @@ const handleLogin = async () => {
           ElMessage.error(result.error);
         }
       } catch (error) {
-        console.error('登录失败', error);
-        ElMessage.error('登录失败，请检查您的凭据');
+        console.error('Login failed', error);
+        ElMessage.error('Login failed, please check your credentials');
       } finally {
         loading.value = false;
       }
@@ -201,7 +188,7 @@ const handleTwoFactorVerify = async (code: string) => {
 
     if (result.success) {
       // 验证成功
-      ElMessage.success('验证成功');
+      ElMessage.success('Verification successful');
 
       // 保存邮箱（如果勾选了记住我）
       if (rememberMe.value) {
@@ -215,8 +202,8 @@ const handleTwoFactorVerify = async (code: string) => {
       ElMessage.error(result.error);
     }
   } catch (error) {
-    console.error('验证失败', error);
-    ElMessage.error('验证失败，请检查您的验证码');
+    console.error('Verification failed', error);
+    ElMessage.error('Verification failed, please check your code');
   } finally {
     loading.value = false;
   }
@@ -233,7 +220,7 @@ const handleRecoveryCodeVerify = async (code: string) => {
 
     if (result.success) {
       // 验证成功
-      ElMessage.success('恢复码验证成功');
+      ElMessage.success('Recovery code verified successfully');
 
       // 保存邮箱（如果勾选了记住我）
       if (rememberMe.value) {
@@ -247,8 +234,8 @@ const handleRecoveryCodeVerify = async (code: string) => {
       ElMessage.error(result.error);
     }
   } catch (error) {
-    console.error('恢复码验证失败', error);
-    ElMessage.error('恢复码验证失败，请检查您的恢复码');
+    console.error('Recovery code verification failed', error);
+    ElMessage.error('Recovery code verification failed, please check your code');
   } finally {
     loading.value = false;
   }
@@ -259,20 +246,7 @@ const cancelTwoFactor = () => {
   requireTwoFactor.value = false;
 };
 
-// OAuth登录
-const oauthLogin = async (provider: string) => {
-  try {
-    loading.value = true;
-    const { loginWithOAuth } = useAuth();
-    await loginWithOAuth(provider);
-    // OAuth登录通常会在新窗口完成，这里不需要额外处理
-  } catch (error) {
-    console.error('OAuth登录失败', error);
-    ElMessage.error(`${provider}登录失败，请稍后重试`);
-  } finally {
-    loading.value = false;
-  }
-};
+// OAuth登录功能已移除
 </script>
 
 <style scoped>

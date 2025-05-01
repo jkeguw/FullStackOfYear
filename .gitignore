@@ -42,3 +42,4 @@ go.work
 # Frontend
 .nuxt/
 *.sw?
+**/.claude/settings.local.json

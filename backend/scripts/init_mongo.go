@@ -1,4 +1,4 @@
-package main
+package scripts
 
 import (
 	"context"
@@ -84,7 +84,7 @@ type MouseDevice struct {
 	} `bson:"recommended"`
 }
 
-func main() {
+func InitMongo() {
 	// 加载环境变量
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Printf("Warning: Could not load .env file: %v", err)

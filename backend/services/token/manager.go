@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"project/backend/config"
 	"project/backend/internal/errors"
+	"project/backend/services/jwt"
 	"time"
 )
 
@@ -37,21 +38,21 @@ func NewManager(rdb *redis.Client) *Manager {
 // GenerateTokenPair creates both access and refresh tokens
 func (m *Manager) GenerateTokenPair(userID, role, deviceID string) (string, string, error) {
 	// Generate access token
-	accessClaims := jwtService.Claims{
+	accessClaims := jwt.Claims{
 		UserID:   userID,
 		Role:     role,
 		DeviceID: deviceID,
 		Type:     "access",
 	}
 
-	jwtSvc := jwtService.NewService(config.GetConfig().JWT)
+	jwtSvc := jwt.NewService(config.GetConfig().JWT)
 	accessToken, expiresAt, err := jwtSvc.GenerateToken(accessClaims, config.GetConfig().JWT.AccessExpire)
 	if err != nil {
 		return "", "", err
 	}
 
 	// Generate refresh token
-	refreshClaims := jwtService.Claims{
+	refreshClaims := jwt.Claims{
 		UserID:   userID,
 		Role:     role,
 		DeviceID: deviceID,
@@ -93,7 +94,7 @@ func (m *Manager) StoreTokens(ctx context.Context, accessToken, refreshToken str
 	pipe := m.rdb.Pipeline()
 
 	pipe.Set(ctx, accessKey, accessToken, time.Until(info.ExpiresAt))
-	pipe.Set(ctx, refreshKey, refreshToken, config.GetConfig().JWT.RefreshExpire)
+	pipe.Set(ctx, fmt.Sprintf(refreshTokenKey, info.UserID, info.DeviceID), refreshToken, config.GetConfig().JWT.RefreshExpire)
 	pipe.SAdd(ctx, userKey, info.DeviceID)
 	pipe.Expire(ctx, userKey, config.GetConfig().JWT.RefreshExpire)
 
@@ -163,8 +164,8 @@ func (m *Manager) InvalidateTokens(ctx context.Context, userID, deviceID string)
 	return nil
 }
 
-func (m *Manager) ValidateRefreshToken(token string) (*jwtService.Claims, error) {
-	jwtSvc := jwtService.NewService(config.GetConfig().JWT)
+func (m *Manager) ValidateRefreshToken(token string) (*jwt.Claims, error) {
+	jwtSvc := jwt.NewService(config.GetConfig().JWT)
 	claims, err := jwtSvc.ParseToken(token)
 	if err != nil {
 		return nil, err

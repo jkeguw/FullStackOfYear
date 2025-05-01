@@ -23,16 +23,20 @@ type Service interface {
 	
 	// 兼容层新增方法
 	GetMouseDevice(ctx context.Context, deviceID primitive.ObjectID) (*models.MouseDevice, error)
+	UpdateMouseDevice(ctx context.Context, deviceID string, request device.UpdateMouseRequest) (*models.MouseDevice, error)
 
 	DeleteDevice(ctx context.Context, deviceID string) error
 	ListDevices(ctx context.Context, filter device.DeviceListFilter) (*device.DeviceListResponse, error)
 	
 	// 相似度相关
 	CompareMice(ctx context.Context, ids []string) (*device.ComparisonResponse, error)
+	FindSimilarMice(ctx context.Context, mouseID string, limit int) (*device.SimilarityResponse, error)
 
 	
 	// 用户设备相关
 	CreateUserDevice(ctx context.Context, userID string, request device.CreateUserDeviceRequest) (*models.UserDevice, error)
+	UpdateUserDevice(ctx context.Context, userID, userDeviceID string, request device.UpdateUserDeviceRequest) (*models.UserDevice, error)
+	DeleteUserDevice(ctx context.Context, userID string, userDeviceID string) error
 
 	GetUserDeviceByID(ctx context.Context, userID, userDeviceID string) (*models.UserDevice, error)
 	GetUserDevices(ctx context.Context, userID string, page, pageSize int) (*device.UserDeviceListResponse, error)
@@ -57,6 +61,7 @@ type Service interface {
 	
 	// 兼容层新增方法
 	CreateDeviceReview(ctx context.Context, userID string, request device.CreateReviewRequest) (*models.DeviceReview, error)
+	GetDeviceReview(ctx context.Context, reviewID string) (*models.DeviceReview, error)
 
 	UpdateDeviceReview(ctx context.Context, userID string, reviewID string, request device.UpdateReviewRequest) (*models.DeviceReview, error)
 	DeleteDeviceReview(ctx context.Context, userID string, reviewID string) error
@@ -152,17 +157,27 @@ func (s *DefaultService) FindSimilarMice(ctx context.Context, mouseID string, li
 	return nil, nil
 }
 
+// UpdateUserDevice 更新用户设备配置
+func (s *DefaultService) UpdateUserDevice(ctx context.Context, userID string, userDeviceID string, request device.UpdateUserDeviceRequest) (*models.UserDevice, error) {
+	// 空实现，仅为了满足接口
+	return nil, nil
+}
+
+// DeleteUserDevice 已在前面定义
+
+// GetDeviceReview 获取评测
+func (s *DefaultService) GetDeviceReview(ctx context.Context, reviewID string) (*models.DeviceReview, error) {
+	// 空实现，仅为了满足接口
+	return nil, nil
+}
+
 // CreateUserDevice 创建用户设备
 func (s *DefaultService) CreateUserDevice(ctx context.Context, userID string, request device.CreateUserDeviceRequest) (*models.UserDevice, error) {
 	// 空实现，仅为了满足接口
 	return nil, nil
 }
 
-// UpdateUserDevice 更新用户设备
-func (s *DefaultService) UpdateUserDevice(ctx context.Context, userID, userDeviceID string, request device.UpdateUserDeviceRequest) (*models.UserDevice, error) {
-	// 空实现，仅为了满足接口
-	return nil, nil
-}
+// UpdateUserDevice 已在前面定义
 
 // GetUserDeviceByID 根据ID获取用户设备
 func (s *DefaultService) GetUserDeviceByID(ctx context.Context, userID, userDeviceID string) (*models.UserDevice, error) {
@@ -188,11 +203,7 @@ func (s *DefaultService) GetUserDevice(ctx context.Context, userID string, userD
 	return nil, nil
 }
 
-// DeleteUserDevice 删除用户设备
-func (s *DefaultService) DeleteUserDevice(ctx context.Context, userID string, userDeviceID string) error {
-	// 空实现，仅为了满足接口
-	return nil
-}
+// DeleteUserDevice 已在前面定义
 
 // ListUserDevices 列出用户设备
 func (s *DefaultService) ListUserDevices(ctx context.Context, request device.UserDeviceListRequest) (*device.UserDeviceListResponse, error) {
@@ -260,11 +271,7 @@ func (s *DefaultService) CreateDeviceReview(ctx context.Context, userID string, 
 	return nil, nil
 }
 
-// GetDeviceReview 获取设备评测
-func (s *DefaultService) GetDeviceReview(ctx context.Context, reviewID string) (*models.DeviceReview, error) {
-	// 空实现，仅为了满足接口
-	return nil, nil
-}
+// GetDeviceReview 已在前面定义
 
 // UpdateDeviceReview 更新设备评测
 func (s *DefaultService) UpdateDeviceReview(ctx context.Context, userID string, reviewID string, request device.UpdateReviewRequest) (*models.DeviceReview, error) {
@@ -288,21 +295,17 @@ func (s *DefaultService) ListDeviceReviews(ctx context.Context, request device.D
 func (s *ServiceImpl) CreateMouseDevice(ctx context.Context, request device.CreateMouseRequest) (*models.MouseDevice, error) {
 	now := time.Now()
 	
-	// 创建基础设备信息
-	deviceInfo := models.HardwareDevice{
-
-		Name:        request.Name,
-		Brand:       request.Brand,
-		Type:        models.DeviceTypeMouse,
-		ImageURL:    request.ImageURL,
-		Description: request.Description,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-	}
-	
 	// 创建鼠标设备
 	mouseDevice := &models.MouseDevice{
-
+		HardwareDevice: models.HardwareDevice{
+			Name:        request.Name,
+			Brand:       request.Brand,
+			Type:        models.DeviceTypeMouse,
+			ImageURL:    request.ImageURL,
+			Description: request.Description,
+			CreatedAt:   now,
+			UpdatedAt:   now,
+		},
 		Dimensions:     request.Dimensions,
 		Shape:          request.Shape,
 		Technical:      request.Technical,
@@ -311,7 +314,7 @@ func (s *ServiceImpl) CreateMouseDevice(ctx context.Context, request device.Crea
 	
 	// 保存到数据库
 	_, err := s.db.Collection(models.DevicesCollection).InsertOne(ctx, mouseDevice)
-
+	if err != nil {
 		return nil, errors.NewInternalServerError("创建鼠标设备失败: " + err.Error())
 	}
 	
@@ -327,7 +330,7 @@ func (s *ServiceImpl) GetDeviceByID(ctx context.Context, deviceID string) (*mode
 	
 	var deviceDoc models.HardwareDevice
 	err = s.db.Collection(models.DevicesCollection).FindOne(ctx, bson.M{"_id": id}).Decode(&deviceDoc)
-
+	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, errors.NewNotFoundError("设备不存在")
 		}
@@ -349,9 +352,9 @@ func (s *ServiceImpl) GetDeviceList(ctx context.Context, deviceType string, page
 	
 	fmt.Printf("DEBUG: GetDeviceList called with type=%s, page=%d, pageSize=%d\n", deviceType, page, pageSize)
 	
-
 	filter := bson.M{}
-
+	
+	if deviceType != "" {
 		// 将类型转为小写，确保匹配不区分大小写
 		filter["type"] = strings.ToLower(deviceType)
 		fmt.Printf("DEBUG: Query filter set to %+v\n", filter)
@@ -359,24 +362,25 @@ func (s *ServiceImpl) GetDeviceList(ctx context.Context, deviceType string, page
 	
 	// 设置分页
 	if page <= 0 {
-
+		page = 1
 	}
 	
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
-
+	}
 	
 	skip := (page - 1) * pageSize
 	skipInt64 := int64(skip)
-
+	limitInt64 := int64(pageSize)
 	
 	// 首先尝试在devices集合中查询
 	totalInDevices, totalErr := s.db.Collection(models.DevicesCollection).CountDocuments(ctx, filter)
-
+	if totalErr != nil {
+		return defaultResponse, nil
+	}
 	
 	// 如果devices集合中没有数据，则尝试查询原始的devices集合
 	if totalInDevices == 0 {
-
 		mouseTotal, mouseErr := s.db.Collection("devices").CountDocuments(ctx, filter)
 		if mouseErr != nil || mouseTotal == 0 {
 			// 如果还是找不到，则返回空响应而不是错误
@@ -385,30 +389,30 @@ func (s *ServiceImpl) GetDeviceList(ctx context.Context, deviceType string, page
 		
 		// 在原始的devices集合中查询
 		mouseCursor, mouseErr := s.db.Collection("devices").Find(ctx, filter, &options.FindOptions{
-
+			Skip:  &skipInt64,
 			Limit: &limitInt64,
 			Sort:  bson.D{{Key: "createdAt", Value: -1}},
 		})
 		
 		if mouseErr != nil {
 			return defaultResponse, nil
-
+		}
 		defer mouseCursor.Close(ctx)
 		
 		// 直接解析为MouseDevice类型
 		var mouseDevices []models.MouseDevice
-
+		if err := mouseCursor.All(ctx, &mouseDevices); err != nil {
 			return defaultResponse, nil
 		}
 		
 		// 检查是否找到了设备
 		if len(mouseDevices) == 0 {
-
+			return defaultResponse, nil
 		}
 		
 		// 转换为响应格式
 		deviceList := make([]device.DevicePreview, len(mouseDevices))
-
+		for i, d := range mouseDevices {
 			deviceList[i] = device.DevicePreview{
 				ID:          d.ID.Hex(),
 				Name:        d.Name,
@@ -422,17 +426,15 @@ func (s *ServiceImpl) GetDeviceList(ctx context.Context, deviceType string, page
 		
 		return &device.DeviceListResponse{
 			Devices:  deviceList,
-
+			Total:    int(mouseTotal),
 			Page:     page,
 			PageSize: pageSize,
 		}, nil
 	}
 	
 	// 原来的查询逻辑
-	
-
 	cursor, err := s.db.Collection(models.DevicesCollection).Find(ctx, filter, &options.FindOptions{
-
+		Skip:  &skipInt64,
 		Limit: &limitInt64,
 		Sort:  bson.D{{Key: "createdAt", Value: -1}},
 	})
@@ -443,20 +445,21 @@ func (s *ServiceImpl) GetDeviceList(ctx context.Context, deviceType string, page
 	
 	// 解析基本设备信息
 	var devices []models.HardwareDevice
-
+	if err := cursor.All(ctx, &devices); err != nil {
 		return defaultResponse, nil // 返回空响应而不是错误
 	}
 	
 	// 转换为响应格式
 	var response device.DeviceListResponse
-
+	
+	response.Total = int(totalInDevices)
 	response.Page = page
 	response.PageSize = pageSize
 	response.Devices = make([]device.DevicePreview, len(devices))
 	
 	for i, d := range devices {
 		response.Devices[i] = device.DevicePreview{
-
+			ID:          d.ID.Hex(),
 			Name:        d.Name,
 			Brand:       d.Brand,
 			Type:        string(d.Type),
@@ -479,7 +482,7 @@ func (s *ServiceImpl) CreateUserDevice(ctx context.Context, userID string, reque
 	
 	// 创建用户设备
 	now := time.Now()
-
+	userDevice := &models.UserDevice{
 		ID:          primitive.NewObjectID(),
 		UserID:      userObjectID,
 		Name:        request.Name,
@@ -492,21 +495,21 @@ func (s *ServiceImpl) CreateUserDevice(ctx context.Context, userID string, reque
 	
 	// 处理设备设置
 	for i, d := range request.Devices {
-
+		deviceID, err := primitive.ObjectIDFromHex(d.DeviceID)
 		if err != nil {
 			return nil, errors.NewBadRequestError("无效的设备ID: " + d.DeviceID)
 		}
 		
 		userDevice.Devices[i] = models.UserDeviceSettings{
 			DeviceID:   deviceID,
-
+			DeviceType: models.DeviceTypeEnum(d.DeviceType),
 			Settings:   d.Settings,
 		}
 	}
 	
 	// 保存到数据库
 	_, err = s.db.Collection(models.UserDevicesCollection).InsertOne(ctx, userDevice)
-
+	if err != nil {
 		return nil, errors.NewInternalServerError("创建用户设备配置失败: " + err.Error())
 	}
 	
@@ -523,47 +526,46 @@ func (s *ServiceImpl) UpdateUserDevice(ctx context.Context, userID, userDeviceID
 	
 	deviceObjectID, err := primitive.ObjectIDFromHex(userDeviceID)
 	if err != nil {
-
+		return nil, errors.NewBadRequestError("无效的设备ID")
 	}
 	
 	// 查找当前用户设备
 	var userDevice models.UserDevice
-
+	err = s.db.Collection(models.UserDevicesCollection).FindOne(ctx, bson.M{
 		"_id":    deviceObjectID,
 		"userId": userObjectID,
 	}).Decode(&userDevice)
 	
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-
+			return nil, errors.NewNotFoundError("未找到用户设备配置")
 		}
 		return nil, errors.NewInternalServerError("获取用户设备配置失败: " + err.Error())
 	}
 	
 	// 更新字段
 	if request.Name != "" {
-
+		userDevice.Name = request.Name
 	}
 	
 	if request.Description != "" {
 		userDevice.Description = request.Description
-
+	}
 	
 	userDevice.IsPublic = request.IsPublic
 	
-
 	if len(request.Devices) > 0 {
-
+		userDevice.Devices = make([]models.UserDeviceSettings, len(request.Devices))
 		
 		for i, d := range request.Devices {
 			deviceID, err := primitive.ObjectIDFromHex(d.DeviceID)
-
+			if err != nil {
 				return nil, errors.NewBadRequestError("无效的设备ID: " + d.DeviceID)
 			}
 			
 			userDevice.Devices[i] = models.UserDeviceSettings{
 				DeviceID:   deviceID,
-
+				DeviceType: models.DeviceTypeEnum(d.DeviceType),
 				Settings:   d.Settings,
 			}
 		}
@@ -571,15 +573,14 @@ func (s *ServiceImpl) UpdateUserDevice(ctx context.Context, userID, userDeviceID
 	
 	userDevice.UpdatedAt = time.Now()
 	
-
 	_, err = s.db.Collection(models.UserDevicesCollection).ReplaceOne(ctx, bson.M{
-
+		"_id":    deviceObjectID,
 		"userId": userObjectID,
 	}, userDevice)
 	
 	if err != nil {
 		return nil, errors.NewInternalServerError("更新用户设备配置失败: " + err.Error())
-
+	}
 	
 	return &userDevice, nil
 }
@@ -597,7 +598,7 @@ func (s *ServiceImpl) GetUserDeviceByID(ctx context.Context, userID, userDeviceI
 
 	// 如果提供了用户ID，确保只能查询该用户的设备
 	if userID != "" {
-
+		userObjectID, err := primitive.ObjectIDFromHex(userID)
 		if err != nil {
 			return nil, errors.NewBadRequestError("无效的用户ID")
 		}
@@ -609,11 +610,11 @@ func (s *ServiceImpl) GetUserDeviceByID(ctx context.Context, userID, userDeviceI
 	
 	// 查询设备
 	var userDevice models.UserDevice
-
+	err = s.db.Collection(models.UserDevicesCollection).FindOne(ctx, filter).Decode(&userDevice)
 	
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-
+			return nil, errors.NewNotFoundError("未找到用户设备配置")
 		}
 		return nil, errors.NewInternalServerError("获取用户设备配置失败: " + err.Error())
 	}
@@ -631,47 +632,47 @@ func (s *ServiceImpl) GetUserDevices(ctx context.Context, userID string, page, p
 	
 	// 设置分页
 	if page <= 0 {
-
+		page = 1
 	}
 	
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
-
+	}
 	
 	skip := (page - 1) * pageSize
 	skipInt64 := int64(skip)
-
+	limitInt64 := int64(pageSize)
 	
 	// 构建查询
 	filter := bson.M{"userId": userObjectID}
 
 	// 计算总数
 	total, err := s.db.Collection(models.UserDevicesCollection).CountDocuments(ctx, filter)
-
+	if err != nil {
 		return nil, errors.NewInternalServerError("计算用户设备配置总数失败: " + err.Error())
 	}
 	
 	// 查询设备列表
 	cursor, err := s.db.Collection(models.UserDevicesCollection).Find(ctx, filter, &options.FindOptions{
-
+		Skip:  &skipInt64,
 		Limit: &limitInt64,
 		Sort:  bson.D{{Key: "updatedAt", Value: -1}},
 	})
 	
 	if err != nil {
 		return nil, errors.NewInternalServerError("查询用户设备配置列表失败: " + err.Error())
-
+	}
 	defer cursor.Close(ctx)
 	
 	// 解析设备列表
 	var userDevices []models.UserDevice
-
+	if err := cursor.All(ctx, &userDevices); err != nil {
 		return nil, errors.NewInternalServerError("解析用户设备配置列表失败: " + err.Error())
 	}
 	
 	// 转换为响应格式
 	response := &device.UserDeviceListResponse{
-
+		Total:       int(total),
 		Page:        page,
 		PageSize:    pageSize,
 		UserDevices: make([]device.UserDeviceResponse, len(userDevices)),
@@ -679,7 +680,7 @@ func (s *ServiceImpl) GetUserDevices(ctx context.Context, userID string, page, p
 	
 	for i, ud := range userDevices {
 		response.UserDevices[i] = device.UserDeviceResponse{
-
+			ID:          ud.ID.Hex(),
 			UserID:      ud.UserID.Hex(),
 			Name:        ud.Name,
 			Description: ud.Description,
@@ -691,7 +692,7 @@ func (s *ServiceImpl) GetUserDevices(ctx context.Context, userID string, page, p
 		
 		for j, d := range ud.Devices {
 			response.UserDevices[i].Devices[j] = device.UserDeviceSettingsResponse{
-
+				DeviceID:   d.DeviceID.Hex(),
 				DeviceType: string(d.DeviceType),
 				Settings:   d.Settings,
 			}
@@ -710,42 +711,42 @@ func (s *ServiceImpl) GetPublicUserDevices(ctx context.Context, page, pageSize i
 	
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
-
+	}
 	
 	skip := (page - 1) * pageSize
 	skipInt64 := int64(skip)
-
+	limitInt64 := int64(pageSize)
 	
 	// 构建查询
 	filter := bson.M{"isPublic": true}
 
 	// 计算总数
 	total, err := s.db.Collection(models.UserDevicesCollection).CountDocuments(ctx, filter)
-
+	if err != nil {
 		return nil, errors.NewInternalServerError("计算公开设备配置总数失败: " + err.Error())
 	}
 	
 	// 查询设备列表
 	cursor, err := s.db.Collection(models.UserDevicesCollection).Find(ctx, filter, &options.FindOptions{
-
+		Skip:  &skipInt64,
 		Limit: &limitInt64,
 		Sort:  bson.D{{Key: "updatedAt", Value: -1}},
 	})
 	
 	if err != nil {
 		return nil, errors.NewInternalServerError("查询公开设备配置列表失败: " + err.Error())
-
+	}
 	defer cursor.Close(ctx)
 	
 	// 解析设备列表
 	var userDevices []models.UserDevice
-
+	if err := cursor.All(ctx, &userDevices); err != nil {
 		return nil, errors.NewInternalServerError("解析公开设备配置列表失败: " + err.Error())
 	}
 	
 	// 转换为响应格式
 	response := &device.UserDeviceListResponse{
-
+		Total:       int(total),
 		Page:        page,
 		PageSize:    pageSize,
 		UserDevices: make([]device.UserDeviceResponse, len(userDevices)),
@@ -753,7 +754,7 @@ func (s *ServiceImpl) GetPublicUserDevices(ctx context.Context, page, pageSize i
 	
 	for i, ud := range userDevices {
 		response.UserDevices[i] = device.UserDeviceResponse{
-
+			ID:          ud.ID.Hex(),
 			UserID:      ud.UserID.Hex(),
 			Name:        ud.Name,
 			Description: ud.Description,
@@ -765,7 +766,7 @@ func (s *ServiceImpl) GetPublicUserDevices(ctx context.Context, page, pageSize i
 		
 		for j, d := range ud.Devices {
 			response.UserDevices[i].Devices[j] = device.UserDeviceSettingsResponse{
-
+				DeviceID:   d.DeviceID.Hex(),
 				DeviceType: string(d.DeviceType),
 				Settings:   d.Settings,
 			}
@@ -848,22 +849,22 @@ func (s *ServiceImpl) DeleteUserDevice(ctx context.Context, userID string, userD
 	
 	deviceObjectID, err := primitive.ObjectIDFromHex(userDeviceID)
 	if err != nil {
-
+		return errors.NewBadRequestError("无效的设备ID")
 	}
 	
 	// 删除用户设备配置
 	result, err := s.db.Collection(models.UserDevicesCollection).DeleteOne(ctx, bson.M{
-
+		"_id":    deviceObjectID,
 		"userId": userObjectID,
 	})
 	
 	if err != nil {
 		return errors.NewInternalServerError("删除用户设备配置失败: " + err.Error())
-
+	}
 	
 	if result.DeletedCount == 0 {
 		return errors.NewNotFoundError("未找到用户设备配置")
-
+	}
 	
 	return nil
 }

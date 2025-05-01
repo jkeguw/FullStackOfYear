@@ -2,21 +2,22 @@
   <div class="review-list-page">
     <div class="container mx-auto p-4">
       <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold">评测列表</h1>
+        <h1 class="text-2xl font-bold text-white">Review List</h1>
         <router-link v-if="isAdmin" to="/reviews/create" class="el-button el-button--primary">
-          <el-icon class="mr-1"><Plus /></el-icon> 创建评测
+          <el-icon class="mr-1"><Plus /></el-icon> Create Review
         </router-link>
       </div>
 
-      <el-card class="mb-4">
+      <el-card class="mb-4 bg-[#1A1A1A] border border-[#333333] text-white">
         <div class="flex flex-wrap gap-4 justify-between items-end">
           <div class="flex-1 min-w-[200px]">
             <el-input
               v-model="searchQuery"
-              placeholder="搜索评测"
+              placeholder="Search reviews"
               clearable
               @clear="handleSearch"
               @keyup.enter="handleSearch"
+              class="dark-theme-input"
             >
               <template #suffix>
                 <el-icon @click="handleSearch"><Search /></el-icon>
@@ -27,38 +28,40 @@
           <div class="flex flex-wrap gap-2">
             <el-select
               v-model="filters.type"
-              placeholder="评测类型"
+              placeholder="Review Type"
               clearable
               @change="handleFilterChange"
+              class="dark-theme-select"
             >
-              <el-option label="全部类型" value="" />
-              <el-option label="鼠标" value="mouse" />
-              <el-option label="键盘" value="keyboard" />
-              <el-option label="显示器" value="monitor" />
-              <el-option label="鼠标垫" value="mousepad" />
-              <el-option label="配件" value="accessory" />
+              <el-option label="All Types" value="" />
+              <el-option label="Mouse" value="mouse" />
+              <el-option label="Keyboard" value="keyboard" />
+              <el-option label="Monitor" value="monitor" />
+              <el-option label="Mousepad" value="mousepad" />
+              <el-option label="Accessory" value="accessory" />
             </el-select>
 
             <el-select
               v-model="filters.contentType"
-              placeholder="内容类型"
+              placeholder="Content Type"
               clearable
               @change="handleFilterChange"
+              class="dark-theme-select"
             >
-              <el-option label="全部内容" value="" />
-              <el-option label="单品评测" value="single" />
-              <el-option label="对比评测" value="comparison" />
-              <el-option label="使用心得" value="experience" />
-              <el-option label="游戏体验" value="gaming" />
-              <el-option label="选购建议" value="buying" />
+              <el-option label="All Content" value="" />
+              <el-option label="Single Product Review" value="single" />
+              <el-option label="Comparison Review" value="comparison" />
+              <el-option label="Usage Experience" value="experience" />
+              <el-option label="Gaming Experience" value="gaming" />
+              <el-option label="Buying Guide" value="buying" />
             </el-select>
 
-            <el-select v-model="sortBy" placeholder="排序" @change="handleSortChange">
-              <el-option label="最新发布" value="createdAt:desc" />
-              <el-option label="最早发布" value="createdAt:asc" />
-              <el-option label="评分最高" value="score:desc" />
-              <el-option label="评分最低" value="score:asc" />
-              <el-option label="最多浏览" value="viewCount:desc" />
+            <el-select v-model="sortBy" placeholder="Sort By" @change="handleSortChange" class="dark-theme-select">
+              <el-option label="Newest First" value="createdAt:desc" />
+              <el-option label="Oldest First" value="createdAt:asc" />
+              <el-option label="Highest Rating" value="score:desc" />
+              <el-option label="Lowest Rating" value="score:asc" />
+              <el-option label="Most Viewed" value="viewCount:desc" />
             </el-select>
           </div>
         </div>
@@ -72,10 +75,10 @@
         </template>
       </el-skeleton>
 
-      <div v-else-if="reviews.length === 0" class="text-center py-8">
-        <el-empty description="暂无评测数据" />
+      <div v-else-if="reviews.length === 0" class="text-center py-8 text-white">
+        <el-empty description="No reviews available" />
         <router-link v-if="isAdmin" to="/reviews/create" class="el-button el-button--primary mt-4">
-          创建第一篇评测
+          Create First Review
         </router-link>
       </div>
 
@@ -83,7 +86,7 @@
         <el-card
           v-for="review in reviews"
           :key="review.id"
-          class="review-card mb-4 hover:shadow-lg transition-shadow duration-300"
+          class="review-card mb-4 hover:shadow-lg transition-shadow duration-300 bg-[#1A1A1A] border border-[#333333] text-white"
           shadow="hover"
           :body-style="{ padding: '0' }"
         >
@@ -112,7 +115,7 @@
 
           <div class="p-4">
             <div class="flex justify-between items-start mb-2">
-              <h3 class="text-lg font-bold truncate mr-2">{{ review.title || '未命名评测' }}</h3>
+              <h3 class="text-lg font-bold truncate mr-2 text-white">{{ review.title || 'Unnamed Review' }}</h3>
               <div class="flex items-center">
                 <el-rate
                   :model-value="review.score || 0"
@@ -125,8 +128,8 @@
               </div>
             </div>
 
-            <p class="text-gray-600 mb-4 line-clamp-2">
-              {{ review.content ? review.content.substring(0, 100) + '...' : '暂无内容' }}
+            <p class="text-gray-400 mb-4 line-clamp-2">
+              {{ review.content ? review.content.substring(0, 100) + '...' : 'No content available' }}
             </p>
 
             <div class="flex justify-between items-center text-sm text-gray-500">
@@ -137,8 +140,8 @@
             </div>
 
             <div class="mt-4 flex gap-2">
-              <el-button type="primary" @click="viewReview(review.id)"> 查看详情 </el-button>
-              <el-button v-if="isAdmin" plain @click="editReview(review.id)"> 编辑 </el-button>
+              <el-button type="primary" @click="viewReview(review.id)">View Details</el-button>
+              <el-button v-if="isAdmin" plain @click="editReview(review.id)">Edit</el-button>
             </div>
           </div>
         </el-card>
@@ -184,7 +187,7 @@ interface Review {
 const router = useRouter();
 const { fetchReviews, loading } = useReview();
 
-// 状态
+// State
 const reviews = ref<Review[]>([]);
 const totalCount = ref(0);
 const totalPages = ref(0);
@@ -192,19 +195,19 @@ const currentPage = ref(1);
 const pageSize = ref(12);
 const searchQuery = ref('');
 const sortBy = ref('createdAt:desc');
-// 从用户认证状态获取管理员权限
+// Get admin privileges from user authentication state
 const { isAdmin } = useAuth();
 const filters = reactive({
   type: '',
   contentType: ''
 });
 
-// 生命周期钩子
+// Lifecycle hooks
 onMounted(() => {
   loadReviews();
 });
 
-// 加载评测数据
+// Load review data
 const loadReviews = async () => {
   try {
     const [field, order] = sortBy.value.split(':');
@@ -223,76 +226,76 @@ const loadReviews = async () => {
     totalCount.value = response.total || 0;
     totalPages.value = Math.ceil(totalCount.value / pageSize.value);
   } catch (error) {
-    ElMessage.error('加载评测列表失败');
+    ElMessage.error('Failed to load review list');
     console.error(error);
   }
 };
 
-// 处理搜索
+// Handle search
 const handleSearch = () => {
   currentPage.value = 1;
   loadReviews();
 };
 
-// 处理筛选
+// Handle filtering
 const handleFilterChange = () => {
   currentPage.value = 1;
   loadReviews();
 };
 
-// 处理排序
+// Handle sorting
 const handleSortChange = () => {
   loadReviews();
 };
 
-// 处理页码变化
+// Handle page change
 const handleCurrentChange = (page: number) => {
   currentPage.value = page;
   loadReviews();
 };
 
-// 处理每页数量变化
+// Handle page size change
 const handleSizeChange = (size: number) => {
   pageSize.value = size;
   currentPage.value = 1;
   loadReviews();
 };
 
-// 查看评测详情
+// View review details
 const viewReview = (id: string) => {
   router.push(`/reviews/${id}`);
 };
 
-// 编辑评测
+// Edit review
 const editReview = (id: string) => {
   router.push(`/reviews/${id}/edit`);
 };
 
-// 获取评测类型名称
+// Get review type name
 const getTypeName = (type: string) => {
   const typeMap: Record<string, string> = {
-    mouse: '鼠标',
-    keyboard: '键盘',
-    monitor: '显示器',
-    mousepad: '鼠标垫',
-    accessory: '配件'
+    mouse: 'Mouse',
+    keyboard: 'Keyboard',
+    monitor: 'Monitor',
+    mousepad: 'Mousepad',
+    accessory: 'Accessory'
   };
-  return typeMap[type] || '未知类型';
+  return typeMap[type] || 'Unknown Type';
 };
 
-// 获取内容类型名称
+// Get content type name
 const getContentTypeName = (contentType: string) => {
   const contentTypeMap: Record<string, string> = {
-    single: '单品评测',
-    comparison: '对比评测',
-    experience: '使用心得',
-    gaming: '游戏体验',
-    buying: '选购建议'
+    single: 'Single Review',
+    comparison: 'Comparison',
+    experience: 'Experience',
+    gaming: 'Gaming Review',
+    buying: 'Buying Guide'
   };
-  return contentTypeMap[contentType] || '未知类型';
+  return contentTypeMap[contentType] || 'Unknown Type';
 };
 
-// 获取标签类型
+// Get tag type
 const getTagType = (type: string) => {
   const typeMap: Record<string, string> = {
     mouse: 'primary',
@@ -304,7 +307,7 @@ const getTagType = (type: string) => {
   return typeMap[type] || '';
 };
 
-// 获取内容标签类型
+// Get content tag type
 const getContentTagType = (contentType: string) => {
   const contentTypeMap: Record<string, string> = {
     single: '',
@@ -320,12 +323,19 @@ const getContentTagType = (contentType: string) => {
 <style scoped>
 .review-list-page {
   padding-bottom: 40px;
+  background-color: #121212;
+  min-height: 100vh;
 }
 
 .review-card {
   height: 100%;
   display: flex;
   flex-direction: column;
+  transition: transform 0.2s ease-in-out;
+}
+
+.review-card:hover {
+  transform: translateY(-5px);
 }
 
 .review-card .el-card__body {
@@ -339,5 +349,50 @@ const getContentTagType = (contentType: string) => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+:deep(.el-pagination) {
+  --el-pagination-bg-color: #1A1A1A;
+  --el-pagination-text-color: white;
+  --el-pagination-button-color: white;
+  --el-pagination-hover-color: #409EFF;
+}
+
+:deep(.el-select) .el-input__inner {
+  color: white !important;
+  background-color: #242424 !important;
+  border-color: #333333 !important;
+}
+
+:deep(.el-input__inner) {
+  color: white !important;
+  background-color: #242424 !important;
+  border-color: #333333 !important;
+}
+
+:deep(.el-button--primary) {
+  background-color: #409EFF;
+}
+
+:deep(.el-button) {
+  color: white;
+  border-color: #333333;
+}
+
+:deep(.el-button:not(.el-button--primary)) {
+  background-color: #242424;
+}
+
+:deep(.el-select-dropdown) {
+  background-color: #242424;
+  border-color: #333333;
+}
+
+:deep(.el-select-dropdown__item) {
+  color: white;
+}
+
+:deep(.el-select-dropdown__item.hover) {
+  background-color: #333333;
 }
 </style>

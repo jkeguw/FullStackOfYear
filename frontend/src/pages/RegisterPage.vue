@@ -3,8 +3,8 @@
     <div class="flex min-h-screen bg-gray-100">
       <div class="m-auto w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <div class="text-center mb-8">
-          <h2 class="text-2xl font-bold">创建账号</h2>
-          <p class="text-gray-600 mt-2">加入我们的社区，享受更多功能</p>
+          <h2 class="text-2xl font-bold">Create Account</h2>
+          <p class="text-gray-600 mt-2">Join our community and enjoy more features</p>
         </div>
 
         <el-form
@@ -14,29 +14,29 @@
           label-position="top"
           @submit.prevent="handleRegister"
         >
-          <el-form-item label="用户名" prop="username">
-            <el-input v-model="form.username" placeholder="请输入用户名" :prefix-icon="User" />
+          <el-form-item label="Username" prop="username">
+            <el-input v-model="form.username" placeholder="Enter your username" :prefix-icon="User" />
           </el-form-item>
 
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="form.email" placeholder="请输入邮箱" :prefix-icon="Message" />
+          <el-form-item label="Email" prop="email">
+            <el-input v-model="form.email" placeholder="Enter your email" :prefix-icon="Message" />
           </el-form-item>
 
-          <el-form-item label="密码" prop="password">
+          <el-form-item label="Password" prop="password">
             <el-input
               v-model="form.password"
               type="password"
-              placeholder="请输入密码"
+              placeholder="Enter your password"
               :prefix-icon="Lock"
               show-password
             />
           </el-form-item>
 
-          <el-form-item label="确认密码" prop="confirmPassword">
+          <el-form-item label="Confirm Password" prop="confirmPassword">
             <el-input
               v-model="form.confirmPassword"
               type="password"
-              placeholder="请再次输入密码"
+              placeholder="Confirm your password"
               :prefix-icon="Lock"
               show-password
             />
@@ -44,10 +44,10 @@
 
           <el-form-item>
             <el-checkbox v-model="form.agreeTerms"
-              >我已阅读并同意<a href="#" class="text-blue-500">服务条款</a>和<a
+              >I have read and agree to the <a href="#" class="text-blue-500">Terms of Service</a> and <a
                 href="#"
                 class="text-blue-500"
-                >隐私政策</a
+                >Privacy Policy</a
               ></el-checkbox
             >
           </el-form-item>
@@ -60,36 +60,20 @@
               :disabled="!form.agreeTerms"
               @click="handleRegister"
             >
-              注册
+              Register
             </el-button>
           </el-form-item>
         </el-form>
 
         <div class="text-center mt-6">
           <p class="text-gray-600">
-            已有账号？
+            Already have an account?
             <router-link to="/login" class="text-blue-500 hover:text-blue-700"
-              >立即登录</router-link
+              >Sign in now</router-link
             >
           </p>
         </div>
 
-        <div class="divider my-6 flex items-center">
-          <div class="flex-1 h-px bg-gray-300"></div>
-          <span class="px-4 text-gray-500 text-sm">或通过第三方账号登录</span>
-          <div class="flex-1 h-px bg-gray-300"></div>
-        </div>
-
-        <div class="flex justify-center space-x-4">
-          <el-button class="social-button" @click="loginWithGoogle">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
-              alt="Google"
-              class="w-5 h-5 mr-2"
-            />
-            Google
-          </el-button>
-        </div>
       </div>
     </div>
   </div>
@@ -121,9 +105,9 @@ const form = reactive({
 // 验证规则
 const validatePass = (rule: any, value: string, callback: (error?: Error) => void) => {
   if (value === '') {
-    callback(new Error('请输入密码'));
+    callback(new Error('Please enter a password'));
   } else if (value.length < 8) {
-    callback(new Error('密码长度不能少于8个字符'));
+    callback(new Error('Password must be at least 8 characters'));
   } else {
     if (form.confirmPassword !== '') {
       if (formRef.value) formRef.value.validateField('confirmPassword');
@@ -134,9 +118,9 @@ const validatePass = (rule: any, value: string, callback: (error?: Error) => voi
 
 const validateConfirmPass = (rule: any, value: string, callback: (error?: Error) => void) => {
   if (value === '') {
-    callback(new Error('请再次输入密码'));
+    callback(new Error('Please confirm your password'));
   } else if (value !== form.password) {
-    callback(new Error('两次输入密码不一致'));
+    callback(new Error('Passwords do not match'));
   } else {
     callback();
   }
@@ -144,12 +128,12 @@ const validateConfirmPass = (rule: any, value: string, callback: (error?: Error)
 
 const rules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
+    { required: true, message: 'Please enter a username', trigger: 'blur' },
+    { min: 3, max: 20, message: 'Length should be 3 to 20 characters', trigger: 'blur' }
   ],
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+    { required: true, message: 'Please enter an email address', trigger: 'blur' },
+    { type: 'email', message: 'Please enter a valid email address', trigger: 'blur' }
   ],
   password: [{ validator: validatePass, trigger: 'blur' }],
   confirmPassword: [{ validator: validateConfirmPass, trigger: 'blur' }]
@@ -158,7 +142,7 @@ const rules = {
 // 处理注册
 const handleRegister = async () => {
   if (!form.agreeTerms) {
-    ElMessage.warning('请阅读并同意服务条款和隐私政策');
+    ElMessage.warning('Please read and agree to the Terms of Service and Privacy Policy');
     return;
   }
 
@@ -170,36 +154,23 @@ const handleRegister = async () => {
     await register({
       username: form.username,
       email: form.email,
-      password: form.password
+      password: form.password,
+      confirmPassword: form.confirmPassword
     });
 
-    ElMessage.success('注册成功！请查收验证邮件');
+    ElMessage.success('Registration successful! Please sign in.');
 
-    // 注册成功后，可以选择直接登录用户或者跳转到登录页面
-    // 这里选择跳转到登录页面，让用户验证邮箱后登录
+    // 注册成功后跳转到登录页面
     router.push('/login');
   } catch (error: any) {
-    const message = error.response?.data?.message || '注册失败，请稍后重试';
+    const message = error.response?.data?.message || 'Registration failed, please try again later';
     ElMessage.error(message);
   } finally {
     loading.value = false;
   }
 };
 
-// 第三方登录
-const loginWithGoogle = async () => {
-  try {
-    loading.value = true;
-    await loginWithOAuth('google');
-
-    // OAuth登录通常会直接将用户重定向到Google的认证页面
-    // 所以这里的代码可能不会执行
-  } catch (error: any) {
-    const message = error.response?.data?.message || 'Google登录失败，请稍后重试';
-    ElMessage.error(message);
-    loading.value = false;
-  }
-};
+// 第三方登录功能已移除
 </script>
 
 <style scoped>

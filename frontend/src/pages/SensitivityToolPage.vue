@@ -1,24 +1,24 @@
 <template>
   <div class="sensitivity-tool-page container mx-auto py-8 px-4">
-    <h1 class="text-3xl font-bold mb-8 text-white">灵敏度工具</h1>
+    <h1 class="text-3xl font-bold mb-8 text-white">Sensitivity Tools</h1>
 
     <div class="mb-8 bg-[#1E1E1E] rounded-lg p-6">
-      <h2 class="text-2xl font-bold mb-4 text-white">工具说明</h2>
+      <h2 class="text-2xl font-bold mb-4 text-white">Tool Description</h2>
       <p class="text-gray-300 mb-4">
-        这个页面集成了多种灵敏度计算工具，帮助您找到最适合自己的游戏鼠标灵敏度设置。
-        您可以使用DPI转换计算器在不同的鼠标DPI设置之间转换灵敏度，或者利用游戏灵敏度转换工具在不同游戏间保持相同的手感。
+        This page integrates various sensitivity calculation tools to help you find the most suitable game mouse sensitivity settings for yourself.
+        You can use the DPI Conversion Calculator to convert sensitivity between different mouse DPI settings, or use the Game Sensitivity Conversion tool to maintain the same feel across different games.
       </p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <!-- DPI转换计算器 -->
+      <!-- DPI Conversion Calculator -->
       <div class="bg-[#1E1E1E] rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-4 text-white">DPI转换计算器</h2>
-        <p class="text-gray-300 mb-4">更换鼠标DPI设置时，使用此工具保持相同的鼠标移动手感。</p>
+        <h2 class="text-2xl font-bold mb-4 text-white">DPI Conversion Calculator</h2>
+        <p class="text-gray-300 mb-4">Use this tool to maintain the same mouse movement feel when changing your mouse DPI settings.</p>
 
         <el-form :model="dpiForm" label-position="top" class="text-white">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <el-form-item label="原始DPI" class="mb-3">
+            <el-form-item label="Original DPI" class="mb-3">
               <el-input-number
                 v-model="dpiForm.sourceDPI"
                 :min="100"
@@ -27,7 +27,7 @@
                 controls-position="right"
               />
             </el-form-item>
-            <el-form-item label="目标DPI" class="mb-3">
+            <el-form-item label="Target DPI" class="mb-3">
               <el-input-number
                 v-model="dpiForm.targetDPI"
                 :min="100"
@@ -37,7 +37,7 @@
               />
             </el-form-item>
           </div>
-          <el-form-item label="原始灵敏度" class="mb-3">
+          <el-form-item label="Original Sensitivity" class="mb-3">
             <el-input-number
               v-model="dpiForm.sensitivity"
               :min="0.1"
@@ -49,7 +49,7 @@
           </el-form-item>
           <el-form-item class="mt-6 text-center">
             <div class="p-3 bg-[#2A2A2A] border border-[#444444] rounded-md">
-              <span class="text-white">转换后灵敏度: </span>
+              <span class="text-white">Converted Sensitivity: </span>
               <span class="text-xl font-bold text-white">{{ convertedDpiSensitivity }}</span>
             </div>
           </el-form-item>
@@ -61,13 +61,13 @@
         </el-form>
       </div>
 
-      <!-- 游戏灵敏度转换 -->
+      <!-- Game Sensitivity Conversion -->
       <div class="bg-[#1E1E1E] rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-4 text-white">游戏灵敏度转换</h2>
-        <p class="text-gray-300 mb-4">在不同游戏之间转换灵敏度，保持一致的肌肉记忆和瞄准手感。</p>
+        <h2 class="text-2xl font-bold mb-4 text-white">Game Sensitivity Conversion</h2>
+        <p class="text-gray-300 mb-4">Convert sensitivity between different games to maintain consistent muscle memory and aiming feel.</p>
 
         <el-form label-position="top" class="text-white">
-          <el-form-item label="鼠标DPI">
+          <el-form-item label="Mouse DPI">
             <el-input-number
               v-model="gameDpi"
               :min="100"
@@ -78,7 +78,7 @@
           </el-form-item>
 
           <div class="grid grid-cols-2 gap-4">
-            <el-form-item label="源游戏">
+            <el-form-item label="Source Game">
               <el-select v-model="sourceGame" class="w-full">
                 <el-option
                   v-for="game in games"
@@ -89,7 +89,7 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="源游戏灵敏度">
+            <el-form-item label="Source Game Sensitivity">
               <el-input-number
                 v-model="sourceSensitivity"
                 :min="0.001"
@@ -103,7 +103,7 @@
           </div>
 
           <div class="grid grid-cols-2 gap-4">
-            <el-form-item label="目标游戏">
+            <el-form-item label="Target Game">
               <el-select v-model="targetGame" class="w-full">
                 <el-option
                   v-for="game in games"
@@ -114,7 +114,7 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="计算结果">
+            <el-form-item label="Result">
               <div
                 class="result-display py-2 px-3 bg-[#2A2A2A] border border-[#444444] rounded text-white text-lg font-bold text-center"
               >
@@ -130,25 +130,25 @@
       </div>
     </div>
 
-    <!-- 三阶校准法和灵敏快分法 -->
+    <!-- Three-Level Calibration and PSA Method -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- 三阶校准法 -->
+      <!-- Three-Level Calibration Method -->
       <div class="bg-[#1E1E1E] rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-4 text-white">三阶校准法</h2>
+        <h2 class="text-2xl font-bold mb-4 text-white">Three-Level Calibration Method</h2>
         <p class="text-gray-300 mb-4">
-          使用渐进式校准方法找到最适合您的灵敏度，提供精确的游戏体验。
+          Use a progressive calibration method to find the sensitivity that's best for you, providing a precise gaming experience.
         </p>
 
         <SensitivityCalculator />
       </div>
 
-      <!-- 极敏内推法 -->
+      <!-- PSA Method -->
       <div class="bg-[#1E1E1E] rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-4 text-white">极敏内推法</h2>
-        <p class="text-gray-300 mb-4">基于您确定的速度范围，使用数学公式推导最佳灵敏度值。</p>
+        <h2 class="text-2xl font-bold mb-4 text-white">PSA Method</h2>
+        <p class="text-gray-300 mb-4">Derive the optimal sensitivity value using mathematical formulas based on your determined speed range.</p>
 
         <el-form label-position="top" class="text-white">
-          <el-form-item label="最快可接受灵敏度 (k)">
+          <el-form-item label="Fastest Acceptable Sensitivity (k)">
             <el-input-number
               v-model="fastestSens"
               :min="0.1"
@@ -159,7 +159,7 @@
             />
           </el-form-item>
 
-          <el-form-item label="最慢可接受灵敏度 (m)">
+          <el-form-item label="Slowest Acceptable Sensitivity (m)">
             <el-input-number
               v-model="slowestSens"
               :min="0.1"
@@ -172,13 +172,13 @@
 
           <div class="grid grid-cols-2 gap-4 mt-6">
             <div class="result-card p-3 bg-[#2A2A2A] border border-[#444444] rounded-lg">
-              <div class="text-sm text-center mb-1">瞄准场景推荐</div>
+              <div class="text-sm text-center mb-1">Aiming Scenario Recommendation</div>
               <div class="text-xl font-bold text-center">{{ aimingScenarioSens.toFixed(3) }}</div>
               <div class="text-xs text-gray-400 text-center mt-1">(k + 3m) / 4</div>
             </div>
 
             <div class="result-card p-3 bg-[#2A2A2A] border border-[#444444] rounded-lg">
-              <div class="text-sm text-center mb-1">游戏场景推荐</div>
+              <div class="text-sm text-center mb-1">Gaming Scenario Recommendation</div>
               <div class="text-xl font-bold text-center">{{ gamingScenarioSens.toFixed(3) }}</div>
               <div class="text-xs text-gray-400 text-center mt-1">(3k + m) / 4</div>
             </div>
@@ -194,7 +194,7 @@ import { ref, computed } from 'vue';
 import { convertDPI } from '@/utils/dpi';
 import SensitivityCalculator from '@/components/tools/SensitivityCalculator.vue';
 
-// DPI转换计算器
+// DPI Conversion Calculator
 const dpiForm = ref({
   sourceDPI: 800,
   targetDPI: 1600,
@@ -210,14 +210,14 @@ const convertedDpiSensitivity = computed(() => {
 });
 
 const cmPer360 = computed(() => {
-  // cm/360° = 360 × 2.54 / (灵敏度 × DPI × 游戏系数)
-  // 使用CSGO的游戏系数0.022作为默认值
+  // cm/360° = 360 × 2.54 / (sensitivity × DPI × game coefficient)
+  // Using CSGO's game coefficient 0.022 as the default value
   const gameCoefficient = 0.022;
   const cm = (360 * 2.54) / (dpiForm.value.sensitivity * dpiForm.value.sourceDPI * gameCoefficient);
   return cm.toFixed(2) + ' cm';
 });
 
-// 游戏灵敏度转换
+// Game Sensitivity Conversion
 const games = [
   { id: 'csgo', name: 'CS:GO/CS2', coefficient: 0.022 },
   { id: 'valorant', name: 'Valorant', coefficient: 0.07 },
@@ -250,7 +250,7 @@ const gameCmPer360 = computed(() => {
   return cm.toFixed(2) + ' cm/360°';
 });
 
-// 极敏内推法
+// PSA Method
 const fastestSens = ref(2.0);
 const slowestSens = ref(1.0);
 

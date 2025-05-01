@@ -88,11 +88,13 @@
       </div>
 
       <!-- Action buttons -->
-      <div class="flex justify-between mt-6">
-        <el-button @click="resetFilters" :icon="RefreshRight" class="dark-button">
+      <div class="flex flex-col gap-2 mt-6">
+        <el-button type="primary" @click="applyFilters" :icon="Filter" class="w-full">
+          Apply Filters
+        </el-button>
+        <el-button @click="resetFilters" :icon="RefreshRight" class="dark-button w-full">
           Reset Filters
         </el-button>
-        <el-button type="primary" @click="applyFilters" :icon="Filter"> Apply Filters </el-button>
       </div>
     </div>
   </div>

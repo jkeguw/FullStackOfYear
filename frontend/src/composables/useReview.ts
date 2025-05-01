@@ -6,20 +6,37 @@ export function useReview() {
   const reviews = ref<Review[]>([]);
   const loading = ref(false);
 
-  const fetchReviews = async (params?: any) => {
+  const fetchReviews = async (params?: ReviewListParams) => {
     loading.value = true;
     try {
       const res = await getReviews(params);
-      if (res && res.data) {
-        reviews.value = res.data.reviews || [];
+      
+      // Verify response structure matches expected format from API
+      if (res && res.code === 0 && res.data) {
+        // Check if the response has the expected structure from design doc
+        const reviewData = res.data;
+        
+        if (reviewData.reviews && Array.isArray(reviewData.reviews)) {
+          reviews.value = reviewData.reviews;
+        } else {
+          console.warn('API response missing reviews array or has invalid format');
+          reviews.value = [];
+        }
+        
+        // Return in format compatible with ReviewListPage
+        return {
+          data: reviews.value,
+          total: reviewData.total || 0
+        };
+      } else {
+        console.warn('Invalid API response format', res);
+        return {
+          data: [],
+          total: 0
+        };
       }
-      // 直接返回适当的格式，兼容ReviewListPage的处理
-      return {
-        data: reviews.value,
-        total: res?.data?.total || 0
-      };
     } catch (error) {
-      console.error('获取评测列表失败', error);
+      console.error('Failed to fetch review list', error);
       return {
         data: [],
         total: 0
@@ -29,45 +46,55 @@ export function useReview() {
     }
   };
 
-  // 创建评测
+  // Create review
   const createReview = async (data: Omit<Review, 'id'>) => {
     loading.value = true;
     try {
       const response = await addReview(data);
-      return response.data.data;
+      if (response.data && response.data.code === 0 && response.data.data) {
+        return response.data.data;
+      } else {
+        console.warn('Invalid API response format when creating review', response);
+        return null;
+      }
     } catch (error) {
-      console.error('创建评测失败', error);
+      console.error('Failed to create review', error);
       return null;
     } finally {
       loading.value = false;
     }
   };
 
-  // 获取单个评测详情
+  // Get single review details
   const getReviewDetail = async (id: string) => {
     loading.value = true;
     try {
       const response = await getReview(id);
-      return response.data;
+      if (response && response.code === 0 && response.data) {
+        return response.data;
+      } else {
+        console.warn('Invalid API response format when getting review details', response);
+        return null;
+      }
     } catch (error) {
-      console.error('获取评测详情失败', error);
+      console.error('Failed to get review details', error);
       return null;
     } finally {
       loading.value = false;
     }
   };
 
-  // 更新评测
+  // Update review
   const updateReview = async (id: string, data: Partial<Review>) => {
     loading.value = true;
     try {
-      // 这里需要实现updateReview API
+      // Implementation of updateReview API needed
       // const response = await updateReview(id, data)
       // return response.data
-      console.warn('updateReview API 未实现');
+      console.warn('updateReview API not implemented yet');
       return null;
     } catch (error) {
-      console.error('更新评测失败', error);
+      console.error('Failed to update review', error);
       return null;
     } finally {
       loading.value = false;

@@ -37,7 +37,21 @@ export const login = (data: LoginRequest) => {
 //   return request.post<Response<LoginResponse>>('/api/auth/verify-2fa', data);
 // };
 
-export const register = (data: { username: string; password: string; email: string }) => {
+export interface RegisterRequest {
+  username: string; 
+  password: string; 
+  email: string;
+  confirmPassword: string;
+  deviceId?: string;
+}
+
+export const register = (data: RegisterRequest) => {
+  // Ensure deviceId is included
+  if (!data.deviceId) {
+    const deviceId = localStorage.getItem('deviceId') || `device_${new Date().getTime()}`;
+    localStorage.setItem('deviceId', deviceId);
+    data.deviceId = deviceId;
+  }
   return request.post<Response<User>>('/api/auth/register', data);
 };
 
