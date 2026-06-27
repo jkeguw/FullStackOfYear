@@ -1,4 +1,4 @@
-// 鼠标数据模型
+// 鼠标数据模型 - 与后端 models.MouseDevice 结构保持一致
 
 // 鼠标形状类型
 export type MouseShapeType = 'ergo' | 'ambi' | 'fingertip' | 'symmetrical' | 'asymmetrical';
@@ -17,8 +17,8 @@ export type Connectivity = 'wired' | 'wireless' | 'bluetooth' | 'dual';
 
 // 鼠标形状特征
 export interface MouseShape {
-  type: MouseShapeType;
-  humpPlacement: HumpPlacement;
+  type: MouseShapeType | string;
+  humpPlacement: HumpPlacement | string;
   frontFlare: string;
   sideCurvature: string;
   handCompatibility: string;
@@ -28,12 +28,12 @@ export interface MouseShape {
 
 // 鼠标技术规格
 export interface MouseTechnical {
-  connectivity: Connectivity[];
+  connectivity: Connectivity[] | string[];
   sensor: string;
   maxDPI: number;
   pollingRate: number;
   sideButtons: number;
-  weight?: number;
+  weight?: number; // 冗余字段，部分数据源可能放在这里
   battery?: {
     type: string;
     capacity: number;
@@ -44,8 +44,8 @@ export interface MouseTechnical {
 // 鼠标推荐用途
 export interface MouseRecommendation {
   gameTypes: string[];
-  gripStyles: GripStyle[];
-  handSizes: HandSize[];
+  gripStyles: GripStyle[] | string[];
+  handSizes: HandSize[] | string[];
   dailyUse: boolean;
   professional: boolean;
 }
@@ -65,7 +65,7 @@ export interface MouseSvgData {
   sideView: string;
 }
 
-// 鼠标设备
+// 鼠标设备 - 统一使用后端返回结构
 export interface MouseDevice {
   id: string;
   name: string;
@@ -77,11 +77,11 @@ export interface MouseDevice {
   recommended: MouseRecommendation;
   svgData?: MouseSvgData;
   imageUrl?: string;
+  description?: string;
   createdAt?: string;
   updatedAt?: string;
-  weight: number; // 冗余字段，方便使用
-  description?: string;
-  price?: number; // 商品价格
+  price?: number;
+  weight?: number; // 冗余字段，兼容部分本地转换的代码
 }
 
 // 鼠标比较结果
@@ -148,6 +148,4 @@ export interface MouseFilterParams {
   gripStyle?: GripStyle;
   sortBy?: 'price' | 'weight' | 'releaseDate' | 'popularity';
   sortOrder?: 'asc' | 'desc';
-  page?: number;
-  pageSize?: number;
 }

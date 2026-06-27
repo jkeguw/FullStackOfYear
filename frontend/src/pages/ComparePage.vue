@@ -190,7 +190,7 @@ import { useComparisonStore, type MouseDevice } from '@/stores';
 import MouseComparisonView from '@/components/comparison/MouseComparisonView.vue';
 import MouseSelector from '@/components/comparison/MouseSelector.vue';
 import comparisonService from '@/services/comparisonService';
-import { getDevices, DeviceListResponse } from '@/api/device';
+import { getDevices, findSimilarMice } from '@/api/device';
 import { Plus, Clock, Mouse, Loading, InfoFilled } from '@element-plus/icons-vue';
 
 // 状态
@@ -234,14 +234,26 @@ function handleMouseSelection(mice: MouseDevice[]) {
 }
 
 // 根据当前选择的鼠标寻找相似鼠标
-async function findSimilarMice() {
-  if (selectedMice.value.length !== 1 || allMice.value.length === 0) {
+async function loadSimilarMice() {
+  if (selectedMice.value.length !== 1) {
     similarMice.value = [];
     return;
   }
 
-  // 使用本地相似度服务找出相似鼠标
-  similarMice.value = comparisonService.findSimilarMice(selectedMice.value[0], allMice.value, 5);
+  try {
+    const response = await findSimilarMice(selectedMice.value[0].id, 5);
+    similarMice.value = response.data.similarMice.map((sim) => sim.mouse);
+  } catch (error) {
+    console.error('Error finding similar mice:', error);
+    // 后端不可用时降级到本地计算
+    if (allMice.value.length > 0) {
+      similarMice.value = comparisonService.findSimilarMice(
+        selectedMice.value[0],
+        allMice.value,
+        5
+      );
+    }
+  }
 }
 
 // 获取所有鼠标数据
@@ -249,9 +261,8 @@ async function fetchAllMice() {
   loading.value = true;
   try {
     const response = await getDevices({ type: 'mouse' });
-    const deviceListResponse = response as unknown as DeviceListResponse;
-    allMice.value = deviceListResponse.devices as MouseDevice[];
-    findSimilarMice();
+    allMice.value = (response.data.devices as MouseDevice[]) || [];
+    loadSimilarMice();
   } catch (error) {
     console.error('Error fetching mice:', error);
   } finally {
@@ -267,7 +278,7 @@ function openMouseSelectorMode(mode: 'mice' | 'recent') {
 
 // 监听选择的鼠标变化，更新相似鼠标
 watch(selectedMice, () => {
-  findSimilarMice();
+  loadSimilarMice();
 });
 
 // 初始化

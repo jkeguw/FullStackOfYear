@@ -54,7 +54,7 @@
                   }}×{{ selectedMouse.dimensions?.height || '未知' }}mm
                 </p>
                 <p class="text-xs text-gray-500">
-                  {{ selectedMouse.weight || '未知' }}g · {{ selectedMouse.shape?.type || '未知' }}
+                  {{ selectedMouse.dimensions?.weight || '未知' }}g · {{ selectedMouse.shape?.type || '未知' }}
                 </p>
               </div>
             </el-card>
@@ -113,7 +113,7 @@
                     }}×{{ mouse.dimensions?.height || '未知' }}mm
                   </p>
                   <p class="text-xs text-gray-500">
-                    {{ mouse.weight || '未知' }}g · {{ mouse.shape?.type || '未知' }}
+                    {{ mouse.dimensions?.weight || '未知' }}g · {{ mouse.shape?.type || '未知' }}
                   </p>
 
                   <div class="similarity-score flex items-center mt-2">
@@ -177,7 +177,7 @@
                   }}x{{ mouse.dimensions?.height || '未知' }}mm
                 </div>
                 <div class="text-sm text-gray-500">
-                  {{ mouse.weight || '未知' }}g · {{ mouse.shape?.type || '未知' }}
+                  {{ mouse.dimensions?.weight || '未知' }}g · {{ mouse.shape?.type || '未知' }}
                 </div>
               </div>
             </div>
@@ -199,7 +199,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useComparisonStore, type MouseDevice } from '@/stores';
 import comparisonService from '@/services/comparisonService';
-import { getDevices, DeviceListResponse } from '@/api/device';
+import { getDevices, findSimilarMice } from '@/api/device';
 import { Plus, Mouse, Loading } from '@element-plus/icons-vue';
 
 // 状态
@@ -239,7 +239,7 @@ function selectReferenceMouseAndFindSimilar(mouse: MouseDevice) {
   selectedMouse.value = mouse;
   comparisonStore.addToRecentlyViewed(mouse);
   showMouseSelector.value = false;
-  findSimilarMice();
+  loadSimilarMice();
 }
 
 function goToCompare(mouse: MouseDevice) {
@@ -255,8 +255,8 @@ function goToCompare(mouse: MouseDevice) {
 }
 
 // 根据当前选择的鼠标寻找相似鼠标
-async function findSimilarMice() {
-  if (!selectedMouse.value || allMice.value.length === 0) {
+async function loadSimilarMice() {
+  if (!selectedMouse.value) {
     similarMice.value = [];
     return;
   }
@@ -264,27 +264,27 @@ async function findSimilarMice() {
   loading.value = true;
 
   try {
-    // 使用本地相似度服务找出相似鼠标
-    // @ts-ignore - Type inconsistency in MouseDevice definition
-    const results = comparisonService.findSimilarMice(selectedMouse.value, allMice.value, 5);
-
-    // 为每个鼠标添加相似度得分
-    // @ts-ignore - Type inconsistency in MouseDevice definition 
-    similarMice.value = results.map((mouse) => {
-      // @ts-ignore - Type inconsistency in MouseDevice definition and return type
-      const result = comparisonService.generateComparisonResult([
-        // @ts-ignore - Type inconsistency between different MouseDevice definitions
-        selectedMouse.value as MouseDevice,
-        mouse
-      ]);
-      // @ts-ignore - Type inconsistency in MouseDevice return type
-      return {
-        ...mouse,
-        similarityScore: result.similarityScore
-      };
-    });
+    const response = await findSimilarMice(selectedMouse.value.id, 5);
+    similarMice.value = response.data.similarMice.map((sim) => ({
+      ...sim.mouse,
+      similarityScore: sim.similarityScore
+    }));
   } catch (error) {
     console.error('Error finding similar mice:', error);
+    // 后端不可用时降级到本地计算
+    if (selectedMouse.value && allMice.value.length > 0) {
+      const results = comparisonService.findSimilarMice(selectedMouse.value, allMice.value, 5);
+      similarMice.value = results.map((mouse) => {
+        const result = comparisonService.generateComparisonResult([
+          selectedMouse.value as MouseDevice,
+          mouse
+        ]);
+        return {
+          ...mouse,
+          similarityScore: result.similarityScore
+        };
+      });
+    }
   } finally {
     loading.value = false;
   }
@@ -294,11 +294,8 @@ async function findSimilarMice() {
 async function fetchAllMice() {
   loading.value = true;
   try {
-    // @ts-ignore - Type mismatch in API response type
     const response = await getDevices({ type: 'mouse' });
-    const deviceListResponse = response as unknown as DeviceListResponse;
-    // @ts-ignore - Type inconsistency in MouseDevice definition
-    allMice.value = deviceListResponse.devices as MouseDevice[];
+    allMice.value = (response.data.devices as MouseDevice[]) || [];
   } catch (error) {
     console.error('Error fetching mice:', error);
   } finally {

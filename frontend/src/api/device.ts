@@ -1,5 +1,9 @@
 import request from '@/utils/request';
 import type { Response } from './types';
+import type {
+  MouseDevice,
+  MouseComparisonResult
+} from '@/models/MouseModel';
 
 // 基础设备类型
 export interface Device {
@@ -13,47 +17,8 @@ export interface Device {
   updatedAt: string;
 }
 
-// 鼠标设备类型
-export interface MouseDevice extends Device {
-  dimensions: {
-    length: number;
-    width: number;
-    height: number;
-    weight: number;
-    gripWidth?: number;
-  };
-  shape: {
-    type: string;
-    humpPlacement: string;
-    frontFlare: string;
-    sideCurvature: string;
-    handCompatibility: string;
-  };
-  technical: {
-    connectivity: string[];
-    sensor: string;
-    maxDPI: number;
-    pollingRate: number;
-    sideButtons: number;
-    weight?: number;
-    battery?: {
-      type: string;
-      capacity: number;
-      life: number;
-    };
-  };
-  recommended: {
-    gameTypes: string[];
-    gripStyles: string[];
-    handSizes: string[];
-    dailyUse: boolean;
-    professional: boolean;
-  };
-  svgData?: {
-    topView: string;
-    sideView: string;
-  };
-}
+// 鼠标设备类型从统一模型导入
+export type { MouseDevice };
 
 // 键盘设备类型
 export interface KeyboardDevice extends Device {
@@ -188,6 +153,38 @@ export interface UserDeviceListResponse {
   userDevices: UserDevice[];
 }
 
+// 鼠标列表响应（设备列表中的鼠标设备）
+export interface MouseListResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  devices: MouseDevice[];
+}
+
+// 对比/相似度相关类型
+export interface PropertyDiff {
+  property: string;
+  values: any[];
+  differencePercent: number;
+}
+
+export interface ComparisonResponse {
+  mice: MouseDevice[];
+  differences: Record<string, PropertyDiff>;
+  similarityScore: number;
+}
+
+export interface SimilarMouse {
+  mouse: MouseDevice;
+  similarityScore: number;
+  keyDifferences: PropertyDiff[];
+}
+
+export interface SimilarityResponse {
+  reference: MouseDevice;
+  similarMice: SimilarMouse[];
+}
+
 // 请求参数类型
 export interface DeviceListParams {
   page?: number;
@@ -198,235 +195,45 @@ export interface DeviceListParams {
   sortOrder?: string;
 }
 
-export interface DeviceReviewListParams {
-  deviceId?: string;
-  userId?: string;
-  page?: number;
-  pageSize?: number;
-  sortBy?: string;
-  sortOrder?: string;
-}
-
-export interface UserDeviceListParams {
-  userId?: string;
-  page?: number;
-  pageSize?: number;
-  isPublic?: boolean;
-  sortBy?: string;
-  sortOrder?: string;
-}
-
-// 设备相关API
-
 // 获取设备列表
-export const getDevices = (params?: DeviceListParams) => {
-  return request.get<Response<DeviceListResponse>>('/api/devices', { params })
-    .then((res) => {
-      if (!res) {
-        console.error('Failed to fetch device list: No response');
-        // 返回空数据结构而不是null
-        return {
-          devices: [],
-          total: 0,
-          page: params?.page || 1,
-          pageSize: params?.pageSize || 20
-        };
-      }
-      
-      // 确保data存在，否则返回默认值
-      if (!res.data) {
-        console.warn('Fetch device list: API returned no data field');
-        return {
-          devices: [],
-          total: 0,
-          page: params?.page || 1,
-          pageSize: params?.pageSize || 20
-        };
-      }
-      
-      // 检查响应结构并处理
-      const responseData = res.data;
-      if (responseData.code === 0 && responseData.data) {
-        // 直接返回data字段中的内容
-        return responseData.data;
-      }
-      
-      return responseData;
-    });
+export const getDevices = (params: DeviceListParams = {}) => {
+  return request.get<Response<DeviceListResponse>>('/api/devices', { params });
 };
 
-// 获取鼠标设备
+// 获取鼠标设备详情
 export const getMouseDevice = (id: string) => {
-  return request.get<Response<MouseDevice>>(`/api/devices/${id}`)
-    .then((res) => {
-      if (!res) {
-        console.error('Failed to fetch mouse device: No response');
-        throw new Error('Failed to fetch mouse device: No response');
-      }
-      
-      // 如果res.data为null，返回一个空对象
-      if (res.data === null) {
-        console.warn(`Mouse device fetch (ID: ${id}) returned null, converted to empty object`);
-        return {} as any;
-      }
-      
-      // 检查响应结构并处理
-      const responseData = res.data;
-      if (responseData.code === 0 && responseData.data) {
-        // 直接返回data字段中的内容
-        return responseData.data;
-      }
-      
-      return responseData;
-    });
+  return request.get<Response<MouseDevice>>(`/api/devices/mice/${id}`);
 };
 
-// 比较结果接口
-export interface ComparisonResult {
-  mice: MouseDevice[];
-  differences: {
-    [key: string]: {
-      property: string;
-      values: any[];
-      differencePercent: number;
-    };
-  };
-  similarityScore: number;
-}
-
-// 比较鼠标
+// 比较多个鼠标
 export const compareMice = (ids: string[]) => {
-  return request
-    .get<Response<ComparisonResult>>(`/api/devices/mice/compare?ids=${ids.join(',')}`)
-    .then((res) => {
-      if (!res) {
-        throw new Error('Mouse comparison failed: No results returned');
-      }
-      
-      // 确保res.data存在，如果不存在则提供默认值
-      if (!res.data) {
-        console.warn('compareMice: API response missing data field, using default empty data');
-        return {
-          mice: [],
-          differences: {},
-          similarityScore: 0
-        };
-      }
-      
-      // 检查响应结构并处理
-      const responseData = res.data;
-      if (responseData.code === 0 && responseData.data) {
-        // 直接返回data字段中的内容
-        return responseData.data;
-      }
-      
-      return responseData;
-    });
+  return request.get<Response<ComparisonResponse>>('/api/devices/mice/compare', {
+    params: { ids: ids.join(',') }
+  });
 };
 
-// 创建鼠标设备
-export const createMouseDevice = (
-  data: Omit<MouseDevice, 'id' | 'type' | 'createdAt' | 'updatedAt'>
-) => {
-  return request.post<Response<MouseDevice>>('/api/devices/mouse', data).then((res) => res.data);
+// 查找相似鼠标
+export const findSimilarMice = (id: string, limit = 5) => {
+  return request.get<Response<SimilarityResponse>>(`/api/devices/mice/${id}/similar`, {
+    params: { limit }
+  });
 };
 
-// 更新鼠标设备
-export const updateMouseDevice = (
-  id: string,
-  data: Partial<Omit<MouseDevice, 'id' | 'type' | 'createdAt' | 'updatedAt'>>
-) => {
-  return request.put<Response<MouseDevice>>(`/api/devices/mouse/${id}`, data).then((res) => res.data);
+// 获取鼠标SVG
+export const getMouseSVG = (id: string, view: 'top' | 'side') => {
+  return request.get<Response<SVGResponse>>(`/api/devices/mice/${id}/svg`, {
+    params: { view }
+  });
 };
 
-// 删除设备
-export const deleteDevice = (id: string) => {
-  return request.delete<Response<null>>(`/api/devices/${id}`).then((res) => res.data);
+// SVG比较
+export const compareSVG = (data: SVGCompareRequest) => {
+  return request.post<Response<SVGCompareResponse>>('/api/devices/svg/compare', data);
 };
-
-// SVG 相关 API
-
-// 获取鼠标SVG数据
-export const getMouseSVG = (id: string, view: 'top' | 'side' = 'top') => {
-  return request.get<Response<SVGResponse>>(`/api/devices/mice/${id}/svg?view=${view}`).then((res) => res.data);
-};
-
-// 比较多个鼠标的SVG
-export const compareSVGs = (data: SVGCompareRequest) => {
-  // 对请求进行额外的日志记录，方便调试
-  console.log('SVG比较请求数据:', data);
-  return request.post<Response<SVGCompareResponse>>('/api/devices/mice/svg/compare', data)
-    .then((res) => {
-      console.log('SVG比较响应:', res);
-      return res.data;
-    })
-    .catch(error => {
-      console.error('SVG比较请求失败:', error);
-      // 重新抛出错误以便上层处理
-      throw error;
-    });
-};
-
-// 获取有SVG数据的鼠标列表
-export const getSVGMouseList = (params?: { type?: string; brand?: string; views?: ('top' | 'side')[] }) => {
-  let queryParams = '';
-  if (params) {
-    const parts = [];
-    if (params.type) parts.push(`type=${params.type}`);
-    if (params.brand) parts.push(`brand=${params.brand}`);
-    if (params.views && params.views.length > 0) parts.push(`views=${params.views.join(',')}`);
-    if (parts.length > 0) queryParams = `?${parts.join('&')}`;
-  }
-  return request.get<Response<{ devices: Device[]; total: number }>>(`/api/devices/mice/svg/list${queryParams}`)
-    .then((res) => {
-      if (!res) {
-        throw new Error('获取SVG鼠标列表失败: 没有返回结果');
-      }
-      
-      // 确保res.data存在，如果不存在则提供默认值
-      if (!res.data) {
-        console.warn('getSVGMouseList: API返回结果缺少data字段，已使用默认空数据');
-        return { devices: [], total: 0 };
-      }
-      
-      return res.data;
-    });
-};
-
-// 设备评测相关API
 
 // 获取设备评测列表
-export const getDeviceReviews = (params?: DeviceReviewListParams) => {
-  return request
-    .get<Response<DeviceReviewListResponse>>('/api/device-reviews', { params })
-    .then((res) => res.data);
+export const getDeviceReviews = (deviceId: string, page = 1, pageSize = 10) => {
+  return request.get<Response<DeviceReviewListResponse>>(`/api/device-reviews`, {
+    params: { deviceId, page, pageSize }
+  });
 };
-
-// 获取单条设备评测
-export const getDeviceReview = (id: string) => {
-  return request.get<Response<DeviceReview>>(`/api/device-reviews/${id}`).then((res) => res.data);
-};
-
-// 创建设备评测
-export const createDeviceReview = (
-  data: Omit<DeviceReview, 'id' | 'userId' | 'status' | 'createdAt' | 'updatedAt'>
-) => {
-  return request.post<Response<DeviceReview>>('/api/device-reviews', data).then((res) => res.data);
-};
-
-// 更新设备评测
-export const updateDeviceReview = (
-  id: string,
-  data: Partial<
-    Omit<DeviceReview, 'id' | 'userId' | 'deviceId' | 'status' | 'createdAt' | 'updatedAt'>
-  >
-) => {
-  return request.put<Response<DeviceReview>>(`/api/device-reviews/${id}`, data).then((res) => res.data);
-};
-
-// 删除设备评测
-export const deleteDeviceReview = (id: string) => {
-  return request.delete<Response<null>>(`/api/device-reviews/${id}`).then((res) => res.data);
-};
-
-// 注意：用户设备配置相关API已被后端移除

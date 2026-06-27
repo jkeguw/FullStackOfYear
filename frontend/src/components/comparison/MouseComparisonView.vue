@@ -108,7 +108,6 @@
 </template>
 
 <script setup lang="ts">
-import { DeviceListResponse } from '@/api/device';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useComparisonStore } from '@/stores';
 import type {
@@ -119,7 +118,8 @@ import type {
 } from '@/models/MouseModel';
 import svgService from '@/services/svgService';
 import comparisonService from '@/services/comparisonService';
-import { getDevices, getMouseSVG } from '@/api/device';
+import { compareMice, getDevices, getMouseSVG } from '@/api/device';
+import type { DeviceListResponse } from '@/api/device';
 import MouseSelector from '@/components/comparison/MouseSelector.vue';
 
 // State
@@ -440,24 +440,24 @@ function openMouseSelector() {
   mouseDialogVisible.value = true;
 }
 
-function handleMouseSelection(_selectedMice) {
+async function handleMouseSelection(_selectedMice) {
   // Handle selection through MouseSelector component
-  updateComparisonData();
+  await updateComparisonData();
   updateComparisonSvg();
 }
 
-function handleDialogConfirm() {
-  updateComparisonData();
+async function handleDialogConfirm() {
+  await updateComparisonData();
   updateComparisonSvg();
   mouseDialogVisible.value = false;
 }
 
-function _removeMouse(mouseId: string) {
+async function _removeMouse(mouseId: string) {
   comparisonStore.removeMouse(mouseId);
   if (selectedMice.value.length < 2) {
     comparisonData.value = null;
   } else {
-    updateComparisonData();
+    await updateComparisonData();
   }
   updateComparisonSvg();
 }
@@ -478,14 +478,20 @@ async function fetchAvailableMice() {
   }
 }
 
-function updateComparisonData() {
+async function updateComparisonData() {
   if (selectedMice.value.length < 2) {
     comparisonData.value = null;
     return;
   }
 
-  // @ts-expect-error - Type inconsistency between MouseDevice definitions
-  comparisonData.value = comparisonService.generateComparisonResult(selectedMice.value);
+  try {
+    const response = await compareMice(selectedMice.value.map((m) => m.id));
+    comparisonData.value = response.data;
+  } catch (error) {
+    console.error('Error fetching comparison data:', error);
+    // 后端不可用时降级到本地计算
+    comparisonData.value = comparisonService.generateComparisonResult(selectedMice.value);
+  }
 }
 
 // Format difference percentage
@@ -526,14 +532,15 @@ watch(viewType, () => {
   updateComparisonSvg();
 });
 
-watch(selectedMice, () => {
+watch(selectedMice, async () => {
+  await updateComparisonData();
   updateComparisonSvg();
 }, { deep: true });
 
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
   fetchAvailableMice();
-  updateComparisonData();
+  await updateComparisonData();
   updateComparisonSvg();
 });
 </script>

@@ -21,8 +21,12 @@ func (h *Handler) CompareMice(c *gin.Context) {
 
 	// 解析鼠标ID
 	mouseIDs := strings.Split(idsQuery, ",")
-	if len(mouseIDs) < 1 {
-		errors.HandleError(c, errors.NewBadRequestError("至少需要一个鼠标ID"))
+	if len(mouseIDs) < 2 {
+		errors.HandleError(c, errors.NewBadRequestError("至少需要两个鼠标ID"))
+		return
+	}
+	if len(mouseIDs) > 3 {
+		errors.HandleError(c, errors.NewBadRequestError("最多只能比较三个鼠标ID"))
 		return
 	}
 

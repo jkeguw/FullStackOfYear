@@ -1,6 +1,5 @@
-// 比较服务 - 处理鼠标对比逻辑
-import type { MouseDevice } from '@/api/device';
-import type { MouseComparisonResult } from '@/types/mouse';
+// 比较服务 - 处理鼠标对比逻辑（已降级为本地离线备用，生产环境优先使用后端 API）
+import type { MouseDevice, MouseComparisonResult } from '@/models/MouseModel';
 import { hardcodedMice } from '@/data/hardcodedMice';
 
 /**
@@ -265,9 +264,7 @@ export function generateComparisonResult(mice: MouseDevice[]): MouseComparisonRe
     dimensionsScore * 0.2 + shapeScore * 0.7 + technicalScore * 0.1
   );
 
-  // @ts-ignore - Type inconsistency in return type and MouseDevice definition
   return {
-    // @ts-ignore - Type inconsistency between different MouseDevice definitions
     mice,
     differences,
     similarityScore
@@ -290,7 +287,6 @@ export function findSimilarMice(
 
   // 计算每个鼠标与目标鼠标的比较结果
   const comparisonResults = otherMice.map((mouse) => {
-    // @ts-ignore - Type inconsistency in MouseDevice definition
     const result = generateComparisonResult([targetMouse, mouse]);
     return {
       mouse,

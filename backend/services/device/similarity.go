@@ -3,14 +3,25 @@ package device
 import (
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"project/backend/internal/errors"
 	"project/backend/models"
 	"project/backend/types/device"
 )
 
 // CompareMice 比较鼠标形状和尺寸
 func (s *ServiceImpl) CompareMice(ctx context.Context, ids []string) (*device.ComparisonResponse, error) {
+	if len(ids) < 2 {
+		return nil, errors.NewBadRequestError("至少需要两个鼠标才能进行比较")
+	}
+	if len(ids) > 3 {
+		return nil, errors.NewBadRequestError("最多只能比较三个鼠标")
+	}
+
 	// 先获取鼠标设备
 	mice := make([]*models.MouseDevice, 0, len(ids))
 	for _, id := range ids {
@@ -68,6 +79,13 @@ func (s *ServiceImpl) CompareMice(ctx context.Context, ids []string) (*device.Co
 
 // FindSimilarMice 根据给定的鼠标ID查找相似的鼠标
 func (s *ServiceImpl) FindSimilarMice(ctx context.Context, id string, limit int) (*device.SimilarityResponse, error) {
+	if limit <= 0 {
+		limit = 5
+	}
+	if limit > 20 {
+		limit = 20
+	}
+
 	// 解析ID
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -80,25 +98,27 @@ func (s *ServiceImpl) FindSimilarMice(ctx context.Context, id string, limit int)
 		return nil, err
 	}
 
-	// 获取所有鼠标
-	filter := device.DeviceListFilter{
-		Type: string(models.DeviceTypeMouse),
-	}
-	deviceList, err := s.ListDevices(ctx, filter)
-	if err != nil {
-		return nil, err
+	// 检查数据库连接
+	if s.db == nil {
+		return nil, errors.NewInternalServerError("数据库连接不可用")
 	}
 
-	// 转换回鼠标模型
-	allMice := make([]*models.MouseDevice, 0, len(deviceList.Devices))
-	for _, dev := range deviceList.Devices {
-		mouseID, err := primitive.ObjectIDFromHex(dev.ID)
-		if err != nil {
-			continue
-		}
-		if mouse, err := s.GetMouseDevice(ctx, mouseID); err == nil {
-			allMice = append(allMice, mouse)
-		}
+	// 直接查询所有鼠标设备，避免 ListDevices 的分页限制和 N+1 查询
+	cursor, err := s.db.Collection(models.DevicesCollection).Find(ctx, bson.M{"type": string(models.DeviceTypeMouse)})
+	if err != nil {
+		return nil, errors.NewInternalServerError("查询鼠标设备失败: " + err.Error())
+	}
+	defer cursor.Close(ctx)
+
+	var allMice []models.MouseDevice
+	if err := cursor.All(ctx, &allMice); err != nil {
+		return nil, errors.NewInternalServerError("解析鼠标设备失败: " + err.Error())
+	}
+
+	// 转换为指针切片以便复用现有逻辑
+	allMicePtrs := make([]*models.MouseDevice, 0, len(allMice))
+	for i := range allMice {
+		allMicePtrs = append(allMicePtrs, &allMice[i])
 	}
 
 	// 计算与每个鼠标的相似度
@@ -106,9 +126,9 @@ func (s *ServiceImpl) FindSimilarMice(ctx context.Context, id string, limit int)
 		Mouse           *models.MouseDevice
 		SimilarityScore float64
 		KeyDifferences  map[string]device.PropertyDiff
-	}, 0, len(allMice))
+	}, 0, len(allMicePtrs))
 
-	for _, mouse := range allMice {
+	for _, mouse := range allMicePtrs {
 		// 跳过自身
 		if mouse.ID == reference.ID {
 			continue
@@ -139,6 +159,9 @@ func (s *ServiceImpl) FindSimilarMice(ctx context.Context, id string, limit int)
 	// 截取前N个结果
 	if limit > len(similarities) {
 		limit = len(similarities)
+	}
+	if limit < 0 {
+		limit = 0
 	}
 
 	// 确保有相似的鼠标
@@ -174,6 +197,20 @@ func (s *ServiceImpl) FindSimilarMice(ctx context.Context, id string, limit int)
 	return response, nil
 }
 
+// 获取鼠标重量，优先使用 dimensions.weight，缺失时回退到 technical.weight
+func getMouseWeight(mouse *models.MouseDevice) float64 {
+	if mouse == nil {
+		return 0
+	}
+	if mouse.Dimensions.Weight > 0 {
+		return mouse.Dimensions.Weight
+	}
+	if mouse.Technical.Weight > 0 {
+		return mouse.Technical.Weight
+	}
+	return 0
+}
+
 // 将鼠标设备模型转换为API响应类型
 func mapMouseToResponse(mouse *models.MouseDevice) device.MouseResponse {
 	return device.MouseResponse{
@@ -204,7 +241,7 @@ func handleDimensionsDiff(mice []*models.MouseDevice, differences map[string]dev
 		lengthValues[i] = mouse.Dimensions.Length
 		widthValues[i] = mouse.Dimensions.Width
 		heightValues[i] = mouse.Dimensions.Height
-		weightValues[i] = mouse.Technical.Weight // 使用技术参数中的重量
+		weightValues[i] = getMouseWeight(mouse) // 统一重量来源
 	}
 
 	// 计算百分比差异
