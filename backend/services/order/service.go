@@ -249,7 +249,8 @@ func (s *Service) ListUserOrders(ctx context.Context, userID primitive.ObjectID,
 }
 
 // UpdateOrderStatus 更新订单状态
-func (s *Service) UpdateOrderStatus(ctx context.Context, userID, orderID primitive.ObjectID, status models.OrderStatusEnum, cancelReason string) (*models.Order, error) {
+// 普通用户只能取消自己的订单；管理员可以执行其他状态变更
+func (s *Service) UpdateOrderStatus(ctx context.Context, userID, orderID primitive.ObjectID, role string, status models.OrderStatusEnum, cancelReason string) (*models.Order, error) {
 	// 检查数据库连接
 	if s.db == nil {
 		return nil, errors.NewInternalServerError("数据库连接失败，订单服务暂不可用")
@@ -259,6 +260,11 @@ func (s *Service) UpdateOrderStatus(ctx context.Context, userID, orderID primiti
 	order, err := s.GetOrder(ctx, userID, orderID)
 	if err != nil {
 		return nil, err
+	}
+
+	// 普通用户只能取消自己的订单，禁止直接标记为已支付/已发货/已完成等
+	if role != string(models.RoleAdmin) && status != models.OrderStatusCancelled {
+		return nil, errors.NewForbiddenError("无权执行此操作")
 	}
 
 	// 验证状态变更是否合法
@@ -344,10 +350,10 @@ func (s *Service) ProcessPayment(ctx context.Context, orderID primitive.ObjectID
 		},
 	}
 
-	// 如果支付成功，更新订单状态为已支付
+	// 安全修复：不再接受客户端直接声明支付成功。
+	// 支付成功必须由受信任的支付网关回调（带签名验证）处理。
 	if paymentStatus == "success" {
-		update["$set"].(bson.M)["status"] = models.OrderStatusPaid
-		update["$set"].(bson.M)["paidAt"] = now
+		return nil, errors.NewForbiddenError("无权直接确认支付成功")
 	}
 
 	// 执行更新

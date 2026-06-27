@@ -20,6 +20,7 @@ import (
 	"project/backend/services/email"
 	"project/backend/services/i18n"
 	"project/backend/services/jwt"
+	authtypes "project/backend/types/auth"
 )
 
 func main() {
@@ -76,14 +77,19 @@ func main() {
 		time.Sleep(10 * time.Second)
 	}
 	if redisErr != nil {
-		log.Printf("警告: Redis连接失败: %v", redisErr)
-		log.Println("继续运行，但Redis缓存和会话功能将不可用...")
+		log.Fatalf("Redis连接失败，认证功能不可用: %v", redisErr)
 	}
 
 	// 初始化服务
-	jwtService := jwt.NewService(config.GetConfig().JWT)
-	emailService := email.NewService(config.GetConfig().Email)
-	oauthProvider := auth.NewMockOAuthProvider()
+	cfg := config.GetConfig()
+	jwtService := jwt.NewService(cfg.JWT)
+	emailService := email.NewService(cfg.Email)
+	oauthProvider := auth.NewGoogleOAuthProvider(authtypes.GoogleOAuthConfig{
+		ClientID:     cfg.OAuth.Google.ClientID,
+		ClientSecret: cfg.OAuth.Google.ClientSecret,
+		RedirectURL:  cfg.OAuth.Google.RedirectURL,
+		Scopes:       cfg.OAuth.Google.Scopes,
+	})
 
 	// 获取用户集合
 	var userCollection *mongo.Collection
@@ -120,7 +126,7 @@ func main() {
 	router.InitRouter(r, authService, jwtService, i18nService)
 
 	// 启动服务器
-	cfg := config.GetConfig()
+	cfg = config.GetConfig()
 	port := cfg.Server.Port
 
 	// 清理端口格式

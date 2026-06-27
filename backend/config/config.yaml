@@ -13,7 +13,7 @@ redis:
   db: 0
 
 jwt:
-  secret: your-secret-key
+  secret: "" # 必须通过 JWT_SECRET 环境变量注入，禁止硬编码
   accessExpireTime: 2h
   refreshExpireTime: 720h
   issuer: "peripheral-review-platform"

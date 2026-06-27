@@ -13,6 +13,7 @@ type LoginResponse struct {
 	UserID    string    `json:"userId"`
 	Email     string    `json:"email,omitempty"`
 	Username  string    `json:"username,omitempty"`
+	Role      string    `json:"role,omitempty"`
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 
 	// OAuth specific fields

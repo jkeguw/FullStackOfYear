@@ -14,10 +14,10 @@ vendor/
 dist/
 build/
 
-# Environment
+# Environment - 禁止提交任何包含真实密钥的文件
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # Logs
 *.log
@@ -38,8 +38,20 @@ Thumbs.db
 *.test
 *.out
 go.work
+# 禁止提交编译产物
+/backend/backend
+/backend/backend_app
+/backend/*.pid
+/frontend/*.pid
+*.pid
 
 # Frontend
 .nuxt/
 *.sw?
 **/.claude/settings.local.json
+
+# Tools and temporary files
+bfg-*.jar
+sec.txt
+*.tmp
+*.bak

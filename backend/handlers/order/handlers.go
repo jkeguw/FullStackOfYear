@@ -226,8 +226,12 @@ func (h *Handler) UpdateOrderStatus(c *gin.Context) {
 		return
 	}
 
+	// 获取用户角色
+	role, _ := c.Get("userRole")
+	roleStr, _ := role.(string)
+
 	// 更新状态
-	orderObj, err := h.orderService.UpdateOrderStatus(c.Request.Context(), userID, orderID, status, req.CancelReason)
+	orderObj, err := h.orderService.UpdateOrderStatus(c.Request.Context(), userID, orderID, roleStr, status, req.CancelReason)
 	if err != nil {
 		appErr, ok := err.(*errors.AppError)
 		if ok {
@@ -244,11 +248,34 @@ func (h *Handler) UpdateOrderStatus(c *gin.Context) {
 
 // ProcessPayment 处理支付
 func (h *Handler) ProcessPayment(c *gin.Context) {
+	// 获取用户ID（支付操作必须认证，且只能操作自己的订单）
+	userIDStr, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, errors.NewAppError(errors.Unauthorized, "未授权访问"))
+		return
+	}
+	userID, err := primitive.ObjectIDFromHex(userIDStr.(string))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errors.NewAppError(errors.BadRequest, "无效的用户ID"))
+		return
+	}
+
 	// 获取订单ID
 	orderIDStr := c.Param("id")
 	orderID, err := primitive.ObjectIDFromHex(orderIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, errors.NewAppError(errors.BadRequest, "无效的订单ID"))
+		return
+	}
+
+	// 校验订单所有权
+	if _, err := h.orderService.GetOrder(c.Request.Context(), userID, orderID); err != nil {
+		appErr, ok := err.(*errors.AppError)
+		if ok {
+			c.JSON(appErr.HTTPStatus(), appErr)
+		} else {
+			c.JSON(http.StatusInternalServerError, errors.NewAppError(errors.InternalError, err.Error()))
+		}
 		return
 	}
 

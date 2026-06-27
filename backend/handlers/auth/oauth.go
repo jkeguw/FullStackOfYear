@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"os"
+	"project/backend/config"
 	"project/backend/internal/errors"
 	"project/backend/services/auth"
 	authtypes "project/backend/types/auth"
@@ -37,15 +39,16 @@ func generateState() (string, error) {
 
 // HandleOAuthLogin 处理OAuth登录请求
 func (h *OAuthHandler) HandleOAuthLogin(c *gin.Context) {
-	// 创建谷歌OAuth提供者
-	config := authtypes.GoogleOAuthConfig{
-		ClientID:     c.MustGet("config").(map[string]interface{})["oauth"].(map[string]interface{})["google"].(map[string]interface{})["clientId"].(string),
-		ClientSecret: c.MustGet("config").(map[string]interface{})["oauth"].(map[string]interface{})["google"].(map[string]interface{})["clientSecret"].(string),
-		RedirectURL:  c.MustGet("config").(map[string]interface{})["oauth"].(map[string]interface{})["google"].(map[string]interface{})["redirectUrl"].(string),
+	// 从配置中读取OAuth信息，避免使用不存在的context key导致panic
+	cfg := config.GetConfig()
+	oauthConfig := authtypes.GoogleOAuthConfig{
+		ClientID:     cfg.OAuth.Google.ClientID,
+		ClientSecret: cfg.OAuth.Google.ClientSecret,
+		RedirectURL:  cfg.OAuth.Google.RedirectURL,
 		Scopes:       []string{"email", "profile"},
 	}
 
-	provider := auth.NewGoogleOAuthProvider(config)
+	provider := auth.NewGoogleOAuthProvider(oauthConfig)
 
 	// 生成随机状态参数，用于防止CSRF攻击
 	state, err := generateState()
@@ -55,7 +58,10 @@ func (h *OAuthHandler) HandleOAuthLogin(c *gin.Context) {
 	}
 
 	// 设置Cookie存储状态
-	c.SetCookie("oauth_state", state, int(5*time.Minute.Seconds()), "/", "", false, true)
+	// 生产环境应启用HTTPS并将Secure设为true
+	secureCookie := os.Getenv("SECURE_COOKIE") == "true" || os.Getenv("ENV") == "production"
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("oauth_state", state, int(5*time.Minute.Seconds()), "/", "", secureCookie, true)
 
 	// 获取认证URL
 	authURL := provider.GetAuthURL(state)
@@ -81,15 +87,16 @@ func (h *OAuthHandler) HandleOAuthCallback(c *gin.Context) {
 		return
 	}
 
-	// 创建谷歌OAuth提供者
-	config := authtypes.GoogleOAuthConfig{
-		ClientID:     c.MustGet("config").(map[string]interface{})["oauth"].(map[string]interface{})["google"].(map[string]interface{})["clientId"].(string),
-		ClientSecret: c.MustGet("config").(map[string]interface{})["oauth"].(map[string]interface{})["google"].(map[string]interface{})["clientSecret"].(string),
-		RedirectURL:  c.MustGet("config").(map[string]interface{})["oauth"].(map[string]interface{})["google"].(map[string]interface{})["redirectUrl"].(string),
+	// 从配置中读取OAuth信息
+	cfg := config.GetConfig()
+	oauthConfig := authtypes.GoogleOAuthConfig{
+		ClientID:     cfg.OAuth.Google.ClientID,
+		ClientSecret: cfg.OAuth.Google.ClientSecret,
+		RedirectURL:  cfg.OAuth.Google.RedirectURL,
 		Scopes:       []string{"email", "profile"},
 	}
 
-	provider := auth.NewGoogleOAuthProvider(config)
+	provider := auth.NewGoogleOAuthProvider(oauthConfig)
 
 	// 交换授权码获取token
 	token, err := provider.ExchangeCode(context.Background(), code)
@@ -113,8 +120,10 @@ func (h *OAuthHandler) HandleOAuthCallback(c *gin.Context) {
 	}
 
 	// 设置认证Cookie
-	c.SetCookie("access_token", resp.AccessToken, 3600, "/", "", false, true)
-	c.SetCookie("refresh_token", resp.RefreshToken, 86400*7, "/", "", false, true)
+	secureCookie := os.Getenv("SECURE_COOKIE") == "true" || os.Getenv("ENV") == "production"
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("access_token", resp.AccessToken, 3600, "/", "", secureCookie, true)
+	c.SetCookie("refresh_token", resp.RefreshToken, 86400*7, "/", "", secureCookie, true)
 
 	// 使用JavaScript关闭窗口并发送消息到父窗口
 	html := `
@@ -131,6 +140,7 @@ func (h *OAuthHandler) HandleOAuthCallback(c *gin.Context) {
 					userId: "` + resp.UserID + `",
 					email: "` + resp.Email + `",
 					username: "` + resp.Username + `",
+					role: "` + resp.Role + `",
 					accessToken: "` + resp.AccessToken + `",
 					refreshToken: "` + resp.RefreshToken + `"
 				}

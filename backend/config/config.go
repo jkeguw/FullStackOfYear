@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
 	"time"
@@ -90,8 +91,16 @@ func LoadConfigFromPath(path string) (*Config, error) {
 		config.OAuth.Google.RedirectURL = redirectURL
 	}
 
-	// Simplified validation - skip complex validations for now
-	
+	// JWT secret environment variable override
+	if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret != "" {
+		config.JWT.Secret = jwtSecret
+	}
+
+	// 安全校验：JWT Secret 不能使用默认值或空值
+	if config.JWT.Secret == "" || config.JWT.Secret == "your-secret-key" {
+		return nil, fmt.Errorf("JWT secret is not configured. Please set JWT_SECRET environment variable or jwt.secret in config")
+	}
+
 	// Email configuration environment variable override
 	if username := os.Getenv("SMTP_USERNAME"); username != "" {
 		config.Email.SMTP.Username = username
@@ -99,8 +108,6 @@ func LoadConfigFromPath(path string) (*Config, error) {
 	if password := os.Getenv("SMTP_PASSWORD"); password != "" {
 		config.Email.SMTP.Password = password
 	}
-
-	// Simplified email validation - skip complex validations for now
 
 	return config, nil
 }

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"project/backend/internal/errors"
+	"project/backend/middleware"
 	"project/backend/models"
 	deviceSvc "project/backend/services/device"
 	deviceTypes "project/backend/types/device"
@@ -295,6 +296,16 @@ func (h *Handler) CreateDeviceReview(c *gin.Context) {
 		return
 	}
 
+	// 对用户输入进行消毒，防止存储型XSS
+	request.Content = middleware.SanitizeHTML(request.Content)
+	request.Usage = middleware.SanitizeText(request.Usage)
+	for i := range request.Pros {
+		request.Pros[i] = middleware.SanitizeText(request.Pros[i])
+	}
+	for i := range request.Cons {
+		request.Cons[i] = middleware.SanitizeText(request.Cons[i])
+	}
+
 	// 转换请求类型为CreateReviewRequest
 	createReviewReq := deviceTypes.CreateReviewRequest(request)
 
@@ -380,6 +391,28 @@ func (h *Handler) UpdateDeviceReview(c *gin.Context) {
 			"data":    nil,
 		})
 		return
+	}
+
+	// 对用户输入进行消毒，防止存储型XSS
+	if request.Content != nil {
+		sanitized := middleware.SanitizeHTML(*request.Content)
+		request.Content = &sanitized
+	}
+	if request.Usage != nil {
+		sanitized := middleware.SanitizeText(*request.Usage)
+		request.Usage = &sanitized
+	}
+	if request.Pros != nil {
+		pros := *request.Pros
+		for i := range pros {
+			pros[i] = middleware.SanitizeText(pros[i])
+		}
+	}
+	if request.Cons != nil {
+		cons := *request.Cons
+		for i := range cons {
+			cons[i] = middleware.SanitizeText(cons[i])
+		}
 	}
 
 	// 转换请求类型为UpdateReviewRequest

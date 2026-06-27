@@ -1,12 +1,9 @@
 package auth
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"io"
 	"net/http"
 	"project/backend/internal/errors"
 	"project/backend/services/auth"
@@ -16,34 +13,6 @@ import (
 
 // Register handles user registration
 func Register(c *gin.Context) {
-	// 先解析请求体，用于日志记录
-	var rawData []byte
-	var rawRequest map[string]interface{}
-	
-	// 读取请求体
-	rawData, _ = c.GetRawData()
-	
-	// 如果读取成功，尝试解析为JSON对象
-	if len(rawData) > 0 {
-		c.Request.Body = http.NoBody
-		_ = json.Unmarshal(rawData, &rawRequest)
-		// 重置请求体供后续绑定
-		c.Request.Body = io.NopCloser(bytes.NewBuffer(rawData))
-	}
-	
-	// 日志记录请求内容
-	if len(rawRequest) > 0 {
-		// 移除敏感信息再打印
-		if _, has := rawRequest["password"]; has {
-			rawRequest["password"] = "[REDACTED]"
-		}
-		if _, has := rawRequest["confirmPassword"]; has {
-			rawRequest["confirmPassword"] = "[REDACTED]"
-		}
-		
-		fmt.Printf("注册请求体: %+v\n", rawRequest)
-	}
-	
 	// 解析请求体
 	var regReq authtypes.RegisterRequest
 	if err := c.ShouldBindJSON(&regReq); err != nil {
@@ -51,6 +20,15 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    errors.BadRequest,
 			"message": "注册请求格式无效: " + err.Error(),
+		})
+		return
+	}
+
+	// 额外校验密码一致性（防御性校验）
+	if regReq.Password != regReq.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    errors.BadRequest,
+			"message": "两次输入的密码不一致",
 		})
 		return
 	}

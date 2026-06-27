@@ -76,7 +76,7 @@ func RegisterRoutes(router *gin.RouterGroup, authService authService.Service, jw
 		log.Println("警告: MongoDB连接不可用，服务将使用空实现")
 	}
 
-	emailService := &email.Service{}
+	emailService := email.NewService(config.GetConfig().Email)
 	deviceService := deviceService.New(db) // 使用实际的MongoDB连接，即使数据库连接为nil也使用完整实现
 	userService := &userService.DefaultService{}
 	reviewSvc := &reviewService.DefaultService{}

@@ -51,10 +51,6 @@ export function useAuth() {
     try {
       const deviceInfo = getDeviceInfo();
 
-      // For admin login, use a special approach
-      const isAdminLogin = email === 'root@example.com' || email === 'admin@example.com';
-      console.log('Login attempt:', { email, isAdminLogin });
-
       const loginRequest: LoginRequest = {
         email,
         password,
@@ -62,10 +58,7 @@ export function useAuth() {
         loginType: 'email', // 显式设置登录类型，与后端期望一致
       };
 
-      console.log('Login request:', { ...loginRequest, password: '[REDACTED]' });
-
       const response = await apiLogin(loginRequest);
-      console.log('Login response:', response);
       
       if (!response) {
         throw new Error('No response received from server');
@@ -91,19 +84,19 @@ export function useAuth() {
         return { requireTwoFactor: true };
       } else {
         // Normal login success
-        // Store user data
+        // Store user data - role must come from the backend, never from the frontend
         userStore.setUser({
           id: data.userID,
           email: data.email,
           username: data.username,
-          role: isAdminLogin ? UserRole.ADMIN : UserRole.USER, // Ensure admin role is set
+          role: data.role || UserRole.USER,
           createdAt: data.createdAt,
         });
         
         userStore.setToken(data.accessToken);
 
-        // Set admin status
-        isAdmin.value = isAdminLogin;
+        // Set role flags based on backend role
+        checkRole();
         
         // 使用sessionStorage代替localStorage存储敏感信息
         sessionStorage.setItem('refreshToken', data.refreshToken);
@@ -206,9 +199,15 @@ export function useAuth() {
           if (data.type === 'oauth_complete' && data.provider === provider) {
             // 认证成功
             if (data.success) {
-              userStore.setUser(data.user);
-              userStore.setToken(data.accessToken);
-              sessionStorage.setItem('refreshToken', data.refreshToken);
+              const userData = data.user || data;
+              userStore.setUser({
+                id: userData.userId || userData.userID || userData.id,
+                email: userData.email,
+                username: userData.username,
+                role: userData.role || UserRole.USER,
+              });
+              userStore.setToken(userData.accessToken);
+              sessionStorage.setItem('refreshToken', userData.refreshToken);
               
               // 关闭OAuth窗口
               if (oauthWindow.value && !oauthWindow.value.closed) {

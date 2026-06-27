@@ -1,7 +1,10 @@
 package auth
 
 import (
+	"context"
+	"project/backend/internal/database"
 	"project/backend/services/jwt"
+	"project/backend/services/token"
 	"project/backend/types/claims"
 	"time"
 )
@@ -18,7 +21,7 @@ func NewSimpleTokenGenerator(jwtService jwt.Service) *SimpleTokenGenerator {
 	}
 }
 
-// GenerateTokenPair generates a pair of access and refresh tokens
+// GenerateTokenPair generates a pair of access and refresh tokens and stores them in Redis
 func (g *SimpleTokenGenerator) GenerateTokenPair(userID, role, deviceID string) (string, string, error) {
 	// Generate access token (1 hour expiration)
 	accessClaims := jwt.Claims{
@@ -27,12 +30,12 @@ func (g *SimpleTokenGenerator) GenerateTokenPair(userID, role, deviceID string) 
 		DeviceID: deviceID,
 		Type:     "access",
 	}
-	
-	accessToken, _, err := g.jwtService.GenerateToken(accessClaims, 3600*time.Second)
+
+	accessToken, accessExpiresAt, err := g.jwtService.GenerateToken(accessClaims, 3600*time.Second)
 	if err != nil {
 		return "", "", err
 	}
-	
+
 	// Generate refresh token (7 days expiration)
 	refreshClaims := jwt.Claims{
 		UserID:   userID,
@@ -40,12 +43,25 @@ func (g *SimpleTokenGenerator) GenerateTokenPair(userID, role, deviceID string) 
 		DeviceID: deviceID,
 		Type:     "refresh",
 	}
-	
+
 	refreshToken, _, err := g.jwtService.GenerateToken(refreshClaims, 7*24*3600*time.Second)
 	if err != nil {
 		return "", "", err
 	}
-	
+
+	// Store tokens in Redis for revocation support
+	tokenManager := token.NewManager(database.RedisClient)
+	info := token.TokenInfo{
+		UserID:    userID,
+		DeviceID:  deviceID,
+		Role:      role,
+		IssuedAt:  time.Now(),
+		ExpiresAt: accessExpiresAt,
+	}
+	if err := tokenManager.StoreTokens(context.Background(), accessToken, refreshToken, info); err != nil {
+		return "", "", err
+	}
+
 	return accessToken, refreshToken, nil
 }
 
@@ -66,7 +82,6 @@ func (g *SimpleTokenGenerator) ValidateRefreshToken(token string) (*claims.Claim
 
 // RevokeTokens revokes all tokens for a user and device
 func (g *SimpleTokenGenerator) RevokeTokens(userID, deviceID string) error {
-	// In this simplified implementation, we don't actually revoke tokens
-	// In a real implementation, you would add them to a blacklist
-	return nil
+	tokenManager := token.NewManager(database.RedisClient)
+	return tokenManager.RevokeTokens(userID, deviceID)
 }

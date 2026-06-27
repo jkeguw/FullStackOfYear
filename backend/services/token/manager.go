@@ -82,9 +82,9 @@ func (m *Manager) GenerateTokenPair(userID, role, deviceID string) (string, stri
 
 // StoreTokens saves tokens to Redis
 func (m *Manager) StoreTokens(ctx context.Context, accessToken, refreshToken string, info TokenInfo) error {
-	// 如果Redis不可用，直接返回成功，不影响用户登录
+	// Redis不可用时不允许登录成功，因为无法验证后续请求
 	if m.rdb == nil {
-		return nil
+		return errors.NewAppError(errors.InternalError, "Redis unavailable")
 	}
 
 	accessKey := fmt.Sprintf(accessTokenKey, info.UserID, info.DeviceID)
@@ -102,18 +102,29 @@ func (m *Manager) StoreTokens(ctx context.Context, accessToken, refreshToken str
 	return err
 }
 
-// CheckTokenExists verifies if a token exists
-func (m *Manager) CheckTokenExists(ctx context.Context, userID, deviceID, tokenType string) (bool, error) {
-	// 如果Redis不可用，返回true避免影响用户登录
+// CheckTokenExists verifies if a token exists and optionally matches the provided token value
+func (m *Manager) CheckTokenExists(ctx context.Context, userID, deviceID, tokenType string, tokenValue ...string) (bool, error) {
+	// Redis不可用时不允许认证通过
 	if m.rdb == nil {
-		return true, nil
+		return false, errors.NewAppError(errors.InternalError, "Redis unavailable")
 	}
 
-	var key string
-	key = fmt.Sprintf(accessTokenKey, userID, deviceID)
+	key := fmt.Sprintf(accessTokenKey, userID, deviceID)
 
-	exists, err := m.rdb.Exists(ctx, key).Result()
-	return exists == 1, err
+	storedToken, err := m.rdb.Get(ctx, key).Result()
+	if err == redis.Nil {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	// 如果提供了token值，校验是否匹配，防止Token复用/重放
+	if len(tokenValue) > 0 && storedToken != tokenValue[0] {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 // InvalidateTokens removes tokens for a specific device

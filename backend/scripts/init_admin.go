@@ -2,6 +2,8 @@ package scripts
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -12,22 +14,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func InitAdmin() {
-	// 加载环境变量
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Printf("Warning: Could not load .env file: %v", err)
-	}
+	// 加载环境变量（从多个可能的位置尝试加载）
+	_ = godotenv.Load("../.env")
+	_ = godotenv.Load(".env")
 
-	// 获取MongoDB连接URI，如果环境变量中没有，则使用默认值
+	// 获取MongoDB连接URI，优先使用环境变量
 	mongoURI := os.Getenv("MONGODB_URI")
 	if mongoURI == "" {
-		// 尝试使用docker容器的默认连接
 		mongoURI = "mongodb://root:example@localhost:27017"
 		log.Printf("Using default MongoDB URI: %s", mongoURI)
 	} else {
-		log.Printf("Using MongoDB URI from environment: %s", mongoURI)
+		log.Printf("Using MongoDB URI from environment")
 	}
 
 	// 连接到MongoDB
@@ -52,11 +53,37 @@ func InitAdmin() {
 	fmt.Println("Connected to MongoDB successfully!")
 
 	// 获取数据库和集合
-	db := client.Database("cpc")
+	dbName := os.Getenv("MONGODB_DATABASE")
+	if dbName == "" {
+		dbName = "cpc"
+	}
+	db := client.Database(dbName)
 	usersCollection := db.Collection("users")
 
+	// 管理员账户信息优先从环境变量读取
+	adminEmail := os.Getenv("ADMIN_EMAIL")
+	if adminEmail == "" {
+		adminEmail = "root@example.com"
+	}
+
+	adminPassword := os.Getenv("ADMIN_INITIAL_PASSWORD")
+	if adminPassword == "" {
+		// 如果没有设置初始密码，生成一个强随机密码并打印到日志
+		adminPassword = generateSecurePassword()
+		log.Printf("============================================================")
+		log.Printf("WARNING: No ADMIN_INITIAL_PASSWORD set.")
+		log.Printf("Generated random admin password for %s: %s", adminEmail, adminPassword)
+		log.Printf("Please change this password immediately after first login.")
+		log.Printf("============================================================")
+	}
+
+	// 生成密码哈希
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), 12)
+	if err != nil {
+		log.Fatalf("Failed to hash admin password: %v", err)
+	}
+
 	// 检查管理员账户是否已存在
-	adminEmail := "root@example.com"
 	var existingAdmin bson.M
 	err = usersCollection.FindOne(ctx, bson.M{"email": adminEmail}).Decode(&existingAdmin)
 
@@ -69,7 +96,7 @@ func InitAdmin() {
 		adminUser := bson.M{
 			"username": "admin",
 			"email":    adminEmail,
-			"password": "$2a$10$ruV4RIXIL5EcScyVhr6Use1zRE7ozPEoaIIicdBjXEHNRYsehfXkO", // 密码为 "admin123"
+			"password": string(hashedPassword),
 			"role": bson.M{
 				"type": "admin",
 			},
@@ -80,8 +107,8 @@ func InitAdmin() {
 				"createdAt":   now,
 				"lastLoginAt": now,
 			},
-			"createdAt": now,
-			"updatedAt": now,
+			"createdAt":  now,
+			"updatedAt":  now,
 			"isVerified": true,
 		}
 
@@ -110,4 +137,13 @@ func InitAdmin() {
 	}
 
 	fmt.Println("Admin account initialization completed!")
+}
+
+func generateSecurePassword() string {
+	b := make([]byte, 24)
+	if _, err := rand.Read(b); err != nil {
+		// 如果随机生成失败，使用一个明确的占位符（不应该在生产环境发生）
+		return "CHANGE_ME_IMMEDIATELY_" + fmt.Sprintf("%d", time.Now().Unix())
+	}
+	return base64.URLEncoding.EncodeToString(b)
 }

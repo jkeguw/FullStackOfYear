@@ -58,32 +58,18 @@ func Auth(jwtService ...jwt.Service) gin.HandlerFunc {
 			return
 		}
 
-		// Verify token exists in Redis
+		// Verify token exists in Redis and matches the provided token
 		tokenManager := token.NewManager(database.RedisClient)
-		exists, err := tokenManager.CheckTokenExists(ctx, claims.UserID, claims.DeviceID, "access")
+		exists, err := tokenManager.CheckTokenExists(ctx, claims.UserID, claims.DeviceID, "access", parts[1])
 		if err != nil {
-			// Redis操作失败时，记录错误但不阻止认证流程 (以允许用户登录)
-			// 这对于开发环境和Redis不可用的情况尤其重要
-			c.Set("userId", claims.UserID)
-			c.Set("userRole", claims.Role)
-			c.Set("deviceId", claims.DeviceID)
-			c.Set("tokenType", claims.Type)
-			c.Next()
+			c.AbortWithStatusJSON(401, gin.H{
+				"code":    errors.Unauthorized,
+				"message": "Unable to verify token",
+			})
 			return
 		}
 
 		if !exists {
-			// 检查这是否是root用户 (admin账户) - 对于admin账户进行特殊处理
-			if claims.Role == "admin" {
-				// 允许admin账户访问，即使token不在Redis中
-				c.Set("userId", claims.UserID)
-				c.Set("userRole", claims.Role)
-				c.Set("deviceId", claims.DeviceID)
-				c.Set("tokenType", claims.Type)
-				c.Next()
-				return
-			}
-			
 			c.AbortWithStatusJSON(401, gin.H{
 				"code":    errors.Unauthorized,
 				"message": "Token has been revoked",

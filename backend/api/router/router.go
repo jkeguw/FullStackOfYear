@@ -15,6 +15,7 @@ func InitRouter(r *gin.Engine, authService auth.Service, jwtService jwt.Service,
 	r.Use(middleware.Recovery())
 	r.Use(middleware.Logger())
 	r.Use(middleware.XSSProtection())
+	r.Use(middleware.CSRFProtection())
 
 	// 添加国际化中间件
 	r.Use(middleware.I18n(i18nService))
@@ -29,20 +30,6 @@ func InitRouter(r *gin.Engine, authService auth.Service, jwtService jwt.Service,
 	r.GET("/api/v1/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "OK",
-		})
-	})
-
-	// 添加调试端点
-	r.GET("/api/debug", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"code":    0,
-			"message": "Debug API",
-			"data": gin.H{
-				"devices":  []gin.H{},
-				"total":    0,
-				"page":     1,
-				"pageSize": 20,
-			},
 		})
 	})
 

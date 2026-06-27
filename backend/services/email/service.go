@@ -1,32 +1,108 @@
 package email
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
+	"net/smtp"
+	"strings"
+
+	"project/backend/config"
 )
 
 // Service 提供电子邮件功能
 type Service struct {
+	config  config.EmailConfig
+	baseURL string
 }
 
 // NewService 创建一个新的邮件服务
-func NewService(config interface{}) *Service {
-	return &Service{}
+func NewService(cfg config.EmailConfig) *Service {
+	return &Service{
+		config:  cfg,
+		baseURL: strings.TrimRight(cfg.BaseURL, "/"),
+	}
 }
 
-// SendEmail 发送一封电子邮件
+// SendEmail 使用SMTP发送一封电子邮件
 func (s *Service) SendEmail(to, subject, body string) error {
-	log.Printf("发送邮件到 %s，主题：%s", to, subject)
-	// 在实际实现中，这里会使用SMTP发送邮件
+	if s.config.SMTP.Host == "" || s.config.SMTP.Username == "" || s.config.SMTP.Password == "" {
+		return fmt.Errorf("email service is not configured")
+	}
+
+	from := s.config.From
+	if from == "" {
+		from = s.config.SMTP.Username
+	}
+
+	addr := fmt.Sprintf("%s:%d", s.config.SMTP.Host, s.config.SMTP.Port)
+
+	headers := fmt.Sprintf(
+		"From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n",
+		from, to, subject,
+	)
+	msg := []byte(headers + body)
+
+	auth := smtp.PlainAuth("", s.config.SMTP.Username, s.config.SMTP.Password, s.config.SMTP.Host)
+
+	// 587端口使用STARTTLS
+	if s.config.SMTP.Port == 587 {
+		client, err := smtp.Dial(addr)
+		if err != nil {
+			log.Printf("Failed to connect to SMTP server: %v", err)
+			return fmt.Errorf("failed to connect to SMTP server: %w", err)
+		}
+		defer client.Close()
+
+		if err := client.Hello("localhost"); err != nil {
+			return err
+		}
+
+		if err := client.StartTLS(&tls.Config{ServerName: s.config.SMTP.Host}); err != nil {
+			log.Printf("Failed to start TLS: %v", err)
+			return fmt.Errorf("failed to start TLS: %w", err)
+		}
+
+		if err := client.Auth(auth); err != nil {
+			log.Printf("SMTP authentication failed: %v", err)
+			return fmt.Errorf("SMTP authentication failed: %w", err)
+		}
+
+		if err := client.Mail(from); err != nil {
+			return err
+		}
+		if err := client.Rcpt(to); err != nil {
+			return err
+		}
+
+		w, err := client.Data()
+		if err != nil {
+			return err
+		}
+		if _, err := w.Write(msg); err != nil {
+			return err
+		}
+		if err := w.Close(); err != nil {
+			return err
+		}
+
+		return client.Quit()
+	}
+
+	// 465端口使用TLS直接连接
+	err := smtp.SendMail(addr, auth, from, []string{to}, msg)
+	if err != nil {
+		log.Printf("Failed to send email: %v", err)
+		return fmt.Errorf("failed to send email: %w", err)
+	}
 	return nil
 }
 
 // SendVerificationEmail 发送邮箱验证邮件
 func (s *Service) SendVerificationEmail(to, username, token string) error {
 	subject := "请验证您的电子邮件地址"
-	verificationURL := fmt.Sprintf("http://localhost:8080/api/auth/verify-email?token=%s", token)
-	
-	// 构建邮件内容
+	verificationURL := fmt.Sprintf("%s/api/auth/verify-email?token=%s", s.baseURL, token)
+
 	body := fmt.Sprintf(`
 <!DOCTYPE html>
 <html>
@@ -59,9 +135,8 @@ func (s *Service) SendVerificationEmail(to, username, token string) error {
 // SendPasswordResetEmail 发送密码重置邮件
 func (s *Service) SendPasswordResetEmail(to, username, token string) error {
 	subject := "密码重置请求"
-	resetURL := fmt.Sprintf("http://localhost:8080/reset-password?token=%s", token)
-	
-	// 构建邮件内容
+	resetURL := fmt.Sprintf("%s/reset-password?token=%s", s.baseURL, token)
+
 	body := fmt.Sprintf(`
 <!DOCTYPE html>
 <html>
@@ -93,5 +168,8 @@ func (s *Service) SendPasswordResetEmail(to, username, token string) error {
 
 // TestConnection 测试邮件配置
 func (s *Service) TestConnection() error {
+	if s.config.SMTP.Host == "" {
+		return fmt.Errorf("SMTP host not configured")
+	}
 	return nil
 }

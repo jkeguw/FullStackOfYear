@@ -73,6 +73,11 @@ func (s *service) Register(ctx context.Context, req *auth.RegisterRequest) (*mod
 		return nil, err
 	}
 
+	// Validate password strength
+	if !ValidatePassword(req.Password) {
+		return nil, errors.NewAppError(errors.BadRequest, "Password must be 8-72 characters with uppercase, lowercase, number and special character")
+	}
+
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcryptCost)
 	if err != nil {
@@ -175,6 +180,7 @@ func (s *service) Login(ctx context.Context, req *auth.LoginRequest) (*auth.Logi
 		UserID:         user.ID.Hex(),
 		Email:          user.Email,
 		Username:       user.Username,
+		Role:           user.Role.Type,
 		CreatedAt:      user.CreatedAt,
 		OAuthConnected: user.OAuth != nil && user.OAuth.Google != nil && user.OAuth.Google.Connected,
 		OAuthProvider:  provider,
